@@ -44,7 +44,9 @@ var m = [20, 120, 20, 120],
     root;
 
 var tree = d3.layout.tree()
-    .size([h, w]);
+    .size([h, w])
+	//.children(function(d){})	
+	;
 
 
 var diagonal = d3.svg.line()
@@ -58,7 +60,8 @@ var vis = d3.select("#chart").append("svg")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
 
-d3.json("../datas/flare.json", function(json) {
+//d3.json("../datas/flare.json", function(json) {
+d3.json("../datas/results.json", function(json) {
   root = json;
   //root.x0 = h / 2;
   root.x0 = 10;
