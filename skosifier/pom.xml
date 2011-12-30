@@ -20,12 +20,20 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
+<!--   <parent> -->
+<!--     <groupId>org.apache.stanbol</groupId> -->
+<!--     <artifactId>org.apache.stanbol.enhancer.parent</artifactId> -->
+<!--     <version>0.9.0-incubating-SNAPSHOT</version> -->
+<!--     <relativePath>../../parent</relativePath> -->
+<!--   </parent> -->
+
+	<parent>
     <groupId>org.apache.stanbol</groupId>
-    <artifactId>org.apache.stanbol.enhancer.parent</artifactId>
+    <artifactId>stanbol-parent</artifactId>
     <version>0.9.0-incubating-SNAPSHOT</version>
-    <!-- <relativePath>../../parent</relativePath> -->
+<!--     <relativePath>../../parent</relativePath> -->
   </parent>
+	
 
   <groupId>eu.lh</groupId>
   <artifactId>eu.lh.skosifier</artifactId>
@@ -84,7 +92,12 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-
+	
+	<dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+    </dependency>    
+    
     <!-- generic tax -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -96,7 +109,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.7</version>
       <scope>test</scope>
     </dependency>
     <dependency><!--  for debugging enhancements -->
@@ -104,6 +116,21 @@
       <artifactId>rdf.jena.serializer</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    	<groupId>org.apache.clerezza</groupId>
+        <artifactId>rdf.simple.storage</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.stanbol</groupId>
+      <artifactId>org.apache.stanbol.commons.jsonld</artifactId>
+      <scope>test</scope>
+    </dependency>
+<!--     <dependency> -->
+<!--       <groupId>org.apache.clerezza</groupId> -->
+<!--       <artifactId>rdf.rdfjson</artifactId> -->
+<!--       <scope>test</scope> -->
+<!--     </dependency> -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
@@ -126,7 +153,10 @@
         <artifactId>maven-bundle-plugin</artifactId>
         <extensions>true</extensions>
         <configuration>
-          <instructions>
+        	<instructions>
+        		<Embed-Dependency>org.apache.servicemix.bundles.commons-csv</Embed-Dependency>
+        	</instructions>
+          <!-- <instructions>
             <Private-Package>
               org.apache.stanbol.enhancer.engines.zemanta.impl.*
             </Private-Package>
@@ -139,7 +169,7 @@
               !org.apache.avalon.framework.*,
               *
             </Import-Package>
-          </instructions>
+          </instructions> -->
         </configuration>
       </plugin>
       <plugin>
