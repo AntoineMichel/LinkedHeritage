@@ -33,6 +33,16 @@ path.linkflo {
     </style>
   </head>
   <body>
+  	<div id="config">
+  		<form id="aform">
+			Choose your language : 
+			<select id="mymenu" size="1">
+				<option value="fr" selected="selected">French</option>
+				<option value="nl">NL</option>
+				<option value="en">English</option>
+			</select>
+		</form>
+  	</div>
     <div id="chart"></div>
     <script type="text/javascript">
 
@@ -59,6 +69,24 @@ var vis = d3.select("#chart").append("svg")
   .append("g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
+/**
+ * language selection
+ */
+//variable for selecting lang
+var lang = "fr";
+var changeLang = false;
+	
+var selectmenu=document.getElementById("mymenu");
+selectmenu.onchange=function(){ //run some code when "onchange" event fires
+	lang = this.options[this.selectedIndex].value;
+	update(root);
+	changeLang = true;
+	/*
+	var chosenoption=this.options[this.selectedIndex] //this refers to "selectmenu"
+ 	if (chosenoption.value!="nothing"){
+  		window.open(chosenoption.value, "", "") //open target site (based on option's value attr) in new window
+ 	}*/
+}
 
 //d3.json("../datas/flare.json", function(json) {
 d3.json("../datas/results.json", function(json) {
@@ -82,17 +110,15 @@ d3.json("../datas/results.json", function(json) {
 	
 	function getChildren(d){
 		var globD = d;
-		//d._children = null;
-		//d.children = [];
 		d.children = objWithBroader.filter(function(p){ return p.broader == globD.@subject;});
-		var val = d.children.length;
-		var toto = "test";
-		if (d.children.length == 0){
+		//set to null for saying "no children" and get the circle white
+		d.children.length == 0 ? d.children = null : d.children.forEach(getChildren);  
+		/*if (d.children.length == 0){
 			d.children = null;	
 		}
 		else{
 			d.children.forEach(getChildren);
-		}
+		}*/
 		
 	}
 	
@@ -142,10 +168,8 @@ function update(source) {
       .style("fill", function(d) { 
       	var test = d._children;
       	return d._children ? "lightsteelblue" : "#fff"; });
-
-	
-	//variable for selecting lang
-	var lang = "fr";
+      	
+      	
 	function getLabel(d){
 		if (d.prefLabel == null){
 			//c'est la racine, voir commment on le traite
@@ -184,7 +208,16 @@ function update(source) {
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);
-
+	
+	//if the language has changed, update the text
+	//TODO : see to set-up a change on condition
+	nodeUpdate.select("text").text(getLabel);
+	/*
+	if(changeLang){
+		nodeUpdate.select("text").text(getLabel);
+		changeLang = false;
+	}*/
+	
   // Transition exiting nodes to the parent's new position.
   var nodeExit = node.exit().transition()
       .duration(duration)
