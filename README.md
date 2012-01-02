@@ -8,3 +8,5 @@ TODO :
 -- like DEL for deleting a graph
 -- like get for get a graph
 -- like ... for modifications
+
+- clean javascripts in visualisation folder, just keep needed
