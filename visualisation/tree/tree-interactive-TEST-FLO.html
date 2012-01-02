@@ -62,7 +62,45 @@ var vis = d3.select("#chart").append("svg")
 
 //d3.json("../datas/flare.json", function(json) {
 d3.json("../datas/results.json", function(json) {
+	
+	//test flo :
+	
+	//get the root of all ld subjects... .@Context is about NS infos
+	rootf = json.@subject;
+	
+	//select just certains elements in the json.
+	//be care full this seems to not apply for ie now (see here : http://stackoverflow.com/a/2722213)
+	// method use : http://stackoverflow.com/a/1694961 
+	// TODO : have a look at json path :
+	// here : http://code.google.com/p/jsonpath/
+	// and here : http://goessner.net/articles/JsonPath/
+	
+	objWithBroader = rootf.filter(function (p){return p.broader != null;});
+	objParent = rootf.filter(function(p){return p.broader == null;});
+	///
+	
+	
+	function getChildren(d){
+		var globD = d;
+		//d._children = null;
+		//d.children = [];
+		d.children = objWithBroader.filter(function(p){ return p.broader == globD.@subject;});
+		var val = d.children.length;
+		var toto = "test";
+		if (d.children.length == 0){
+			d.children = null;	
+		}
+		else{
+			d.children.forEach(getChildren);
+		}
+		
+	}
+	
   root = json;
+  
+  root.children = objParent;
+  //build the tree :
+  root.children.forEach(getChildren);
   //root.x0 = h / 2;
   root.x0 = 10;
   root.y0 = 0;
@@ -101,15 +139,35 @@ function update(source) {
 
   nodeEnter.append("circle")
       .attr("r", 1e-6)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { 
+      	var test = d._children;
+      	return d._children ? "lightsteelblue" : "#fff"; });
 
+	
+	//variable for selecting lang
+	var lang = "fr";
+	function getLabel(d){
+		if (d.prefLabel == null){
+			//c'est la racine, voir commment on le traite
+			return "---racine---";
+		}
+		else{
+			preflab = d.prefLabel.filter(function(p){ return p.@language == lang;})
+			return preflab[0].@literal;
+		}
+		/*
+		val = "toto";
+		return val;*/	
+	}
+	
   nodeEnter.append("text")
       //.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
 	.attr("x", function(d) { return 10; })
       .attr("dy", ".35em")
       //.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
 	.attr("text-anchor", function(d) { return "start"; })
-      .text(function(d) { return d.name; })
+      //.text(function(d) { return d.name; })
+      .text(getLabel)
       .style("fill-opacity", 1e-6);
 
   // Transition nodes to their new position.
@@ -120,7 +178,9 @@ function update(source) {
 
   nodeUpdate.select("circle")
       .attr("r", 4.5)
-      .style("fill", function(d) { return d._children ? "lightsteelblue" : "#fff"; });
+      .style("fill", function(d) { 
+      	var test = d._children;
+      	return d._children ? "lightsteelblue" : "#fff"; });
 
   nodeUpdate.select("text")
       .style("fill-opacity", 1);
