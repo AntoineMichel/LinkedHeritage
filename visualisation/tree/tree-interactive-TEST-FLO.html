@@ -94,7 +94,8 @@ d3.json("../datas/results.json", function(json) {
 	//test flo :
 	
 	//get the root of all ld subjects... .@Context is about NS infos
-	rootf = json.@subject;
+	//rootf = json.@subject;
+        rootf = json["@subject"];
 	
 	//select just certains elements in the json.
 	//be care full this seems to not apply for ie now (see here : http://stackoverflow.com/a/2722213)
@@ -110,7 +111,7 @@ d3.json("../datas/results.json", function(json) {
 	
 	function getChildren(d){
 		var globD = d;
-		d.children = objWithBroader.filter(function(p){ return p.broader == globD.@subject;});
+		d.children = objWithBroader.filter(function(p){ return p.broader == globD["@subject"];});
 		//set to null for saying "no children" and get the circle white
 		d.children.length == 0 ? d.children = null : d.children.forEach(getChildren);  
 		/*if (d.children.length == 0){
@@ -176,8 +177,8 @@ function update(source) {
 			return "---racine---";
 		}
 		else{
-			preflab = d.prefLabel.filter(function(p){ return p.@language == lang;})
-			return preflab[0].@literal;
+			preflab = d.prefLabel.filter(function(p){ return p["@language"] == lang;})
+			return preflab[0]["@literal"];
 		}
 		/*
 		val = "toto";
