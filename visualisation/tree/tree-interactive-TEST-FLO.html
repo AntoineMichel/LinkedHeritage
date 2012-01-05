@@ -33,16 +33,16 @@ path.linkflo {
     </style>
   </head>
   <body>
-  	<div id="config">
-  		<form id="aform">
-			Choose your language : 
-			<select id="mymenu" size="1">
-				<option value="fr" selected="selected">French</option>
-				<option value="nl">NL</option>
-				<option value="en">English</option>
-			</select>
-		</form>
-  	</div>
+    <div id="config">
+      <form id="aform">
+	Choose your language : 
+	<select id="mymenu" size="1">
+	  <option value="fr" selected="selected">French</option>
+	  <option value="nl">NL</option>
+	  <option value="en">English</option>
+	</select>
+      </form>
+    </div>
     <div id="chart"></div>
     <script type="text/javascript">
 
@@ -186,19 +186,15 @@ function update(source) {
 	}
 	
   nodeEnter.append("text")
-      //.attr("x", function(d) { return d.children || d._children ? -10 : 10; })
-	.attr("x", function(d) { return 10; })
-      .attr("dy", ".35em")
-      //.attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-	.attr("text-anchor", function(d) { return "start"; })
-      //.text(function(d) { return d.name; })
-      .text(getLabel)
-      .style("fill-opacity", 1e-6);
+    	.attr("x", function(d) { return 10; })
+        .attr("dy", ".35em")
+        .attr("text-anchor", function(d) { return "start"; })
+        .text(getLabel)
+        .style("fill-opacity", 1e-6);
 
   // Transition nodes to their new position.
   var nodeUpdate = node.transition()
       .duration(duration)
-      //.attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
 
   nodeUpdate.select("circle")
