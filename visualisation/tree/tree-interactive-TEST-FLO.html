@@ -144,6 +144,33 @@ d3.json("../datas/results.json", function(json) {
   update(root);
 });
 
+//function get and set label to extract
+	function getLabel(d){
+		if (d.prefLabel == null){
+			//c'est la racine, voir commment on le traite
+			return "---racine---";
+		}
+		else{
+			preflab = d.prefLabel.filter(function(p){ return p["@language"] == lang;})
+			return preflab[0]["@literal"];
+		}
+	}
+
+        function setLabel(d,label){
+		if (d.prefLabel == null){
+			//c'est la racine, voir commment on le traite
+			//return "---racine---";
+                        return d;
+		}
+		else{
+			d.prefLabel.filter(function(p){ return p["@language"] == lang;})[0]["@literal"] = label
+			return d;
+                        
+		}
+	}
+     //end function to extract
+
+
 function update(source) {
 
   // Compute the new tree layout.
@@ -165,35 +192,27 @@ function update(source) {
       //.on("click", click)
       ;
 
+  //event : drag and drop (on the g or on the text ?) :
+ // change the parent of the node. See : https://github.com/mbostock/d3/wiki/Drag-Behavior#wiki-on
+
   nodeEnter.append("circle")
       .attr("r", 1e-6)
       .style("fill", function(d) { 
       	var test = d._children;
       	return d._children ? "lightsteelblue" : "#fff"; })
+       //click event on the circle : open children
       .on("click", click)
        ;
-      	
-      	
-	function getLabel(d){
-		if (d.prefLabel == null){
-			//c'est la racine, voir commment on le traite
-			return "---racine---";
-		}
-		else{
-			preflab = d.prefLabel.filter(function(p){ return p["@language"] == lang;})
-			return preflab[0]["@literal"];
-		}
-		/*
-		val = "toto";
-		return val;*/	
-	}
-	
+
   nodeEnter.append("text")
     	.attr("x", function(d) { return 10; })
         .attr("dy", ".35em")
         .attr("text-anchor", function(d) { return "start"; })
         .text(getLabel)
-        .style("fill-opacity", 1e-6);
+        .style("fill-opacity", 1e-6)
+        //double click event on the text : edit the node
+        .on("dblclick", doubleClick)
+        ;
 
   // Transition nodes to their new position.
   var nodeUpdate = node.transition()
@@ -296,6 +315,22 @@ function click(d) {
     d._children = null;
   }
   update(d);
+}
+
+function doubleClick(d) {
+  alert("Change the text");
+
+  setLabel(d,"changed");
+
+  update(d);
+/*  if (d.children) {
+    d._children = d.children;
+    d.children = null;
+  } else {
+    d.children = d._children;
+    d._children = null;
+  }
+  update(d);*/
 }
 
     </script>
