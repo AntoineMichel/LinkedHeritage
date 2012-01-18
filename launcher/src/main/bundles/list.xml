@@ -104,13 +104,26 @@
  
   <!-- KReS -->
   <startLevel level="22">
-		<bundle>
-			<groupId>org.apache.stanbol</groupId>
-			<artifactId>org.apache.stanbol.owl</artifactId>
-			<version>0.9.0-incubating-SNAPSHOT</version>
-	  </bundle>
+    <bundle>
+      <groupId>org.apache.stanbol</groupId>
+      <artifactId>org.apache.stanbol.owl</artifactId>
+      <version>0.9.0-incubating-SNAPSHOT</version>
+    </bundle>
   </startLevel>
 
+  <!-- LH front-end -->
+  <startLevel level="22">
+    <bundle>
+      <groupId>eu.lh</groupId>
+      <artifactId>eu.lh.skosifier</artifactId>
+      <version>0.9.0-incubating-SNAPSHOT</version>
+    </bundle>
+    <bundle>
+      <groupId>eu.lh</groupId>
+      <artifactId>skosifier-web</artifactId>
+      <version>0.9.0-incubating-SNAPSHOT</version>
+    </bundle>
+  </startLevel>
   <!-- *********************************************************************
           start level 25 TO 29 reserved for Stanbol plug-ins
           (currently the Enhancement Engines)

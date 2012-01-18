@@ -38,7 +38,7 @@
   <groupId>eu.lh</groupId>
   <artifactId>eu.lh.parent</artifactId>
   <packaging>pom</packaging>
-
+  
   <name>Linked Heritage Parent and reactor</name>
   <description>Manage modules and versions for LH</description>
   <inceptionYear>2011</inceptionYear>
@@ -53,15 +53,22 @@
     <url>http://incubator.apache.org/stanbol/</url>
   </scm>-->
 
-  <dependencies>
+  <!-- <dependencies> -->
     
-    <dependency>
-      <groupId>eu.lh</groupId>
-      <artifactId>eu.lh.skosifier</artifactId>
-      <version>0.9.0-incubating-SNAPSHOT</version>
-    </dependency>
+  <!--   <dependency> -->
+  <!--     <groupId>eu.lh</groupId> -->
+  <!--     <artifactId>eu.lh.skosifier</artifactId> -->
+  <!--     <version>0.9.0-incubating-SNAPSHOT</version> -->
+  <!--   </dependency> -->
     
-  </dependencies>
+  <!-- </dependencies> -->
+
+  <modules>
+    <module>skosifier</module>
+    <module>skosifierWeb</module>
+    <module>launcher</module>
+    <!-- <module>visualisation</module> -->
+    </modules>
 
 
 </project>

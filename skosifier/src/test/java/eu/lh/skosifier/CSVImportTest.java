@@ -26,7 +26,7 @@ public class CSVImportTest {
 		s = new Skosify();
 	}
 	
-	@Test
+    //Test
 	public void testimport(){
 		
 		List<List<String>> result = s.getContent();

@@ -24,17 +24,16 @@
     <version>0.9.0-incubating-SNAPSHOT</version>
     <relativePath>../../parent</relativePath>
   </parent>
-
-  <groupId>org.apache.stanbol</groupId>
-  <artifactId>org.apache.stanbol.launchers.framework</artifactId>
+	
+  <artifactId>eu.lh.launcher</artifactId>
   <packaging>jar</packaging>
 
-  <name>Apache Stanbol Launcher - Framework</name>
+  <name>Linked Heritage Launcher</name>
   <description>
-    Runnable jar that runs the minimal Stanbol Framework configuration.
+    Runnable jar that runs the Linked Heritage server.
   </description>
 
-  <scm>
+  <!-- <scm>
     <connection>
       scm:svn:http://svn.apache.org/repos/asf/incubator/stanbol/trunk/launchers/framework/
     </connection>
@@ -42,7 +41,7 @@
       scm:svn:https://svn.apache.org/repos/asf/incubator/stanbol/trunk/launchers/framework/
     </developerConnection>
     <url>http://incubator.apache.org/stanbol/</url>
-  </scm>
+  </scm> -->
 
   <build>
     <plugins>
@@ -136,6 +135,12 @@
       <groupId>org.apache.stanbol</groupId>
       <artifactId>org.apache.stanbol.rules.bundlelist</artifactId>
       <type>partialbundlelist</type>
+    </dependency>
+    <!--dependencies for lh -->
+    <dependency>
+       <groupId>eu.lh</groupId>
+      <artifactId>skosifier-web</artifactId>
+      <version>0.9.0-incubating-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

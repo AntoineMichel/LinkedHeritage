@@ -23,15 +23,15 @@
     <groupId>eu.lh</groupId>
     <artifactId>eu.lh.parent</artifactId>
     <version>0.9.0-incubating-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
+    <relativePath>../</relativePath>
   </parent>
 
   <groupId>eu.lh</groupId>
   <artifactId>skosifier-web</artifactId>
   <packaging>bundle</packaging>
 
-  <name>Apache Stanbol Enhancer Jersey JAX-RS API and front-end</name>
-  <description>To be renamed as org.apache.stanbol.enhancer.web</description>
+  <name>CSV importer front-end</name>
+  <description>UI for making import easy</description>
 
   <!-- <scm>
     <connection>
@@ -86,23 +86,23 @@
   </build>
 
   <dependencies>
-  	<!-- dep on skosifier -->
-  	<dependency>
-  		<groupId>eu.lh</groupId>
-  		<artifactId>eu.lh.skosifier</artifactId>
-  		<!-- TODO : remove this version number, see why it's asked as we have a parent...-->
-  		 <version>0.9.0-incubating-SNAPSHOT</version>
-  	</dependency>
+    <!-- dep on skosifier -->
+    <dependency>
+      <groupId>eu.lh</groupId>
+      <artifactId>eu.lh.skosifier</artifactId>
+      <!-- TODO : remove this version number, see why it's asked as we have a parent...-->
+      <version>0.9.0-incubating-SNAPSHOT</version>
+    </dependency>
 
     <!-- dependencies on other IKS modules -->
     <dependency>
       <groupId>org.apache.stanbol</groupId>
       <artifactId>org.apache.stanbol.enhancer.servicesapi</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.stanbol</groupId>
-      <artifactId>org.apache.stanbol.enhancer.standalone</artifactId>
-    </dependency>
+    <!-- <dependency> -->
+    <!--   <groupId>org.apache.stanbol</groupId> -->
+    <!--   <artifactId>org.apache.stanbol.enhancer.standalone</artifactId> -->
+    <!-- </dependency> -->
     <dependency>
       <groupId>org.apache.stanbol</groupId>
       <artifactId>org.apache.stanbol.commons.jsonld</artifactId>
@@ -132,7 +132,7 @@
       <groupId>org.apache.clerezza</groupId>
       <artifactId>rdf.rdfjson</artifactId>
     </dependency>
-
+    
     <!-- Jersey -->
     <dependency>
       <groupId>com.sun.jersey</groupId>
@@ -143,20 +143,20 @@
       <artifactId>jersey-core</artifactId>
     </dependency>
     <dependency>
-        <groupId>com.sun.jersey.contribs</groupId>
-        <artifactId>jersey-multipart</artifactId>
-        <!-- <version>1.6</version> -->
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-multipart</artifactId>
+      <!-- <version>1.6</version> -->
     </dependency>
     
     <!--  <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-json</artifactId>
+	  <groupId>com.sun.jersey</groupId>
+	  <artifactId>jersey-json</artifactId>
     </dependency>  -->
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
     </dependency>
-
+    
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
@@ -166,7 +166,7 @@
       <groupId>org.codehaus.jettison</groupId>
       <artifactId>jettison</artifactId>
     </dependency>
-
+    
     <!-- generic tax -->
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -180,7 +180,7 @@
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
     </dependency>
-
+    
     <!-- OSGi tax -->
     <dependency>
       <groupId>org.osgi</groupId>
@@ -194,7 +194,7 @@
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.scr.annotations</artifactId>
     </dependency>
-
+    
     <!-- Jetty -->
     <dependency>
       <groupId>org.mortbay.jetty</groupId>
