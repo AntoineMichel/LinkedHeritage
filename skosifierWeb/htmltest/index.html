@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script type="text/javascript" language="javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" language="javascript" src="js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" language="javascript" src="js/jquery.csv.min.js"></script>
+  <script type="text/javascript">
+  function handleFileSelect(evt) {
+    var files = evt.target.files; // FileList object
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+  var stringFile;
+  var reader = new FileReader();
+  
+  // Closure to capture the file information.
+  reader.onload = (function(theFile) {
+    return function(e) {
+    // Render thumbnail.
+    //var span = document.createElement('span');
+    //span.innerHTML = ['<img class="thumb" src="', e.target.result,'" title="', theFile.name, '"/>'].join('');
+    //document.getElementById('list').insertBefore(span, null);
+//  alert("dans el output");
+  stringFile = e.target.result;
+  output.push('<li><strong>', theFile.name, '</strong> (', theFile.type || 'n/a', ') - ',
+      theFile.size, ' bytes, last modified: ',
+      //stringFile,
+      //f.lastModifiedDate.toLocaleDateString(), 
+      '</li>');
+  //alert(e.target.result);
+  };
+  })(f);
+  
+  // Read in the image file as a data URL.
+  //reader.readAsDataURL(f);
+  alert("before read");
+  reader.readAsText(f);
+  alert("after read");
+  
+	var tocsv = jQuery.csv("\t","\"");
+	fullarray = tocsv(stringFile);
+
+	function makeHeader(a){
+		var res = new Array();
+		a.forEach(function(v){
+			res.push({"sTitle": v})
+		});
+		return res;
+	}	
+	
+	header = makeHeader(fullarray[0]);
+	
+	//alert(fullarray);
+	//create datatable
+	$('#demo').html( '<table cellpadding="0" cellspacing="0" border="0" class="display" id="example"></table>' );
+	$('#example').dataTable( {
+		/*"aaData": [
+			[ "Trident", "Internet Explorer 4.0", "Win 95+", 4, "X" ],
+			[ "Trident", "Internet Explorer 5.0", "Win 95+", 5, "C" ],
+			[ "Trident", "Internet Explorer 5.5", "Win 95+", 5.5, "A" ],
+			[ "Trident", "Internet Explorer 6.0", "Win 98+", 6, "A" ],
+			[ "Trident", "Internet Explorer 7.0", "Win XP SP2+", 7, "A" ],
+			[ "Gecko", "Firefox 1.5", "Win 98+ / OSX.2+", 1.8, "A" ],
+			[ "Gecko", "Firefox 2", "Win 98+ / OSX.2+", 1.8, "A" ],
+			[ "Gecko", "Firefox 3", "Win 2k+ / OSX.3+", 1.9, "A" ],
+			[ "Webkit", "Safari 1.2", "OSX.3", 125.5, "A" ],
+			[ "Webkit", "Safari 1.3", "OSX.3", 312.8, "A" ],
+			[ "Webkit", "Safari 2.0", "OSX.4+", 419.3, "A" ],
+			[ "Webkit", "Safari 3.0", "OSX.4+", 522.1, "A" ]
+		],*/
+		"aaData": fullarray,
+		"aoColumns": header
+		/*"aoColumns": [
+			{ "sTitle": "Engine" },
+			{ "sTitle": "Browser" },
+			{ "sTitle": "Platform" },
+			{ "sTitle": "Version", "sClass": "center" },
+			{
+				"sTitle": "Grade",
+				"sClass": "center",
+				"fnRender": function(obj) {
+					var sReturn = obj.aData[ obj.iDataColumn ];
+					if ( sReturn == "A" ) {
+						sReturn = "<b>A</b>";
+					}
+					return sReturn;
+				}
+			}
+		]*/
+	} );	
+  
+	
+  
+  /*output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+      f.size, ' bytes, last modified: ',
+      //f.lastModifiedDate.toLocaleDateString(), 
+      '</li>');*/
+  }
+    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+  }
+  
+  $(document).ready(function(){
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+  });
+</script>
+</head>
+<body>
+	<div id="input">  
+  <input type="file" id="files" name="files[]" multiple />
+  <output id="list"></output>
+	</div>
+	<div id="demo">
+	</div>
+</body>
+</html>
+
