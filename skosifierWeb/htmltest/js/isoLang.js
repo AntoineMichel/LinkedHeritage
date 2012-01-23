@@ -5,7 +5,7 @@ function getIsoOptions(){
 	if (isoOptions == null){
 		isoOptions = "";			
 		Object.keys(isoLangs).forEach(function(d){
-			isoOptions += "<option name="+d+">"+isoLangs[d].name+"</option>";
+			isoOptions += "<option value="+d+">"+isoLangs[d].name+"</option>";
 		})
 	}
 	return isoOptions;

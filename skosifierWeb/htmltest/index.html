@@ -13,13 +13,12 @@
 height:500px;
 }*/
 </style>
-<script type="text/javascript" language="javascript" src="js/jquery.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery-1.7.1.min.js"></script>
 <script type="text/javascript" language="javascript"
 	src="js/jquery-ui-1.8.17.custom.min.js"></script>
 <script type="text/javascript" language="javascript"
 	src="js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language="javascript"
-	src="js/jquery.csv.min.js"></script>
+<script type="text/javascript" language="javascript" src="js/jquery.csv.min.js"></script>
 <script type="text/javascript" language="javascript"
 	src="js/lh.importUI.js"></script>
 <script type="text/javascript" language="javascript"
@@ -43,6 +42,7 @@ height:500px;
 	$(document).ready(function() {
 		importDCForm();
 		
+		//tabs management
 		$("#toImport").live("click", function() {
 			$("#tabs").tabs("enable", 1).tabs("select", 1);
 		});
@@ -53,11 +53,15 @@ height:500px;
 			disabled : [ 1, 2 ]
 		});
 		
+		//accordion management
 		$( "#import-acc" ).accordion({
 			autoHeight: false,
 			selected : 0,
 		});
 		
+		$("#goToimport").click(function(){
+			$("#import-acc").accordion("activate", 2);
+		})
 		
 		$('#files').change(handleFileSelect);
 		addSubmitEvent();
@@ -79,9 +83,7 @@ height:500px;
 			<div id="import-acc">
 				<h3><a href="#">1) Upload your datas</a></h3>
 					<div id="input">
-						<input type="file" id="files" name="files[]" multiple />
-						<output id="list"></output>
-						<input type="submit" id="submit" />
+						<input type="file" id="files" name="csvFile" />
 					</div>
 				<h3><a href="#">2) Configure your import</a></h3>
 				<div id="l3">
@@ -98,7 +100,9 @@ height:500px;
 				</div>
 				<h3><a href="#">3) Import !</a></h3>	
 				<div id="#import-3">
-					<p>import ! (TODO : this required ?)</p>
+					<p>Your data is now ready to be import ?</p>
+					<p>Click on the button wait a minute and you can edit and map your thesaurus.</p>
+					<p><input type="submit" id="submit" /></p>
 				</div>
 			</div>
 		</div>

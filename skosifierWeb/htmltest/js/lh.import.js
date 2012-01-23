@@ -1,136 +1,65 @@
 
+var headers;
+
 function handleFileSelect(evt) {
 	var files = evt.target.files; // FileList object
 
 	// files is a FileList of File objects. List some properties.
-	var output = [];
+	//var output = [];
 	for ( var i = 0, f; f = files[i]; i++) {
 		var stringFile;
 		var reader = new FileReader();
 
 		// Closure to capture the file information.
-		reader.onload = (function(theFile) {
+		reader.onloadend = (function(theFile) {
 			return function(e) {
-				// Render thumbnail.
-				// var span = document.createElement('span');
-				// span.innerHTML = ['<img class="thumb" src="',
-				// e.target.result,'" title="', theFile.name, '"/>'].join('');
-				// document.getElementById('list').insertBefore(span, null);
-				// alert("dans el output");
+				//alert(e.target.result);
 				stringFile = e.target.result;
-				/*output.push('<li><strong>', theFile.name, '</strong> (',
-						theFile.type || 'n/a', ') - ', theFile.size,
-						' bytes, last modified: ',
-						// stringFile,
-						// f.lastModifiedDate.toLocaleDateString(),
-						'</li>');
-						*/
-				// alert(e.target.result);
+				loadCSVTable(stringFile);
 			};
 		})(f);
-
-		// Read in the image file as a data URL.
-		// reader.readAsDataURL(f);
-		// alert("before read");
-		reader.readAsText(f);
-		// alert("after read");
-
-		// /////////csv processing
-		/*
-		 * var tocsv = jQuery.csv("\t","\"");
-		 * 
-		 * //TODO : remove : do nothing... just for the display in emacs var
-		 * nothing="\"";
-		 * 
-		 * fullarray = tocsv(stringFile);
-		 * 
-		 * function makeHeader(a){ var res = new Array(); a.forEach(function(v){
-		 * res.push({"sTitle": v}) }); return res; }
-		 * 
-		 * header = makeHeader(fullarray[0]);
-		 */
-
-		header = [ "tt", "dd", "dd", "lll", "mmm" ];
-
-		// alert(fullarray);
-		// create datatable
-		$('#csv-import')
-				.html(
-						'<table cellpadding="0" cellspacing="0" border="0" class="display" id="example"></table>');
-
-		// ///////////// generation dynamique du tableau fonctionne a remettre
-		// en place après
-//		$('#example').dataTable({
-//			"bFilter" : false,
-//			"bLengthChange" : false,
-//			"bSort" : false,
-//			"bScrollInfinite" : true,
-//			"aaData" : fullarray,
-//			"aoColumns" : header
-//		});
-		 
-
-		// static exemple pour tester, a remove
-		$('#example').dataTable(
-				{
-					"bFilter": false,
-					"bLengthChange" : false,
-					"bSort": false,
-					"bScrollInfinite": true,
-					"aaData" : [
-							[ "Trident", "Internet Explorer 4.0", "Win 95+", 4,
-									"X" ],
-							[ "Trident", "Internet Explorer 5.0", "Win 95+", 5,
-									"C" ],
-							[ "Trident", "Internet Explorer 5.5", "Win 95+",
-									5.5, "A" ],
-							[ "Trident", "Internet Explorer 6.0", "Win 98+", 6,
-									"A" ],
-							[ "Trident", "Internet Explorer 7.0",
-									"Win XP SP2+", 7, "A" ],
-							[ "Gecko", "Firefox 1.5", "Win 98+ / OSX.2+", 1.8,
-									"A" ],
-							[ "Gecko", "Firefox 2", "Win 98+ / OSX.2+", 1.8,
-									"A" ],
-							[ "Gecko", "Firefox 3", "Win 2k+ / OSX.3+", 1.9,
-									"A" ],
-							[ "Webkit", "Safari 1.2", "OSX.3", 125.5, "A" ],
-							[ "Webkit", "Safari 1.3", "OSX.3", 312.8, "A" ],
-							[ "Webkit", "Safari 2.0", "OSX.4+", 419.3, "A" ],
-							[ "Webkit", "Safari 3.0", "OSX.4+", 522.1, "A" ] ],
-					"aoColumns" : [ {
-						"sTitle" : "Engine"
-					}, {
-						"sTitle" : "Browser"
-					}, {
-						"sTitle" : "Platform"
-					}, {
-						"sTitle" : "Version",
-						"sClass" : "center"
-					}, {
-						"sTitle" : "Grade",
-						"sClass" : "center",
-						"fnRender" : function(obj) {
-							var sReturn = obj.aData[obj.iDataColumn];
-							if (sReturn == "A") {
-								sReturn = "<b>A</b>";
-							}
-							return sReturn;
-						}
-					} ]
-				});
 		
-		addImportUI("#example");
-	}
-	//$('#list').innerHTML = '<ul>' + output.join('')+ '</ul>';
+		reader.readAsText(f);
+		
+	}	
+}
+
+function loadCSVTable(stringFile){
 	
-	//$( "#import-acc" ).accordion(disabled: true);
-	//$( "#import-acc" ).accordion("enable");
-	/*$( "#import-acc" ).accordion({
-		disabled : [ 2 ]
-	});*/
-	$( "#import-acc" ).accordion("activate", 1);
+	/////////csv processing
+	var tocsv = jQuery.csv("\t","\"");
+	 
+	fullarray = tocsv(stringFile);
 	
+	function makeTableHeader(a){ var res = new Array(); a.forEach(function(v){
+	res.push({"sTitle": v}) }); return res; }
+	
+	headers = fullarray[0];
+	
+	//headers = makeHeader(fullarray[0]);
+	
+	//remove the first element of the array
+	fullarray.splice(0,1);
+	
+	$('#csv-import')
+			.html(
+					'<table cellpadding="0" cellspacing="0" border="0" class="display" id="example"></table>');
+
+	 ///////////// generation dynamique du tableau fonctionne a remettre en place après
+	$('#example').dataTable({
+		"bFilter" : false,
+		"bLengthChange" : false,
+		"bSort" : false,
+		//"bScrollInfinite" : true,
+		"aaData" : fullarray,
+		//"aoColumns" : headers
+		"aoColumns" : makeTableHeader(headers)
+	});
+	 
+	addImportUI("#example");
+
+$( "#import-acc" ).accordion("activate", 1);
+
 }
 
 function addSubmitEvent(){

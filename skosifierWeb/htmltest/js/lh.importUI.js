@@ -43,10 +43,10 @@ function propertyRef() {
 
 	colRef = "To column:";
 	// get the array with the name of header (via parameters ?)
-	ha = [ "header1", "header2", "header3" ];
+	//ha = [ "header1", "header2", "header3" ];
 	colRef += "<select id='colRefId'>";
 	colRef += "<option value'-1'>Select one</option>";
-	ha.forEach(function(v, i) {
+	headers.forEach(function(v, i) {
 		colRef += "<option value=" + i + ">" + v + "</option>";
 	});
 	colRef += "</select>";
@@ -65,7 +65,7 @@ function droplists(id) {
 	return res;
 }
 
-function getImportUI(headers) {
+function getImportUI() {
 	// TODO : initialisation of propertyValArray and langArray
 
 	// create the configuration line
@@ -83,7 +83,7 @@ function getImportUI(headers) {
 
 
 function addImportUI(tableID){
-	$(tableID+' thead').prepend(getImportUI(header));
+	$(tableID+' thead').prepend(getImportUI());
 	
 	// add the change event to all drop lists
 	$("[cat='typeSelection']").change(function() {
