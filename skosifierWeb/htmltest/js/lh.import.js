@@ -1,58 +1,3 @@
-var SELECT = "select";
-var LOCAL_ID = "localID";
-var P_VALUE = "propertyValue";
-var P_REF = "propertyRef";
-
-//functions that generate interface for subselection
-//general because call with "string to function" js capabilities
-function select(){
-	return "<p> Please select a mapping if relevant </p>"
-	};
-	
-function localID(){
-	return "<input type='checkbox' name='cb_' value='todefine?' checked /> Unique ?"
-	};
-	
-propertyValArray = ["skos:concept","skos:scopeNote","skos:definition"];
-langArray = ["fr","de","it"]; // get a real list for java.lang
-function propertyValue(){
-	res = "Select the value : ";
-	res += "<select name='pval_' cat='pval'>";
-	
-	propertyValArray.forEach(function(v,i){
-		res += "<option value="+v+">"+v+"</option>";
-	});
-	res += "</select>";
-	
-	lang = "Select the language : ";
-	lang += "<select name='lang_'>";
-	langArray.forEach(function(v,i){
-		lang += "<option value="+v+">"+v+"</option>";
-	});
-	lang += "</select>";
-	return res+"</br>"+lang;
-}	
-
-propertyRefArray = ["skos:broader","skos:narrower","skos:sameAs"];
-function propertyRef(){
-	res = "Select the property type : "
-	res += "<select name='pval_' cat='pval'>";
-	
-	propertyRefArray.forEach(function(v,i){
-		res += "<option value="+v+">"+v+"</option>";
-	});
-	res += "</select>";
-	
-	colRef = "Select the reference column";
-	//get the array with the name of header (via parameters ?)
-	ha = ["header1","header2","header3"];
-	colRef += "<select name='colRef_'>";
-	ha.forEach(function(v,i){
-		colRef += "<option value="+i+">"+v+"</option>";
-	});
-	colRef += "</select>";
-	return res+"</br>"+colRef;
-}	
 
 function handleFileSelect(evt) {
 	var files = evt.target.files; // FileList object
@@ -73,12 +18,13 @@ function handleFileSelect(evt) {
 				// document.getElementById('list').insertBefore(span, null);
 				// alert("dans el output");
 				stringFile = e.target.result;
-				output.push('<li><strong>', theFile.name, '</strong> (',
+				/*output.push('<li><strong>', theFile.name, '</strong> (',
 						theFile.type || 'n/a', ') - ', theFile.size,
 						' bytes, last modified: ',
 						// stringFile,
 						// f.lastModifiedDate.toLocaleDateString(),
 						'</li>');
+						*/
 				// alert(e.target.result);
 			};
 		})(f);
@@ -108,19 +54,29 @@ function handleFileSelect(evt) {
 
 		// alert(fullarray);
 		// create datatable
-		$('#demo')
+		$('#csv-import')
 				.html(
 						'<table cellpadding="0" cellspacing="0" border="0" class="display" id="example"></table>');
 
 		// ///////////// generation dynamique du tableau fonctionne a remettre
 		// en place après
-		/*
-		 * $('#example').dataTable( { "aaData": fullarray, "aoColumns": header } );
-		 */
+//		$('#example').dataTable({
+//			"bFilter" : false,
+//			"bLengthChange" : false,
+//			"bSort" : false,
+//			"bScrollInfinite" : true,
+//			"aaData" : fullarray,
+//			"aoColumns" : header
+//		});
+		 
 
 		// static exemple pour tester, a remove
 		$('#example').dataTable(
 				{
+					"bFilter": false,
+					"bLengthChange" : false,
+					"bSort": false,
+					"bScrollInfinite": true,
 					"aaData" : [
 							[ "Trident", "Internet Explorer 4.0", "Win 95+", 4,
 									"X" ],
@@ -164,41 +120,62 @@ function handleFileSelect(evt) {
 					} ]
 				});
 		
-		function droplists(id) {
-
-			res = "<select name='type_" + i + "' cat='typeSelection'>"
-					+ "<option value=" + SELECT + ">Select a value</option>"
-					+ "<option value=" + LOCAL_ID + "> ID local</option>"
-					+ "<option value=" + P_VALUE + "> Property</option>"
-					+ "<option value=" + P_REF + "> Reference</option>"
-					+ "</select>" + "</br>" + "<div id='dyn'> </div>";
-			return res;
-		}
-
-		// $("#example tbody").prepend(
-		$('#example').prepend(function() {
-			var mapline = "<tr id='config' class='config'>";
-			header.forEach(function(v, i) {
-				mapline += "<td colid=" + i + ">"
-				// + "<span style='hidden'>"+i+"</span>"
-				+ " YO " + droplists(i) + "  " + i + "</td>"
-
-				;
-			});
-			mapline += "</tr>";
-			return mapline;
-		}
-
-		);
-		
-
-		
-		// add the change event to all drop lists
-		$("[cat='typeSelection']").change(function() {
-			$(this).next("#dyn").html(window[$(this).attr("value")]);
-		});
-
+		addImportUI("#example");
 	}
-	document.getElementById('list').innerHTML = '<ul>' + output.join('')
-			+ '</ul>';
+	//$('#list').innerHTML = '<ul>' + output.join('')+ '</ul>';
+	
+	//$( "#import-acc" ).accordion(disabled: true);
+	//$( "#import-acc" ).accordion("enable");
+	/*$( "#import-acc" ).accordion({
+		disabled : [ 2 ]
+	});*/
+	$( "#import-acc" ).accordion("activate", 1);
+	
+}
+
+function addSubmitEvent(){
+$("#submit").click(function(){
+	//create json from datas in header
+	var mapping = new Array();
+	$("#config td").each(function() {
+		var obj;
+		selection = $(this).children("[cat='typeSelection']").val();
+		obj = {
+				"columnID" : $(this).attr("colid"),
+				"type" : selection,
+		};
+		dynZone = $(this).children("#dyn");
+		//TODO : faire la vérification de saisie au moment du clic sur submit et remonter les erreurs avant début du traitement
+		switch (selection) {
+			case LOCAL_ID:
+				obj.unique = true; //TODO get the value from the table
+				obj.rdfType = "skos:Concept"; //TODO : provide a configuration for this ?
+				break;
+			case P_VALUE:
+				alert($(dynZone).children("#pType").html());
+				pT = $(dynZone).children("#pType").val();
+				pT != -1 ? obj.propType = pT : function(){alert("Select a propType");};
+				vLang = $(dynZone).children("#lang").val(); 
+				vLang != -1 ? obj.lang = vLang : vLang;
+				break;
+			case P_REF:
+				pT = $(dynZone).children("#pType").val();
+				pT != -1 ? obj.propType = pT : function(){alert("Select a propType");};
+				colRef = $(dynZone).children("#colRefId").val();
+				colRef != -1 ? obj.columnRefId = colRef : function(){alert("Select a columnReference");};
+				break;
+			default:
+				// this is when no value is selected for mapping, do nothing
+				obj = null;
+			}
+			
+		if(obj != null){
+			mapping.push(obj);
+		}
+	});
+	//send json to the serveur
+	result = JSON.stringify(mapping);
+	alert(result);
+	//redirect to the visualisation file
+});
 }

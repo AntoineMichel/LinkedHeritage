@@ -1,30 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
- <!-- @import "../../media/css/demo_page.css";-->
-  <style type="text/css" title="currentStyle">
-    @import "css/demo_table.css";
-  </style>
-  <script type="text/javascript" language="javascript" src="js/jquery.js"></script>
-  <script type="text/javascript" language="javascript" src="js/jquery.dataTables.min.js"></script>
-  <script type="text/javascript" language="javascript" src="js/jquery.csv.min.js"></script>
-  <script type="text/javascript" language="javascript" src="js/lh.import.js"></script>
-  <script type="text/javascript">
-  
-  
-  $(document).ready(function(){
-  document.getElementById('files').addEventListener('change', handleFileSelect, false);
-  });
+<meta charset="utf-8" />
+<!-- @import "../../media/css/demo_page.css";
+@import "css/form.css";
+-->
+<style type="text/css" title="currentStyle">
+@import "css/demo_table.css";
+
+@import "css/jquery/cupertino/jquery-ui-1.8.17.custom.css";
+/*#tabs-2{
+height:500px;
+}*/
+</style>
+<script type="text/javascript" language="javascript" src="js/jquery.js"></script>
+<script type="text/javascript" language="javascript"
+	src="js/jquery-ui-1.8.17.custom.min.js"></script>
+<script type="text/javascript" language="javascript"
+	src="js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript"
+	src="js/jquery.csv.min.js"></script>
+<script type="text/javascript" language="javascript"
+	src="js/lh.importUI.js"></script>
+<script type="text/javascript" language="javascript"
+	src="js/lh.import.js"></script>
+	<script type="text/javascript" language="javascript"
+	src="js/isoLang.js"></script>
+<script type="text/javascript">
+	function importDCForm() {
+		//import the dc form
+		$.ajax({
+			url : "dc.html",
+			context : $("#tabs-1"),
+			//dataType : "xml",
+			success : function(data) {
+				$(this).html(data);
+			}
+		});
+		
+	}
+
+	$(document).ready(function() {
+		importDCForm();
+		
+		$("#toImport").live("click", function() {
+			$("#tabs").tabs("enable", 1).tabs("select", 1);
+		});
+		
+		//tab build
+		$("#tabs").tabs({
+			selected : 0,
+			disabled : [ 1, 2 ]
+		});
+		
+		$( "#import-acc" ).accordion({
+			autoHeight: false,
+			selected : 0,
+		});
+		
+		
+		$('#files').change(handleFileSelect);
+		addSubmitEvent();
+		
+	});
 </script>
 </head>
 <body>
-	<div id="input">  
-  <input type="file" id="files" name="files[]" multiple />
-  <output id="list"></output>
+	<div id="tabs">
+		<ul>
+			<li><a href="#tabs-1">1) Information</a></li>
+			<li><a href="#tabs-2">2) Upload datas</a></li>
+			<li><a href="#tabs-3">3) Modify and map</a></li>
+		</ul>
+		<div id="tabs-1">
+			<p>Datas are loaded from dc.html</p>
+		</div>
+		<div id="tabs-2">
+			<div id="import-acc">
+				<h3><a href="#">1) Upload your datas</a></h3>
+					<div id="input">
+						<input type="file" id="files" name="files[]" multiple />
+						<output id="list"></output>
+						<input type="submit" id="submit" />
+					</div>
+				<h3><a href="#">2) Configure your import</a></h3>
+				<div id="l3">
+					<div style="margin-bottom: 20px;">
+						<p>Does your import look good ? <a href="#" id="showCSVConfig">No</a></p>
+						<div class="CSVConfig" style="display: none;">
+							<p>TODO : CSV param config ; On save update the table view</p>
+						</div>
+						<p>Map you data on the underlying table with drop-down lists and <a href="#" id="goToimport">when you mapping is OK click here.</a></p>
+					</div>
+					<div id="csv-import">
+						<p>You need to import a file first</p>
+					</div>
+				</div>
+				<h3><a href="#">3) Import !</a></h3>	
+				<div id="#import-3">
+					<p>import ! (TODO : this required ?)</p>
+				</div>
+			</div>
+		</div>
+		<div id="tabs-3">
+			<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse
+				potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque
+				rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante.
+				Class aptent taciti sociosqu ad litora torquent per conubia nostra,
+				per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim
+				commodo pellentesque. Praesent eu risus hendrerit ligula tempus
+				pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a,
+				lacus.</p>
+			<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at,
+				semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra
+				justo vitae neque. Praesent blandit adipiscing velit. Suspendisse
+				potenti. Donec mattis, pede vel pharetra blandit, magna ligula
+				faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque.
+				Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi
+				lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean
+				vehicula velit eu tellus interdum rutrum. Maecenas commodo.
+				Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus
+				hendrerit hendrerit.</p>
+		</div>
 	</div>
-	<div id="demo">
-	</div>
+
+
+
 </body>
 </html>
 

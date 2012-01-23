@@ -1,0 +1,8 @@
+
+{
+	"nName":"name", //the node name
+	"nAttr":["attr1","attr2"], //node attributes
+	"nContent": ["#variable",{balisedefinition}],
+	"multiple":"true/false",
+	"event":"definition event associate to field"
+}
