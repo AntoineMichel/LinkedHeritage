@@ -143,8 +143,8 @@ function dragstart(d,i){
 function dragmove(d,i){
 	/*txt = "start move :" + getLabel(d) + "  " + getLabel(d.parent);
 	d3.select("#debug").text(txt);*/
-	t = d3.event;
-	d3.select("#debug").text(d3.event.clientX);
+	//t = d3.event;
+	//d3.select("#debug").text(d3.event.clientX);
 	
 	pnode = d3.select(this.parentNode);
 	//alert(pnode);
@@ -160,7 +160,7 @@ function dragmove(d,i){
 };
 function dragend(d,i){
 	//si remis à la même place, exit
-	if(target == d) return;
+	if(target != d){
 	/*txt = "drag END :" + getLabel(d) + ":::" + getLabel(target);
 	d3.select("#debug").text(txt);*/
 	//remove this object from his parent's children list
@@ -177,7 +177,7 @@ function dragend(d,i){
 	}
 	childrenOfTarget.push(d);
 	update(target);
-	
+	}
 	//onDragAndDrop = false;
 };
 
