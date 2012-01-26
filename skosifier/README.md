@@ -1,3 +1,20 @@
+
+== Call the skosifier / skosify a file ==
+
+curl -X POST -H "Accept: text/turtle" -F "conf=@mapConf.json" -F "file=@data.csv" http://localhost:8080/skosifier
+
+== Get an already skosified file ==
+
+* for get it as turtle
+curl -H "Accept: text/turtle" http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2
+
+* for get it as json-ld
+curl -H "Accept: application/json" http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2
+
+
+== Mapping ==
+//TODO : review it
+
 {
 	metadata : {
 		organisationName : "fullName",

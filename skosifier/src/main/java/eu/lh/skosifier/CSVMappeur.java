@@ -1,19 +1,11 @@
 package eu.lh.skosifier;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import org.apache.clerezza.rdf.core.Language;
-import org.apache.clerezza.rdf.core.Literal;
 import org.apache.clerezza.rdf.core.MGraph;
-import org.apache.clerezza.rdf.core.Triple;
-import org.apache.clerezza.rdf.core.UriRef;
-import org.apache.clerezza.rdf.core.impl.PlainLiteralImpl;
-import org.apache.clerezza.rdf.core.impl.TripleImpl;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -35,8 +27,6 @@ public class CSVMappeur {
 	
 	//TODO : make it configurable
     private String NSroot = "http://cuture-heritage.org/thesaurus/";
-	
-	//private Map<Integer,CSVMap> map;
 	
 	public CSVMappeur(String json) throws JSONException{
 		mapList = new ArrayList<ColMap>();

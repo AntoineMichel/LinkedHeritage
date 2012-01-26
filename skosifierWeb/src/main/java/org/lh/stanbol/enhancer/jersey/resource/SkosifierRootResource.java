@@ -128,7 +128,8 @@ public class SkosifierRootResource extends BaseStanbolResource {
     @Consumes(WILDCARD)
     public Response getGraph(@QueryParam(value = "uri") String uri,
                                     @Context HttpHeaders headers){
-    	MGraph graph = tcManager.getInstance().getMGraph(new UriRef(uri));
+    	//MGraph graph = tcManager.getInstance().getMGraph(new UriRef(uri));
+    	MGraph graph = tcManager.getMGraph(new UriRef(uri));
     	
     	return okGraphResponse(headers, graph);
     }
@@ -141,7 +142,7 @@ public class SkosifierRootResource extends BaseStanbolResource {
         }
     }*/
 
-    public static String makeEngineId(EnhancementEngine engine) {
+    /*public static String makeEngineId(EnhancementEngine engine) {
         // TODO: add a property on engines to provided custom local ids and make
         // this static method a method of the interface EnhancementEngine
         String engineClassName = engine.getClass().getSimpleName();
@@ -151,7 +152,7 @@ public class SkosifierRootResource extends BaseStanbolResource {
                     .substring(0, engineClassName.length() - suffixToRemove.length());
         }
         return engineClassName.toLowerCase();
-    }
+    }*/
 
     /**
      * Form-based OpenCalais-compatible interface
@@ -164,9 +165,9 @@ public class SkosifierRootResource extends BaseStanbolResource {
      *             if the content is somehow corrupted
      * @throws IOException
      */
-    @POST
-    @Consumes(APPLICATION_FORM_URLENCODED)
-    public Response enhanceFromForm(@FormParam("content") String content,
+    //POST
+    //Consumes(APPLICATION_FORM_URLENCODED)
+    /*public Response enhanceFromForm(@FormParam("content") String content,
                                     @FormParam("format") String format,
                                     @FormParam("ajax") boolean buildAjaxview,
                                     @Context HttpHeaders headers) throws EngineException, IOException {
@@ -176,7 +177,7 @@ public class SkosifierRootResource extends BaseStanbolResource {
         String jsonConfig = IOUtils.toString(this.getClass().getResourceAsStream("/mapping.json"));
         //
         return enhanceAndBuildResponse(format, headers, ci, jsonConfig, buildAjaxview);
-    }
+    }*/
 
     /**
      * Media-Type based handling of the raw POST data.
@@ -196,72 +197,54 @@ public class SkosifierRootResource extends BaseStanbolResource {
                                     @QueryParam(value = "uri") String uri,
                                     @QueryParam(value = "conf") String jsonConfig,
                                     @Context HttpHeaders headers) throws EngineException, IOException {*/
+    
+  //public Response enhanceFromData(@FormParam(value ="conf") String conf, @FormParam(value = "f") String f,
+    
+    //TODO : add parameter(s) for CSV mapping (separator + string delimiter) 
     @POST
     @Consumes(MULTIPART_FORM_DATA)
-    public Response enhanceFromData(@FormDataParam(value ="conf") String jsonConfig, @FormDataParam(value = "file") String f,
-    //public Response enhanceFromData(@FormParam(value ="conf") String conf, @FormParam(value = "f") String f,
-            @Context HttpHeaders headers) throws EngineException, IOException {
-        System.out.println("DANS le enhance");
-        //System.out.println("JSON val = " + jsonConfig);
-        //System.out.println("DATA val = " + IOUtils.toString(data));
-        System.out.println("JSON val = " + jsonConfig);
-        System.out.println("DATA val = " + f);
-        /*for ( Entry<String, String> e : map.entrySet()){
-        	System.out.println("DATA val = " + e.getKey());
-        	System.out.println("DATA val = " + e.getValue());
-        }*/
+    public Response enhanceFromData(@FormDataParam(value ="conf") String jsonConfig, 
+    								@FormDataParam(value = "file") String f,
+    								@Context HttpHeaders headers) throws EngineException, IOException {
         
     	String format = TEXT_PLAIN;
         if (headers.getMediaType() != null) {
             format = headers.getMediaType().toString();
         }
-        /*if (uri != null && uri.isEmpty()) {
-            // let the store build an internal URI based on the content
-            uri = null;
-        }*/
+        
         //TO REMOVE
-        String uri = null;
-        //String jsonConfig = "te";
-        //ContentItem ci = new InMemoryContentItem(uri, data, format);
-        ContentItem ci = new InMemoryContentItem(uri, "TEST".getBytes(), format);
-        return enhanceAndBuildResponse(null, headers, ci, jsonConfig, false);
+        //String uri = null;
+        
+        //ContentItem ci = new InMemoryContentItem(uri, "TEST".getBytes(), format);
+        return enhanceAndBuildResponse(null, headers, jsonConfig, f, false);
     }
 
     protected Response enhanceAndBuildResponse(String format,
                                                HttpHeaders headers,
-                                               ContentItem ci,
+                                               //ContentItem ci,
                                                String jsonConfig,
+                                               String data,
                                                boolean buildAjaxview) throws EngineException, IOException{
     	System.out.println("Dans le build responses");
     	/** variables to get */
     	//String jsonConfig = IOUtils.toString(this.getClass().getResourceAsStream("/mapping.json"));
-    	InputStream inputStream = this.getClass().getResourceAsStream("/horn1.csv");
+    	//InputStream inputStream = this.getClass().getResourceAsStream("/horn1.csv");
+    	InputStream inputStream = IOUtils.toInputStream(data);
     	String delim = "	";
     	/** end variable to get */
     	MGraph graph = null;
     	if (skosifier != null) {
-    		System.out.println("*************** SLOSIFIER NULL ***********");
     		try {
 				graph = skosifier.skosify(delim.charAt(0), inputStream, jsonConfig);
 			} catch (JSONException e) {
 				throw new WebApplicationException(e, BAD_REQUEST);
 			}
         }
-
-        if (buildAjaxview) {
-            ContentItemResource contentItemResource = new ContentItemResource(null, ci, uriInfo, tcManager,
-                    serializer, servletContext);
-            contentItemResource.setRdfSerializationFormat(format);
-            Viewable ajaxView = new Viewable("/ajax/contentitem", contentItemResource);
-            ResponseBuilder rb =  Response.ok(ajaxView);
-            rb.header(HttpHeaders.CONTENT_TYPE, TEXT_HTML+"; charset=UTF-8");
-            addCORSOrigin(servletContext,rb, headers);
-            return rb.build();
-        }
-        
-        //MGraph graph = ci.getMetadata();
-        
-        return okGraphResponse(headers, graph);
+    	
+        //return okGraphResponse(headers, graph);
+    	
+    	//TODO : get the graph name from skosifier, change api of stuff 
+    	return Response.ok("<a rel='job' href='/jobs/1234'>").type("text/xml").build();
     }
     
     private Response okGraphResponse(HttpHeaders headers, MGraph graph){

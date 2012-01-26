@@ -94,8 +94,6 @@ public class Skosify implements Skosifier{
 	
 	private MGraph toSkos(CSVMappeur map){
 		
-		
-		
 		//TODO : get manager from OSGI stuff
 		TcManager tcm = TcManager.getInstance();
 		//TODO : build the graph name from organisation informations
