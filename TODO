@@ -4,3 +4,7 @@ returns 201 created with Location header pointing to the job (say
 /jobs/1234) and HTML content that contains <a rel="job"
 href="/jobs/1234"> (or JSON equivalent if that's useful)
 
+
+* URLencode all informations used to create the thesaurus and concept uri
+
+

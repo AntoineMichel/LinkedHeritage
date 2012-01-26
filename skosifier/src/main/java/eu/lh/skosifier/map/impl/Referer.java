@@ -7,14 +7,15 @@ import org.apache.clerezza.rdf.core.UriRef;
 public class Referer {
 	
 	private UriRef ref = null;
-
-	public Referer() {
-		super();
+	private UriRef graphName; 
+	
+	public Referer(UriRef graphName) {
+		this.graphName = graphName;
 	}
 
 	public UriRef getRef() {
 		if (ref == null){
-			ref = new UriRef("http://defineURL.com/"+UUID.randomUUID().toString());
+			ref = new UriRef(graphName.getUnicodeString()+"/"+UUID.randomUUID().toString());
 		}
 		return ref;
 	}

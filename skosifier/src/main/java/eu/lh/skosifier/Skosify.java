@@ -51,18 +51,39 @@ public class Skosify implements Skosifier{
     private boolean autogenColumns = true;
     private String delimiter;
     
-    private List<List<String>> csv;
+    private String orgName;
+	private String orgId;
+	private String thesaurusName;
+	
+	//TODO : make it configurable
+    private String NSroot = "http://cuture-heritage.org/thesaurus/";
     
+    //private String jsonConfig;
+    
+    private List<List<String>> csv;
+    private UriRef graphName;
+    
+    //required default constructor for service
     public Skosify(){}
-    /*public Skosify(Character delim, InputStream inputStream) throws IOException{
-    	csv = createCSV(delim, inputStream);
-    }*/
+    
+    private void initConfiguration(String jsonConfig) throws JSONException{
+    	//this.jsonConfig = jsonConfig;
+    	
+    	JSONObject jo = new JSONObject(jsonConfig);
+    	JSONObject meta = jo.getJSONObject("metadata");
+		orgName = meta.getString("organisationName");
+		orgId = meta.getString("organisationID");
+		thesaurusName = meta.getString("thesaurusName");
+		
+		this.graphName = new UriRef(NSroot+orgId+"/"+thesaurusName);
+    }
     
     public List<List<String>> getContent(){
     	return csv;
     }
     
     public MGraph skosify(Character delim, InputStream inputStream, String jsonConfig ) throws IOException, JSONException{
+    	initConfiguration(jsonConfig);
     	csv = createCSV(delim, inputStream);
     	CSVMappeur mappeur = new CSVMappeur(jsonConfig);
     	return toSkos(mappeur);
@@ -96,11 +117,8 @@ public class Skosify implements Skosifier{
 		
 		//TODO : get manager from OSGI stuff
 		TcManager tcm = TcManager.getInstance();
-		//TODO : build the graph name from organisation informations
-		//TODO : get the graph name directly from the Mappeur
-		//UriRef gname = new UriRef("http://someNameForExample.com");
-		UriRef gname = new UriRef(map.getGraphName());
-		MGraph graph = tcm.createMGraph(gname);
+		
+		MGraph graph = tcm.createMGraph(graphName);
 		boolean fistLineHeader;
 		//TODO : set this parameter in function signature
 		fistLineHeader = true;
@@ -109,9 +127,39 @@ public class Skosify implements Skosifier{
 		}
 		
 		
-		map.doMap(csv, graph);
+		map.doMap(csv, graph, graphName);
 		
 		return graph;
 	}
+	
+	public UriRef getGraphName(){
+		//create the graph name from medatada informations
+		//TODO : add a way to have a generation function / some generation rules
+		return graphName;
+	}
+	public String getOrgName() {
+		return orgName;
+	}
+
+	public void setOrgName(String orgName) {
+		this.orgName = orgName;
+	}
+
+	public String getOrgId() {
+		return orgId;
+	}
+
+	public void setOrgId(String orgId) {
+		this.orgId = orgId;
+	}
+
+	public String getThesaurusName() {
+		return thesaurusName;
+	}
+
+	public void setThesaurusName(String thesaurusName) {
+		this.thesaurusName = thesaurusName;
+	}
+
 	
 }

@@ -261,9 +261,9 @@ public class SkosifierRootResource extends BaseStanbolResource {
         }
     	
         //return okGraphResponse(headers, graph);
-    	
+    	UriRef thRef = skosifier.getGraphName();
     	//TODO : get the graph name from skosifier, change api of stuff 
-    	return Response.ok("<a rel='job' href='/jobs/1234'>").type("text/xml").build();
+    	return Response.ok("<a rel='job' href='"+thRef.getUnicodeString()+"'>").type("text/xml").build();
     }
     
     private Response okGraphResponse(HttpHeaders headers, MGraph graph){

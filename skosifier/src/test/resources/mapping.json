@@ -2,7 +2,7 @@
 	metadata : {
 		organisationName : "fullName",
 		organisationID : "organisationID",
-		thesaurusName : "nameTest3"
+		thesaurusName : "nameTest4"
 	},
 	//TODO : change the mapping for doing a specific case with referer (take place of "localID" and take in account metadatas, url schema and why not generation function
 	/* example : 

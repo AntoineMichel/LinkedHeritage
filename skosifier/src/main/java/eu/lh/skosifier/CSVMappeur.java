@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.clerezza.rdf.core.MGraph;
+import org.apache.clerezza.rdf.core.UriRef;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -18,15 +19,10 @@ import eu.lh.skosifier.map.impl.ValueMap;
 
 public class CSVMappeur {
 	
-	private String orgName;
-	private String orgId;
-	private String thesaurusName;
-	
 	private ColMap localID;
 	private List<ColMap> mapList;
 	
-	//TODO : make it configurable
-    private String NSroot = "http://cuture-heritage.org/thesaurus/";
+	
 	
 	public CSVMappeur(String json) throws JSONException{
 		mapList = new ArrayList<ColMap>();
@@ -34,11 +30,6 @@ public class CSVMappeur {
 		//JSONObject jQuery = new JSONObject(jsonQueryString);
 		//see : FromJSON in org.apache.stanbol.entityhub.jersey/src/main/java/org/apache/stanbol/entityhub/jersey/parsers/FieldQueryReader.java
 		JSONObject jo = new JSONObject(json);
-		
-		JSONObject meta = jo.getJSONObject("metadata");
-		orgName = meta.getString("organisationName");
-		orgId = meta.getString("organisationID");
-		thesaurusName = meta.getString("thesaurusName");
 		
 		JSONArray mapping = jo.getJSONArray("mapping");
 		for (int i= 0 ; i < mapping.length() ; i++ ){
@@ -83,7 +74,7 @@ public class CSVMappeur {
 		this.mapList = mapList;
 	}
 
-	public void doMap(List<List<String>> values, MGraph graph){
+	public void doMap(List<List<String>> values, MGraph graph, UriRef graphName){
 		Map<String,Referer> localUUID = new HashMap<String, Referer>();
 		
 		//TODO : see if string/string is okay
@@ -92,7 +83,7 @@ public class CSVMappeur {
 		
 		for(List<String> l  : values){
 			//UriRef referer = new UriRef("http://TESTAREVOIR-DANSCSVMAPPEUR.com/"+UUID.randomUUID().toString());
-			Referer referer = new Referer();
+			Referer referer = new Referer(graphName);
 			localID.doMap(localUUID, toProcess, l, referer, graph);
 			
 			for(ColMap m : mapList){
@@ -105,36 +96,6 @@ public class CSVMappeur {
 		
 		//TODO : 
 
-	}
-	
-	public String getGraphName(){
-		//create the graph name from medatada informations
-		//TODO : add a way to have a generation function / some generation rules
-		return NSroot+orgId+"/"+thesaurusName;
-	}
-	public String getOrgName() {
-		return orgName;
-	}
-
-	public void setOrgName(String orgName) {
-		this.orgName = orgName;
-	}
-
-	public String getOrgId() {
-		return orgId;
-	}
-
-	public void setOrgId(String orgId) {
-		this.orgId = orgId;
-	}
-
-	public String getThesaurusName() {
-		return thesaurusName;
-	}
-
-	public void setThesaurusName(String thesaurusName) {
-		this.thesaurusName = thesaurusName;
-	}
-	
+	}	
 	
 }

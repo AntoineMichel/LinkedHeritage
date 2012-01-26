@@ -17,10 +17,11 @@ public class CSVImportTest {
 	Skosify s;
 	String delim = "	"; 
 	InputStream inputStream;
+	String jsonMap;
 	
 	@Before
-	public void setup() throws IOException{
-		
+	public void setup() throws IOException, JSONException{
+		jsonMap = IOUtils.toString(this.getClass().getResourceAsStream("/mapping.json"));
 		inputStream = this.getClass().getResourceAsStream("/horn1.csv");
 		//s = new Skosify(delim.charAt(0),inputStream);
 		s = new Skosify();
@@ -54,14 +55,12 @@ public class CSVImportTest {
 	@Test
 	public void testToSkos() throws JSONException, IOException{
 		
-		String jsonMap = IOUtils.toString(this.getClass().getResourceAsStream("/mapping.json"));
-		
 		CSVMappeur mappeur = new CSVMappeur(jsonMap);
 		
 		Assert.assertNotNull(mappeur);
 		Assert.assertNotNull(mappeur.getLocalID());
 		
-		MGraph mGraph = s.skosify(delim.charAt(0), inputStream, jsonMap);
+		MGraph mGraph = s.skosify(delim.charAt(0), inputStream,jsonMap);
 		
 		final Serializer serializer = Serializer.getInstance();
 		//serializer.serialize(System.out, mGraph, "application/json");
