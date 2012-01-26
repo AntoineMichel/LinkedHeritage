@@ -12,6 +12,10 @@ curl -H "Accept: text/turtle" http://localhost:8080/skosifier?uri=http://cuture-
 curl -H "Accept: application/json" http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2
 
 
+== Get the list of existing thesaurus ==
+
+* curl -H "Accept: application/json" http://localhost:8080/skosifier/graphlist
+
 == Mapping ==
 //TODO : review it
 

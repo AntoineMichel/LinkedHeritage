@@ -31,9 +31,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -65,6 +67,7 @@ import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
 import org.apache.stanbol.enhancer.servicesapi.EnhancementJobManager;
 import org.apache.stanbol.enhancer.servicesapi.helper.InMemoryContentItem;
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,10 +133,26 @@ public class SkosifierRootResource extends BaseStanbolResource {
                                     @Context HttpHeaders headers){
     	//MGraph graph = tcManager.getInstance().getMGraph(new UriRef(uri));
     	MGraph graph = tcManager.getMGraph(new UriRef(uri));
+    	tcManager.getProviderList().first().listGraphs();
     	
     	return okGraphResponse(headers, graph);
     }
     
+    @Path("/graphlist")
+    @GET
+    @Consumes(WILDCARD)
+    public Response getGraphList(@Context HttpHeaders headers) throws JSONException{
+    	JSONObject jo = new JSONObject();
+    	
+    	Set<UriRef> l = tcManager.listMGraphs();
+    	Iterator<UriRef> iter = l.iterator(); 
+    	while (iter.hasNext()){
+    		jo.accumulate("graphUri", iter.next().getUnicodeString());
+    		//jo.put("graphUri", iter.next().getUnicodeString());
+    	}
+    	
+    	return Response.ok(jo.toString()).build();
+    }
     /*public List<EnhancementEngine> getActiveEngines() {
         if (skosifier != null) {
             return skosifier.getActiveEngines();
