@@ -277,7 +277,8 @@ function update(graphName, source) {
   // Compute the new tree layout.
   //var nodes = tree.nodes(root).reverse();
   //TODO remplace root by source here
-  var nodes = tree.nodes(root);
+  //var nodes = tree.nodes(root);
+  var nodes = tree.nodes(source);
 
   // Normalize for fixed-depth.
   //nodes.forEach(function(d) { d.y = d.depth * 180; });
@@ -354,7 +355,7 @@ function update(graphName, source) {
       .style("fill-opacity", 1e-6);
 
   // Update the links…
-  var link = vis.selectAll("path.link")
+  var link = graphName.selectAll("path.link")
       .data(tree.links(nodes), function(d) { return d.target.id; });
 
   // Enter any new links at the parent's previous position.
