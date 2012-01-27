@@ -5,6 +5,8 @@
     <title>Node-Link Tree</title>
     <script type="text/javascript" src="../d3/d3.js"></script>
     <script type="text/javascript" src="../d3/d3.layout.js"></script>
+    <!-- TODO: extract commons libs from import -->
+    <script type="text/javascript" src="../import/js/jquery-1.7.1.min.js"></script>
     <style type="text/css">
 
 .node circle {
@@ -49,6 +51,7 @@ path.linkflo {
     <script type="text/javascript">
 
 var m = [20, 120, 20, 120],
+    //w = 1280 - m[1] - m[3],
     w = 1280 - m[1] - m[3],
     h = 800 - m[0] - m[2],
     i = 0,
@@ -141,23 +144,14 @@ function dragstart(d,i){
 	//onDragAndDrop = true;
 };
 function dragmove(d,i){
-	/*txt = "start move :" + getLabel(d) + "  " + getLabel(d.parent);
-	d3.select("#debug").text(txt);*/
-	//t = d3.event;
-	//d3.select("#debug").text(d3.event.clientX);
-	
 	pnode = d3.select(this.parentNode);
-	//alert(pnode);
 	
-	/*d.x += d3.event.dx;
-	d.y += d3.event.dy;*/
 	d.x += d3.event.x;
 	d.y += d3.event.y;
 	
 	d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
-	//d3.select(pnode).attr("transform", "translate(" + d.x + "," + d.y + ")");
-
 };
+
 function dragend(d,i){
 	//si remis à la même place, exit
 	if(target != d){
@@ -188,14 +182,24 @@ var dragdrop = d3.behavior.drag()
 
 /*********** End drag and drop ****/
 
-//d3.json("../datas/flare.json", function(json) {
-d3.json("../datas/results.json", function(json) {
+
+$.ajax({
+	url : "http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2",
+			//accepts : "application/json",
+			headers : {"Accept":"application/json"},
+			dataType : "json",
+	success: function(data){
+		displayGraph(data);
+	}
+});
+
+function displayGraph(json){
+//d3.json("../datas/results.json", function(json) {
+//d3.json(jsonDatas, function(json) {
 	
-	//test flo :
 	
 	//get the root of all ld subjects... .@Context is about NS infos
-	//rootf = json.@subject;
-        rootf = json["@subject"];
+     rootf = json["@subject"];
 	
 	//select just certains elements in the json.
 	//be care full this seems to not apply for ie now (see here : http://stackoverflow.com/a/2722213)
@@ -242,9 +246,9 @@ d3.json("../datas/results.json", function(json) {
 
   root.children.forEach(collapse);
   update(root);
-});
+//});
 
-
+}
 
 
 function update(source) {
@@ -401,14 +405,6 @@ function doubleClick(d) {
   setLabel(d,"changed");
 
   update(d);
-/*  if (d.children) {
-    d._children = d.children;
-    d.children = null;
-  } else {
-    d.children = d._children;
-    d._children = null;
-  }
-  update(d);*/
 }
 
     </script>
