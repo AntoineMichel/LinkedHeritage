@@ -80,8 +80,10 @@ var svgZone = d3.select("#chart").append("svg")
 		.attr("height", h + m[0] + m[2]);
 
     //TODO : rename this var en graphOne when ok
-var vis = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")");
-var graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")");
+var graphOne = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+	.attr("id", "graphOne");
+var graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")")
+	.attr("id", "graphTwo");
     
 /**
  * language selection
@@ -198,7 +200,7 @@ $.ajax({
 			headers : {"Accept":"application/json"},
 			dataType : "json",
 	success: function(data){
-		displayGraph(vis, data);
+		displayGraph(graphOne, data);
 	}
 });
 
@@ -248,14 +250,14 @@ function displayGraph(graphName, json){
 		
 	}
 	
-  root = json;
+  graphName.root = json;
   
-  root.children = objParent;
+  graphName.root.children = objParent;
   //build the tree :
-  root.children.forEach(getChildren);
+  graphName.root.children.forEach(getChildren);
   //root.x0 = h / 2;
-  root.x0 = 10;
-  root.y0 = 0;
+  graphName.root.x0 = 10;
+  graphName.root.y0 = 0;
 
   function collapse(d) {
     if (d.children) {
@@ -265,8 +267,8 @@ function displayGraph(graphName, json){
     }
   }
 
-  root.children.forEach(collapse);
-  update(graphName, root);
+  graphName.root.children.forEach(collapse);
+  update(graphName, graphName.root);
 //});
 
 }
@@ -278,8 +280,9 @@ function update(graphName, source) {
   //var nodes = tree.nodes(root).reverse();
   //TODO remplace root by source here
   //var nodes = tree.nodes(root);
-  var nodes = tree.nodes(source);
-
+  var nodes = tree.nodes(graphName.root);
+	
+  debugTest = 1;
   // Normalize for fixed-depth.
   //nodes.forEach(function(d) { d.y = d.depth * 180; });
   nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 });
@@ -304,7 +307,8 @@ function update(graphName, source) {
       	var test = d._children;
       	return d._children ? "lightsteelblue" : "#fff"; })
        //click event on the circle : open children
-/****     .on("click", click(graphName))*/
+	    .on("click", click)
+	    //.on("click", click(graphName))
        ;
 
   nodeEnter.append("text")
@@ -410,9 +414,17 @@ function update(graphName, source) {
   });
 }
 
-// Toggle children on click.
-//function click(d,i,graphName) {
-function click(graphName) {
+/************** clic and double clic 
+ * 
+ */
+ 
+ function getGraphRef(ctxt){
+	 gId = ctxt.parentElement.parentElement.id;
+	 return gId == "graphOne" ? graphOne : graphTwo;
+}
+
+// Toggle children on click on circles
+function click(d) {
   if (d.children) {
     d._children = d.children;
     d.children = null;
@@ -420,7 +432,10 @@ function click(graphName) {
     d.children = d._children;
     d._children = null;
   }
-  update(graphName, d);
+  //get the parent graph, as we are in a circle, the parent of parent
+  //pGraph = [[this.parentElement.parentElement]];
+  //update(pGraph, d);
+  update(getGraphRef(this), d);
 }
 
 function doubleClick(d,i,graphName) {
