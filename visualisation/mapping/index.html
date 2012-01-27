@@ -35,6 +35,7 @@ path.linkflo {
     </style>
   </head>
   <body>
+  	<div id="graphOne">
     <div id="config">
       <form id="aform">
 	Choose your language : 
@@ -47,6 +48,11 @@ path.linkflo {
     </div>
     <div id="debug">Debug console</div>
     <div id="mover">MouseOver</div>
+    </div>
+    <div id="graphTwo">
+    	Choose you graph
+    	<select id="graphChoice"></select>
+    </div>
     <div id="chart"></div>
     <script type="text/javascript">
 
@@ -194,6 +200,8 @@ var dragdrop = d3.behavior.drag()
 /*********** End drag and drop ****/
 
 
+/**** init Stuff ***/
+
 $.ajax({
 	url : "http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2",
 			//accepts : "application/json",
@@ -215,6 +223,29 @@ $.ajax({
 	}
 });
 
+
+//load graph list
+/*$.ajax({
+	//url : "http://localhost:8080/skosifier/graphlist/",
+	url : "http://localhost:8080/skosifier/graphlist/",
+			//accepts : "application/json",
+			//headers : {"Accept":"application/json"},
+	dataType : "text",
+	success: function(data){
+		alert("dans success");
+		opt = "";
+		data.graphUri.each(function (d){
+			opt += "<option name="+d+">"+d+"</option>";
+		});
+		$("#graphChoice").html(opt);
+		$("#graphChoice").onChange(function(){
+			alert("TOTO");
+		})
+		//displayGraph(graphTwo, data);
+	}
+});*/
+
+//**** end init stuff
 
 function displayGraph(graphName, json){
 //d3.json("../datas/results.json", function(json) {

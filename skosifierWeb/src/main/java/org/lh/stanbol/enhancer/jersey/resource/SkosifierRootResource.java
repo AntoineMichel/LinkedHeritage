@@ -151,7 +151,7 @@ public class SkosifierRootResource extends BaseStanbolResource {
     		//jo.put("graphUri", iter.next().getUnicodeString());
     	}
     	
-    	return Response.ok(jo.toString()).build();
+    	return Response.ok(jo.toString()).type("application/json").build();
     }
     /*public List<EnhancementEngine> getActiveEngines() {
         if (skosifier != null) {
