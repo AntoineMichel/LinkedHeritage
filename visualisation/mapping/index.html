@@ -68,12 +68,21 @@ var diagonal = d3.svg.line()
 		.interpolate("step-before")
 		;
 
-var vis = d3.select("#chart").append("svg")
+
+/*var vis = d3.select("#chart").append("svg")
     .attr("width", w + m[1] + m[3])
     .attr("height", h + m[0] + m[2])
   .append("g")
-    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");*/
 
+var svgZone = d3.select("#chart").append("svg")
+		.attr("width", w + m[1] + m[3])
+		.attr("height", h + m[0] + m[2]);
+
+    //TODO : rename this var en graphOne when ok
+var vis = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+var graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")");
+    
 /**
  * language selection
  */
@@ -189,11 +198,23 @@ $.ajax({
 			headers : {"Accept":"application/json"},
 			dataType : "json",
 	success: function(data){
-		displayGraph(data);
+		displayGraph(vis, data);
 	}
 });
 
-function displayGraph(json){
+//load the second graph
+$.ajax({
+	url : "http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2",
+			//accepts : "application/json",
+			headers : {"Accept":"application/json"},
+			dataType : "json",
+	success: function(data){
+		displayGraph(graphTwo, data);
+	}
+});
+
+
+function displayGraph(graphName, json){
 //d3.json("../datas/results.json", function(json) {
 //d3.json(jsonDatas, function(json) {
 	
@@ -245,16 +266,17 @@ function displayGraph(json){
   }
 
   root.children.forEach(collapse);
-  update(root);
+  update(graphName, root);
 //});
 
 }
 
 
-function update(source) {
+function update(graphName, source) {
 
   // Compute the new tree layout.
   //var nodes = tree.nodes(root).reverse();
+  //TODO remplace root by source here
   var nodes = tree.nodes(root);
 
   // Normalize for fixed-depth.
@@ -262,7 +284,7 @@ function update(source) {
   nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 });
 
   // Update the nodes…
-  var node = vis.selectAll("g.node")
+  var node = graphName.selectAll("g.node")
       .data(nodes, function(d) { return d.id || (d.id = ++i); });
 
   // Enter any new nodes at the parent's previous position.
@@ -281,7 +303,7 @@ function update(source) {
       	var test = d._children;
       	return d._children ? "lightsteelblue" : "#fff"; })
        //click event on the circle : open children
-      .on("click", click)
+/****     .on("click", click(graphName))*/
        ;
 
   nodeEnter.append("text")
@@ -291,9 +313,9 @@ function update(source) {
         .text(getLabel)
         .style("fill-opacity", 1e-6)
         //double click event on the text : edit the node
-        .on("dblclick", doubleClick)
+  /*****      .on("dblclick", doubleClick(d,i,graphName))
         .on("mouseover", mo)
-        .call(dragdrop)
+        .call(dragdrop) ***/
         ;
 
   // Transition nodes to their new position.
@@ -388,7 +410,8 @@ function update(source) {
 }
 
 // Toggle children on click.
-function click(d) {
+//function click(d,i,graphName) {
+function click(graphName) {
   if (d.children) {
     d._children = d.children;
     d.children = null;
@@ -396,15 +419,15 @@ function click(d) {
     d.children = d._children;
     d._children = null;
   }
-  update(d);
+  update(graphName, d);
 }
 
-function doubleClick(d) {
+function doubleClick(d,i,graphName) {
   alert("Change the text");
 
   setLabel(d,"changed");
 
-  update(d);
+  update(graphName, d);
 }
 
     </script>
