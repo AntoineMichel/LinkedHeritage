@@ -127,7 +127,7 @@ selectmenu.onchange=function(){ //run some code when "onchange" event fires
 		if (d.prefLabel == null){
 			//c'est la racine, voir commment on le traite
 			//return "---racine---";
-                        return d;
+            return d;
 		}
 		else{
 			d.prefLabel.filter(function(p){ return p["@language"] == lang;})[0]["@literal"] = label
@@ -202,48 +202,36 @@ var dragdrop = d3.behavior.drag()
 
 /**** init Stuff ***/
 
-$.ajax({
-	url : "http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2",
-			//accepts : "application/json",
-			headers : {"Accept":"application/json"},
-			dataType : "json",
-	success: function(data){
-		displayGraph(graphOne, data);
-	}
-});
+function getGraph(graphName, graphURI){
+	$.ajax({
+		url : "http://localhost:8080/skosifier?uri="+graphURI,
+		//accepts : "application/json",
+		headers : {"Accept":"application/json"},
+		dataType : "json",
+		success: function(data){
+			displayGraph(graphName, data);
+		}
+	});
+}
 
-//load the second graph
-$.ajax({
-	url : "http://localhost:8080/skosifier?uri=http://cuture-heritage.org/thesaurus/organisationID/nameTest2",
-			//accepts : "application/json",
-			headers : {"Accept":"application/json"},
-			dataType : "json",
-	success: function(data){
-		displayGraph(graphTwo, data);
-	}
-});
-
+getGraph(graphOne,"http://cuture-heritage.org/thesaurus/organisationID/nameTest2");
+getGraph(graphTwo,"http://cuture-heritage.org/thesaurus/organisationID/nameTest2");
 
 //load graph list
-/*$.ajax({
-	//url : "http://localhost:8080/skosifier/graphlist/",
+$.ajax({
 	url : "http://localhost:8080/skosifier/graphlist/",
-			//accepts : "application/json",
-			//headers : {"Accept":"application/json"},
-	dataType : "text",
+	dataType : "json",
 	success: function(data){
-		alert("dans success");
 		opt = "";
-		data.graphUri.each(function (d){
-			opt += "<option name="+d+">"+d+"</option>";
+		data.graphUri.forEach(function (d){
+			opt += "<option value="+d+">"+d+"</option>";
 		});
 		$("#graphChoice").html(opt);
-		$("#graphChoice").onChange(function(){
-			alert("TOTO");
+		$("#graphChoice").change(function(){
+			getGraph(graphTwo, $(this).attr("value"));
 		})
-		//displayGraph(graphTwo, data);
 	}
-});*/
+});
 
 //**** end init stuff
 

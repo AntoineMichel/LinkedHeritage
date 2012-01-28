@@ -8,3 +8,10 @@ href="/jobs/1234"> (or JSON equivalent if that's useful)
 * URLencode all informations used to create the thesaurus and concept uri
 
 
+voir avec hugo pour les champs du formulaire ? quels champs obligatoires ?
+
+language : faire de la multi-selection
+
+
+* tutorial on CSV export from excel : 
+** take care of encoding issues.

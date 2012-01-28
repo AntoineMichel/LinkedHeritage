@@ -16,30 +16,22 @@
 */
 package org.lh.stanbol.enhancer.jersey.resource;
 
-import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.WILDCARD;
 import static javax.ws.rs.core.MediaType.MULTIPART_FORM_DATA;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static org.apache.clerezza.rdf.core.serializedform.SupportedFormat.RDF_XML;
 import static org.apache.stanbol.commons.web.base.CorsHelper.addCORSOrigin;
 import static org.apache.stanbol.commons.web.base.CorsHelper.enableCORS;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
@@ -49,7 +41,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
@@ -57,15 +49,10 @@ import org.apache.clerezza.rdf.core.MGraph;
 import org.apache.clerezza.rdf.core.UriRef;
 import org.apache.clerezza.rdf.core.access.TcManager;
 import org.apache.clerezza.rdf.core.serializedform.Serializer;
-import org.apache.clerezza.rdf.core.serializedform.SupportedFormat;
 import org.apache.commons.io.IOUtils;
 import org.apache.stanbol.commons.web.base.ContextHelper;
 import org.apache.stanbol.commons.web.base.resource.BaseStanbolResource;
-import org.apache.stanbol.enhancer.servicesapi.ContentItem;
 import org.apache.stanbol.enhancer.servicesapi.EngineException;
-import org.apache.stanbol.enhancer.servicesapi.EnhancementEngine;
-import org.apache.stanbol.enhancer.servicesapi.EnhancementJobManager;
-import org.apache.stanbol.enhancer.servicesapi.helper.InMemoryContentItem;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -138,20 +125,28 @@ public class SkosifierRootResource extends BaseStanbolResource {
     	return okGraphResponse(headers, graph);
     }
     
+    
     @Path("/graphlist")
     @GET
     @Consumes(WILDCARD)
-    public Response getGraphList(@Context HttpHeaders headers) throws JSONException{
-    	JSONObject jo = new JSONObject();
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGraphList(@Context HttpHeaders headers) throws JSONException {
     	
+    	JSONObject jo = new JSONObject();
+    	//JSONArray ja = new JSONArray();
     	Set<UriRef> l = tcManager.listMGraphs();
     	Iterator<UriRef> iter = l.iterator(); 
     	while (iter.hasNext()){
+    		//ja.add(iter.next().getUnicodeString());
     		jo.accumulate("graphUri", iter.next().getUnicodeString());
-    		//jo.put("graphUri", iter.next().getUnicodeString());
     	}
+    	//jo.put("graphUri", ja);
+    	//return Response.ok(jo.toString()).type("application/json").build();
+    	//return Response.ok(jo).type("application/json").build();
+    	ResponseBuilder rb = Response.ok(jo.toString());
+    	addCORSOrigin(servletContext,rb, headers);
+    	return rb.build();
     	
-    	return Response.ok(jo.toString()).type("application/json").build();
     }
     /*public List<EnhancementEngine> getActiveEngines() {
         if (skosifier != null) {
