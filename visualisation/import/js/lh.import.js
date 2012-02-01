@@ -114,9 +114,9 @@ $("#submit").click(function(){
 		success: function(data){
 			alert("result");
 			
-			var target = $(data).find("a").first().attr("href");  
+			var target = "../mapping?uri=" + $(data).find("a").first().attr("href");  
 			alert(target);
-			//window.location.replace(target);
+			window.location.replace(target);
 			
 		}
 	});

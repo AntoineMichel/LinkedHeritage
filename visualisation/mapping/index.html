@@ -7,6 +7,7 @@
     <script type="text/javascript" src="../d3/d3.layout.js"></script>
     <!-- TODO: extract commons libs from import -->
     <script type="text/javascript" src="../import/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" src="../import/js/urlInfo.js"></script>
     <style type="text/css">
 
 .node circle {
@@ -85,12 +86,18 @@ var svgZone = d3.select("#chart").append("svg")
 		.attr("width", w + m[1] + m[3])
 		.attr("height", h + m[0] + m[2]);
 
-    //TODO : rename this var en graphOne when ok
 var graphOne = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 	.attr("id", "graphOne");
-var graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")")
-	.attr("id", "graphTwo");
-    
+var graphTwo;
+initGraphTwo();
+function initGraphTwo(){
+	graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")")
+	.attr("id", "graphTwo");	
+}
+
+
+
+
 /**
  * language selection
  */
@@ -214,8 +221,11 @@ function getGraph(graphName, graphURI){
 	});
 }
 
-getGraph(graphOne,"http://cuture-heritage.org/thesaurus/organisationID/nameTest2");
-getGraph(graphTwo,"http://cuture-heritage.org/thesaurus/organisationID/nameTest2");
+var graphOneURL = getURLargs()["uri"];
+alert(graphOneURL);
+
+getGraph(graphOne,graphOneURL);
+//getGraph(graphTwo,"http://cuture-heritage.org/thesaurus/organisationID/nameTest2");
 
 //load graph list
 $.ajax({
@@ -223,12 +233,21 @@ $.ajax({
 	dataType : "json",
 	success: function(data){
 		opt = "";
+		//default value
+		opt += "<option value='-1'>Choose the graph you want to map to.</option>";
 		data.graphUri.forEach(function (d){
 			opt += "<option value="+d+">"+d+"</option>";
 		});
 		$("#graphChoice").html(opt);
 		$("#graphChoice").change(function(){
-			getGraph(graphTwo, $(this).attr("value"));
+			val = $(this).attr("value");
+			if(val == '-1'){
+				graphTwo.remove();
+				initGraphTwo();
+			}else {
+				getGraph(graphTwo, val);
+			}
+			
 		})
 	}
 });
