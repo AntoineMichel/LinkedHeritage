@@ -110,11 +110,14 @@ $("#submit").click(function(){
 		type : "POST",
 		data : {"conf" : JSON.stringify(jmapping), "file" : stringFile},
 		
-		//dataType : "html",
+		dataType : "xml",
 		success: function(data){
 			alert("result");
-			alert(data);
-			alert(data.html());
+			
+			var target = $(data).find("a").first().attr("href");  
+			alert(target);
+			//window.location.replace(target);
+			
 		}
 	});
 	/*result = JSON.stringify(jmapping);

@@ -33,29 +33,11 @@ height:500px;
 	//gobal var for the json mapping file
 	var jmapping = {"metadata":{},"mapping":[]}
 
-	function getURLargs() {
-		var args = document.location.search.substring(1).split(/\&/);
-		//alert(JSON.stringify(args));
-		argsParsed = {};
-
-		for (i = 0; i < args.length; i++) {
-			arg = unescape(args[i]);
-
-			if (arg.indexOf('=') == -1) {
-				argsParsed[arg.trim()] = true;
-			} else {
-				kvp = arg.split('=');
-				argsParsed[kvp[0].trim()] = kvp[1].trim();
-			}
-		}
-		return argsParsed;
-	}
-
+	
 	$(document).ready(function() {
-		var params = getURLargs();
+		//var params = getURLargs();
 		//alert(JSON.stringify(params));
 		///test pour passage de paramètres
-		var loc = location.href;
 		/*alert(loc);
 		alert(location.search);*/
 

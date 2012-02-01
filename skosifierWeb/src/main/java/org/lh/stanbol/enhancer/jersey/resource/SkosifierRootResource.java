@@ -263,7 +263,7 @@ public class SkosifierRootResource extends BaseStanbolResource {
     	
     	UriRef thRef = skosifier.getGraphName();
     	
-    	ResponseBuilder rb = Response.ok("<a rel='job' href='"+thRef.getUnicodeString()+"'>").type("text/xml");
+    	ResponseBuilder rb = Response.ok("<a rel='job' href='"+thRef.getUnicodeString()+"'>Browse your thesaurus</a>").type("text/xml");
     	addCORSOrigin(servletContext,rb, headers);
     	return rb.build();
     }
