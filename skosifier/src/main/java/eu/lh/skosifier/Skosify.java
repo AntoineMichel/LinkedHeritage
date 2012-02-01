@@ -47,11 +47,11 @@ import eu.lh.skosifier.api.Skosifier;
 public class Skosify implements Skosifier{
 	
 	private CSVStrategy strategy = CSVStrategy.DEFAULT_STRATEGY;
-    private CSVConfig config = new CSVConfig();
+    /*private CSVConfig config = new CSVConfig();
     private boolean autogenColumns = true;
-    private String delimiter;
+    private String delimiter;*/
     
-    private String orgName;
+    //private String orgName;
 	private String orgId;
 	private String thesaurusName;
 	
@@ -71,9 +71,11 @@ public class Skosify implements Skosifier{
     	
     	JSONObject jo = new JSONObject(jsonConfig);
     	JSONObject meta = jo.getJSONObject("metadata");
-		orgName = meta.getString("organisationName");
-		orgId = meta.getString("organisationID");
-		thesaurusName = meta.getString("thesaurusName");
+		//orgName = meta.getString("organisationName");
+		/*orgId = meta.getString("organisationID");
+		thesaurusName = meta.getString("thesaurusName");*/
+    	orgId = meta.getString(DCElementsEnum.creator.toString());
+		thesaurusName = meta.getString(DCElementsEnum.title.toString());
 		
 		this.graphName = new UriRef(NSroot+orgId+"/"+thesaurusName);
     }
@@ -137,13 +139,13 @@ public class Skosify implements Skosifier{
 		//TODO : add a way to have a generation function / some generation rules
 		return graphName;
 	}
-	public String getOrgName() {
+	/*public String getOrgName() {
 		return orgName;
 	}
 
 	public void setOrgName(String orgName) {
 		this.orgName = orgName;
-	}
+	}*/
 
 	public String getOrgId() {
 		return orgId;

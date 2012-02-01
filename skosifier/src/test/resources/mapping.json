@@ -1,8 +1,7 @@
 {
 	metadata : {
-		organisationName : "fullName",
-		organisationID : "organisationID",
-		thesaurusName : "nameTest5"
+		"http://purl.org/dc/elements/1.1/creator" : "organisationID",
+		"http://purl.org/dc/elements/1.1/title" : "nameTest7"
 	},
 	//TODO : change the mapping for doing a specific case with referer (take place of "localID" and take in account metadatas, url schema and why not generation function
 	/* example : 
@@ -37,7 +36,7 @@
 	{
 		columnId : 4,
 		type : "propertyRef", //en fait broader ID//
-		refType : "skos:broader",
+		propType : "skos:broader",
 		columnRefId : 0 //number of the reference column column 
 	},
 	{

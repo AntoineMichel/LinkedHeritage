@@ -49,7 +49,7 @@ public class CSVMappeur {
 				mapList.add(new ValueMap(colIndex, CSVMapTypeEnum.propertyValue, SkosEnum.NSValueOf(pt), lang));
 			}
 			if(type.equals(CSVMapTypeEnum.propertyRef.name())){
-				String rt = colMapping.getString("refType");
+				String rt = colMapping.getString("propType");
 				int colRefId = colMapping.getInt("columnRefId");
 				mapList.add(new RefMap(colIndex, CSVMapTypeEnum.propertyRef, SkosEnum.NSValueOf(rt), colRefId));
 			}

@@ -64,13 +64,14 @@ $( "#import-acc" ).accordion("activate", 1);
 
 function addSubmitEvent(){
 $("#submit").click(function(){
+	alert("in click");
 	//create json from datas in header
 	var mapping = new Array();
 	$("#config td").each(function() {
 		var obj;
 		selection = $(this).children("[cat='typeSelection']").val();
 		obj = {
-				"columnID" : $(this).attr("colid"),
+				"columnId" : $(this).attr("colid"),
 				"type" : selection,
 		};
 		dynZone = $(this).children("#dyn");
@@ -107,9 +108,9 @@ $("#submit").click(function(){
 	$.ajax({
 		url : "http://localhost:8080/skosifier",
 		type : "POST",
-		data : {"conf" : jmapping, "file" : stringFile},
+		data : {"conf" : JSON.stringify(jmapping), "file" : stringFile},
 		
-		//dataType : "json",
+		//dataType : "html",
 		success: function(data){
 			alert("result");
 			alert(data);

@@ -16,6 +16,7 @@
 */
 package org.lh.stanbol.enhancer.jersey.resource;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED;
 import static javax.ws.rs.core.MediaType.TEXT_HTML;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
 import static javax.ws.rs.core.MediaType.WILDCARD;
@@ -37,6 +38,7 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -214,11 +216,15 @@ public class SkosifierRootResource extends BaseStanbolResource {
     
   //public Response enhanceFromData(@FormParam(value ="conf") String conf, @FormParam(value = "f") String f,
     
+    //combinaison that work
+    //Consumes(MULTIPART_FORM_DATA)
+    //FormDataParam
+    
     //TODO : add parameter(s) for CSV mapping (separator + string delimiter) 
     @POST
-    @Consumes(MULTIPART_FORM_DATA)
-    public Response enhanceFromData(@FormDataParam(value ="conf") String jsonConfig, 
-    								@FormDataParam(value = "file") String f,
+    @Consumes(APPLICATION_FORM_URLENCODED)
+    public Response enhanceFromData(@FormParam(value ="conf") String jsonConfig, 
+    								@FormParam(value = "file") String f,
     								@Context HttpHeaders headers) throws EngineException, IOException {
         
     	String format = TEXT_PLAIN;
@@ -255,10 +261,11 @@ public class SkosifierRootResource extends BaseStanbolResource {
 			}
         }
     	
-        //return okGraphResponse(headers, graph);
     	UriRef thRef = skosifier.getGraphName();
-    	//TODO : get the graph name from skosifier, change api of stuff 
-    	return Response.ok("<a rel='job' href='"+thRef.getUnicodeString()+"'>").type("text/xml").build();
+    	
+    	ResponseBuilder rb = Response.ok("<a rel='job' href='"+thRef.getUnicodeString()+"'>").type("text/xml");
+    	addCORSOrigin(servletContext,rb, headers);
+    	return rb.build();
     }
     
     private Response okGraphResponse(HttpHeaders headers, MGraph graph){

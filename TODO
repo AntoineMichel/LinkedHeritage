@@ -1,4 +1,30 @@
 
+== Form ==
+
+=== Metadata informations ===
+* voir avec hugo pour les champs du formulaire ? quels champs obligatoires ?
+
+* language : faire de la multi-selection
+
+===  CSV import ===
+
+* get all possibles properties (skos:preflabel, ...) and get all possibles references (skos:broader,...) direclty from the server
+** see how to cleanly code the properties and references mapping
+
+
+* create a nice CSS for drop down list
+
+* better integration of the configuration zone with the rest of the tab
+
+* do ckeck for well filled configuration before import
+
+
+
+* tutorial on CSV export from excel : 
+** take care of encoding issues.
+
+== After import ==
+
 * for answer after skosification
 returns 201 created with Location header pointing to the job (say
 /jobs/1234) and HTML content that contains <a rel="job"
@@ -8,10 +34,4 @@ href="/jobs/1234"> (or JSON equivalent if that's useful)
 * URLencode all informations used to create the thesaurus and concept uri
 
 
-voir avec hugo pour les champs du formulaire ? quels champs obligatoires ?
 
-language : faire de la multi-selection
-
-
-* tutorial on CSV export from excel : 
-** take care of encoding issues.
