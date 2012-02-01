@@ -9,6 +9,7 @@
 @import "css/demo_table.css";
 
 @import "css/jquery/cupertino/jquery-ui-1.8.17.custom.css";
+@import "css/form.css";
 /*#tabs-2{
 height:500px;
 }*/
@@ -25,76 +26,84 @@ height:500px;
 	src="js/lh.import.js"></script>
 	<script type="text/javascript" language="javascript"
 	src="js/isoLang.js"></script>
+	<script type="text/javascript" language="javascript"
+	src="js/jquery.validate.min.js"></script>
+	
 <script type="text/javascript">
-	function importDCForm() {
-		//import the dc form
-		$.ajax({
-			url : "dc.html",
-			context : $("#tabs-1"),
-			//dataType : "xml",
-			success : function(data) {
-				$(this).html(data);
+	//gobal var for the json mapping file
+	var jmapping = {"metadata":{},"mapping":[]}
+
+	function getURLargs() {
+		var args = document.location.search.substring(1).split(/\&/);
+		//alert(JSON.stringify(args));
+		argsParsed = {};
+
+		for (i = 0; i < args.length; i++) {
+			arg = unescape(args[i]);
+
+			if (arg.indexOf('=') == -1) {
+				argsParsed[arg.trim()] = true;
+			} else {
+				kvp = arg.split('=');
+				argsParsed[kvp[0].trim()] = kvp[1].trim();
+			}
+		}
+		return argsParsed;
+	}
+
+	$(document).ready(function() {
+		var params = getURLargs();
+		//alert(JSON.stringify(params));
+		///test pour passage de paramètres
+		var loc = location.href;
+		/*alert(loc);
+		alert(location.search);*/
+
+		//importDCForm();
+		$.validator.setDefaults({
+			submitHandler : function(form) {
+				/*var jo = {
+					"metadata" : {}
+				};*/
+
+				$(form).find("input:filled").each(function(i, d) {
+					jmapping.metadata[d.name] = d.value;
+				});
+				
+				$("#tabs").tabs("enable", 1).tabs("select", 1);
+				
 			}
 		});
-		
-	}
-	
-	function getURLargs(){
-	var args = document.location.search.substring(1).split(/\&/);
-	 //alert(JSON.stringify(args));
-argsParsed = {};
 
-for (i=0; i < args.length; i++)
-{
-    arg = unescape(args[i]);
-
-    if (arg.indexOf('=') == -1)
-    {
-        argsParsed[arg.trim()] = true;
-    }
-    else
-    {
-        kvp = arg.split('=');
-        argsParsed[kvp[0].trim()] = kvp[1].trim();
-    }
-	      }
-	      return argsParsed;
-	}
-	
-	$(document).ready(function() {
-	var params = getURLargs();
-	      //alert(JSON.stringify(params));
-	///test pour passage de paramètres
-	var loc = location.href;
-	/*alert(loc);
-	alert(location.search);*/
-
-		importDCForm();
-		
 		//tabs management
-		$("#toImport").live("click", function() {
-			$("#tabs").tabs("enable", 1).tabs("select", 1);
+		$().ready(function() {
+			$("#metadataForm").validate();
+
 		});
-		
+		// save metada fields
+		/*$("#validMetadata").live("click", function() {
+			$("#tabs").tabs("enable", 1).tabs("select", 1);
+		});*/
+
 		//tab build
 		$("#tabs").tabs({
 			selected : 0,
 			disabled : [ 1, 2 ]
 		});
-		
+
 		//accordion management
-		$( "#import-acc" ).accordion({
-			autoHeight: false,
+		$("#import-acc").accordion({
+			autoHeight : false,
 			selected : 0,
 		});
-		
-		$("#goToimport").click(function(){
+
+		$("#goToimport").click(function() {
 			$("#import-acc").accordion("activate", 2);
 		})
-		
+
 		$('#files').change(handleFileSelect);
 		addSubmitEvent();
-		
+
 	});
 </script>
 </head>
@@ -106,7 +115,111 @@ for (i=0; i < args.length; i++)
 			<li><a href="#tabs-3">3) Modify and map</a></li>
 		</ul>
 		<div id="tabs-1">
-			<p>Datas are loaded from dc.html</p>
+				<div id="stylized" class="myform">
+				<form action="" method="post" id="metadataForm" novalidate="novalidate">
+<h1>Sign-up form</h1>
+<h2>This is the basic look of my form without table</h2>
+<p>
+<label for="dctitle">Title
+<span class="small">A name given to the resource. </span>
+</label>
+<input id="dctitle" type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/title"/>
+
+</p>
+<p>
+<label>Creator
+<span class="small">An entity primarily responsible for making the resource.</span>
+</label>
+<input type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/creator"/>
+</p>
+<p>
+<label>Subject
+<span class="small">The topic of the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/subject" />
+</p>
+<p>
+<label>Description
+<span class="small">An account of the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/description" />
+</p>
+<p>
+<label>Publisher
+<span class="small">An entity responsible for making the resource available.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/publisher" />
+</p>
+<p>
+<label>Contributor
+<span class="small">An entity responsible for making contributions to the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/contributor" />
+</p>
+<p>
+<label>Date
+<span class="small">A point or period of time associated with an event in the lifecycle of the resource. </span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/date" />
+</p>
+<p>
+<label>Type
+<span class="small">Recommended best
+			practice is to use a controlled vocabulary such as the DCMI Type
+			Vocabulary [DCMITYPE]. To describe the file format, physical medium,
+			or dimensions of the resource, use the Format element.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/type" />
+</p>
+<p>
+<label>Format
+<span class="small">The file format, physical medium, or dimensions of the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/format" />
+</p>
+
+<p>
+<label>Identifier
+<span class="small">An unambiguous reference to the resource within a given context.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/identifier" />
+</p>
+<p>
+<label>Source
+<span class="small">A related resource from which the described resource is derived.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/source" />
+</p>
+<p>
+<label>Language
+<span class="small">A language of the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/language" />
+</p>
+<p>
+<label>Relation
+<span class="small">A related resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/relation" />
+</p>
+<p>
+<label>Coverage
+<span class="small">Spatial topic and spatial applicability may be a named place or a location specified by its geographic coordinates.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/coverage" />
+</p>
+<p>
+<label>Rights
+<span class="small">Information about rights held in and over the resource.</span>
+</label>
+<input type="text" name="http://purl.org/dc/elements/1.1/rights" />
+</p>
+<button id="validMetadata">Import file</button>
+<div class="spacer"></div>
+
+</form>
+</div>
+
 		</div>
 		<div id="tabs-2">
 			<div id="import-acc">

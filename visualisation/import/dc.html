@@ -8,15 +8,16 @@
 </head>
 <body>
 	<div id="stylized" class="myform">
-<!--<form id="form" name="form" method="post" action="index.html">-->
+<form id="metadataForm" name="form" method="post" action="" novalidate="novalidate">
 <h1>Sign-up form</h1>
 <h2>This is the basic look of my form without table</h2>
 
 <p>
-<label>Title
+<label for="dctitle">Title
 <span class="small">A name given to the resource. </span>
 </label>
-<input type="text" name="http://purl.org/dc/elements/1.1/title"/>
+<input id="dctitle" type="text" class="required" minlenght="2" name="http://purl.org/dc/elements/1.1/title"/>
+
 </p>
 <p>
 <label>Creator
@@ -106,10 +107,10 @@
 </label>
 <input type="text" name="http://purl.org/dc/elements/1.1/rights" />
 </p>
-<button id="toImport">Import file</button>
+<button id="validMetadata">Import file</button>
 <div class="spacer"></div>
 
-<!--</form>-->
+</form>
 </div>
 </body>
 </html>

@@ -1,5 +1,6 @@
 
 var headers;
+var stringFile;
 
 function handleFileSelect(evt) {
 	var files = evt.target.files; // FileList object
@@ -7,7 +8,6 @@ function handleFileSelect(evt) {
 	// files is a FileList of File objects. List some properties.
 	//var output = [];
 	for ( var i = 0, f; f = files[i]; i++) {
-		var stringFile;
 		var reader = new FileReader();
 
 		// Closure to capture the file information.
@@ -99,12 +99,26 @@ $("#submit").click(function(){
 			}
 			
 		if(obj != null){
-			mapping.push(obj);
+			jmapping.mapping.push(obj);
 		}
 	});
 	//send json to the serveur
-	result = JSON.stringify(mapping);
-	alert(result);
+	//load graph list
+	$.ajax({
+		url : "http://localhost:8080/skosifier",
+		type : "POST",
+		data : {"conf" : jmapping, "file" : stringFile},
+		
+		//dataType : "json",
+		success: function(data){
+			alert("result");
+			alert(data);
+			alert(data.html());
+		}
+	});
+	/*result = JSON.stringify(jmapping);
+	alert(result);*/
 	//redirect to the visualisation file
+	
 });
 }
