@@ -3,6 +3,30 @@ var LOCAL_ID = "localID";
 var P_VALUE = "propertyValue";
 var P_REF = "propertyRef";
 
+var propertyRefArray;// = [ "skos:broader", "skos:narrower", "skos:sameAs" ];
+var propertyValArray;// = [ "skos:concept", "skos:scopeNote", "skos:definition" ];
+
+//initialisation of properties Arrays
+function initPropArrays(){
+	$.ajax({
+		url : "http://localhost:8080/skosifier/skosdefinition?type=properties",
+		type : "GET",
+		dataType : "json",
+		success: function(data){
+			propertyValArray = data.values;
+		}
+	});
+
+	$.ajax({
+		url : "http://localhost:8080/skosifier/skosdefinition?type=references",
+		type : "GET",
+		dataType : "json",
+		success: function(data){
+			propertyRefArray = data.values;
+		}
+	});
+}
+
 // functions that generate interface for subselection
 // general because call with "string to function" js capabilities
 function select() {
@@ -31,7 +55,6 @@ function propertyValue() {
 	return res + "<br />" + lang;
 }
 
-propertyRefArray = [ "skos:broader", "skos:narrower", "skos:sameAs" ];
 function propertyRef() {
 	res = "Of type: "
 	res += "<select id='pType'>";
@@ -52,8 +75,6 @@ function propertyRef() {
 	colRef += "</select>";
 	return res + "<br />" + colRef;
 }
-propertyValArray = [ "skos:concept", "skos:scopeNote", "skos:definition" ];
-//langArray = [ "fr", "de", "it" ]; // get a real list for java.lang
 
 function droplists(id) {
 	res = "<select name='type_" + id + "' cat='typeSelection'>"
@@ -66,15 +87,13 @@ function droplists(id) {
 }
 
 function getImportUI() {
-	// TODO : initialisation of propertyValArray and langArray
-
+	initPropArrays();
 	// create the configuration line
 	var mapline = "<tr id='config' class='config'>";
 	headers.forEach(function(v, i) {
 		mapline += "<td colid=" + i + ">"
 		// + "<span style='hidden'>"+i+"</span>"
 		+ "This col is :" + droplists(i) + "</td>"
-
 		;
 	});
 	mapline += "</tr>";

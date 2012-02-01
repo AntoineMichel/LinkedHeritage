@@ -57,12 +57,17 @@ import org.apache.stanbol.commons.web.base.resource.BaseStanbolResource;
 import org.apache.stanbol.enhancer.servicesapi.EngineException;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.codehaus.jettison.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sun.jersey.api.view.Viewable;
 import com.sun.jersey.multipart.FormDataParam;
 
+import eu.lh.skosifier.CSVMapTypeEnum;
+import eu.lh.skosifier.SkosEnum;
+import eu.lh.skosifier.SkosPropertiesEnum;
+import eu.lh.skosifier.SkosReferencesEnum;
 import eu.lh.skosifier.Skosify;
 import eu.lh.skosifier.api.Skosifier;
 
@@ -72,9 +77,10 @@ import eu.lh.skosifier.api.Skosifier;
  * <p>
  * If you need the content of the extractions to be stored on the server, use the StoreRootResource API
  * instead.
+ * @param <e>
  */
 @Path("/skosifier")
-public class SkosifierRootResource extends BaseStanbolResource {
+public class SkosifierRootResource<e> extends BaseStanbolResource {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -133,23 +139,52 @@ public class SkosifierRootResource extends BaseStanbolResource {
     @Consumes(WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGraphList(@Context HttpHeaders headers) throws JSONException {
-    	
     	JSONObject jo = new JSONObject();
-    	//JSONArray ja = new JSONArray();
     	Set<UriRef> l = tcManager.listMGraphs();
     	Iterator<UriRef> iter = l.iterator(); 
     	while (iter.hasNext()){
-    		//ja.add(iter.next().getUnicodeString());
     		jo.accumulate("graphUri", iter.next().getUnicodeString());
     	}
-    	//jo.put("graphUri", ja);
-    	//return Response.ok(jo.toString()).type("application/json").build();
-    	//return Response.ok(jo).type("application/json").build();
     	ResponseBuilder rb = Response.ok(jo.toString());
     	addCORSOrigin(servletContext,rb, headers);
     	return rb.build();
-    	
     }
+    
+    
+    @Path("/skosdefinition")
+    @GET
+    @Consumes(WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getSkosDefinition(@QueryParam(value = "type") String type, @Context HttpHeaders headers) throws JSONException {
+    	
+    	JSONObject jo = new JSONObject();
+    	JSONArray ja = new JSONArray();
+    	
+    	if(type.equals("all")){
+    		for (SkosEnum e : SkosEnum.values()){
+        		ja.put(e.name());
+        	}
+    	}
+    	else if(type.equals("references")){
+    		for (SkosReferencesEnum e : SkosReferencesEnum.values()){
+        		ja.put(e.name());
+        	}
+    	}
+    	else if(type.equals("properties")){
+    		for (SkosPropertiesEnum e : SkosPropertiesEnum.values()){
+        		ja.put(e.name());
+        	}
+    	}
+    	else {
+    		return Response.status(BAD_REQUEST).build();
+    	}
+    	
+    	jo.put("values", ja);
+    	ResponseBuilder rb = Response.ok(jo.toString());
+    	addCORSOrigin(servletContext,rb, headers);
+    	return rb.build();
+    }
+    
     /*public List<EnhancementEngine> getActiveEngines() {
         if (skosifier != null) {
             return skosifier.getActiveEngines();

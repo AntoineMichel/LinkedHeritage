@@ -64,7 +64,6 @@ $( "#import-acc" ).accordion("activate", 1);
 
 function addSubmitEvent(){
 $("#submit").click(function(){
-	alert("in click");
 	//create json from datas in header
 	var mapping = new Array();
 	$("#config td").each(function() {
@@ -112,12 +111,8 @@ $("#submit").click(function(){
 		
 		dataType : "xml",
 		success: function(data){
-			alert("result");
-			
 			var target = "../mapping?uri=" + $(data).find("a").first().attr("href");  
-			alert(target);
 			window.location.replace(target);
-			
 		}
 	});
 	/*result = JSON.stringify(jmapping);

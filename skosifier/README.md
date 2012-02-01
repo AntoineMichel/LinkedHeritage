@@ -1,7 +1,11 @@
 
 == Call the skosifier / skosify a file ==
 
-curl -X POST -H "Accept: text/turtle" -F "conf=@mapConf.json" -F "file=@data.csv" http://localhost:8080/skosifier
+The endpoint accept APPLICATION_FORM_URLENCODED stuff :
+curl -X POST --data-urlencode conf@mapping.json --data-urlencode file@horn1.csv http://localhost:8080/skosifier
+
+// if endpoint is transform to MULTIPART_FORM_DATA 
+//curl -X POST -H "Accept: text/turtle" -F "conf=@mapConf.json" -F "file=@data.csv" http://localhost:8080/skosifier
 
 == Get an already skosified file ==
 
@@ -15,6 +19,10 @@ curl -H "Accept: application/json" http://localhost:8080/skosifier?uri=http://cu
 == Get the list of existing thesaurus ==
 
 * curl -H "Accept: application/json" http://localhost:8080/skosifier/graphlist
+
+== get skos informations ==
+
+curl -H "Accept: application/json" http://localhost:8080/skosifier/skosdefinition?type=all|reference|properties
 
 == Mapping ==
 //TODO : review it
