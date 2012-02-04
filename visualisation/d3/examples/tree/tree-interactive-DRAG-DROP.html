@@ -84,8 +84,8 @@ d3.json("../data/flare.json", function(json) {
 	
 	function dragmove(d,i){
 		pnode = d3.select(this.parentNode);	
-		d.x += d3.event.x;
-		d.y += d3.event.y;
+		d.x += d3.event.x+10;
+		d.y += d3.event.y+10;
 		d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
 	};
 	

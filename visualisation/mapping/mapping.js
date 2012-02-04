@@ -103,11 +103,17 @@ function initGraphDisplay(){
 	
 	//////////// mouseOver Related code
 	var target; 
-	//var onDragAndDrop = false;
+	
 	function mo(d,i){
 		target = d;
 		d3.select("#mover").text(getLabel(d));
-		//if(onDragAndDrop){click(d);}
+		d3.select(this).attr("fill", "orange"); 
+	}
+	
+	function mout(d,i){
+		target = d;
+		d3.select("#mover").text(getLabel(d));
+		d3.select(this).attr("fill","");
 	}
 	////////////end mouseOver Related code
 	
@@ -119,14 +125,10 @@ function initGraphDisplay(){
 	function dragmove(d,i){
 		pnode = d3.select(this.parentNode);
 		
-		/*d.x += d3.event.x;
-		d.y += d3.event.y;
-		*/
-		d.x += d3.event.dx;
-		d.y += d3.event.dy;
+		d.x += d3.event.x+10;
+		d.y += d3.event.y+10;
 		
-		//d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
-		d3.select(this).attr("transform", "translate(" + d.x + "," + d.y + ")");
+		d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
 	};
 	
 	function dragend(d,i){
@@ -134,9 +136,9 @@ function initGraphDisplay(){
 		txt = "drag END :" + getLabel(d) + ":::" + getLabel(target);
 		d3.select("#dragend").text(txt);
 		
-		/*
-		//si remis à la même place, exit
-		if(target != d){
+		
+		//if the drag move to the same place, or to a different graph, do nothing
+		if( (target != d) && (d.ingraph == target.ingraph)){
 		
 		//remove this object from his parent's children list
 		childrenOfParent = d.parent.children;
@@ -151,10 +153,10 @@ function initGraphDisplay(){
 			childrenOfTarget = target.children;
 		}
 		childrenOfTarget.push(d);
-		update(target);
+		update(target.ingraph, target);
 		}
 		//onDragAndDrop = false;
-		*/
+		
 	};
 	
 	var dragdrop = d3.behavior.drag()
@@ -281,8 +283,6 @@ function initGraphDisplay(){
 	      .attr("class", "node")
 	      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
 	      //.on("click", click)
-	      .call(dragdrop)
-	        .on("mouseover", mo)
 	      ;
 	
 	  nodeEnter.append("circle")
@@ -304,8 +304,9 @@ function initGraphDisplay(){
 	        //double click event on the text : edit the node
 	  /*****      .on("dblclick", doubleClick(d,i,graphName))
 	   * */
-	        /*.call(dragdrop)
-	        .on("mouseover", mo)*/
+	        .call(dragdrop)
+	        .on("mouseover", mo)
+	        .on("mouseout", mout);
 	        ;
 	
 	  // Transition nodes to their new position.
