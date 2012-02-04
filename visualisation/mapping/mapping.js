@@ -119,17 +119,25 @@ function initGraphDisplay(){
 	function dragmove(d,i){
 		pnode = d3.select(this.parentNode);
 		
-		d.x += d3.event.x;
+		/*d.x += d3.event.x;
 		d.y += d3.event.y;
+		*/
+		d.x += d3.event.dx;
+		d.y += d3.event.dy;
 		
-		d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
+		//d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
+		d3.select(this).attr("transform", "translate(" + d.x + "," + d.y + ")");
 	};
 	
 	function dragend(d,i){
+		
+		txt = "drag END :" + getLabel(d) + ":::" + getLabel(target);
+		d3.select("#dragend").text(txt);
+		
+		/*
 		//si remis à la même place, exit
 		if(target != d){
-		/*txt = "drag END :" + getLabel(d) + ":::" + getLabel(target);
-		d3.select("#debug").text(txt);*/
+		
 		//remove this object from his parent's children list
 		childrenOfParent = d.parent.children;
 		childrenOfParent.splice(childrenOfParent.indexOf(d), 1);
@@ -146,6 +154,7 @@ function initGraphDisplay(){
 		update(target);
 		}
 		//onDragAndDrop = false;
+		*/
 	};
 	
 	var dragdrop = d3.behavior.drag()
@@ -186,28 +195,12 @@ function initGraphDisplay(){
 			});
 			return res;
 		});
-		//selectmenu.onchange=function(){ //run some code when "onchange" event fires
 		$(selectmenu).change(function(){ //run some code when "onchange" event fires
 			graphName.curLang = this.options[this.selectedIndex].value; 
 			update(graphName,graphName.root);
 		});
 		
 	}
-	//TODO : create a function
-	//var selectmenu=document.getElementById("graphOneLang");
-	//var selectmenu=$("#graphOneLang");
-	//TODO : create a generic function for create options (see ones in import)
-//	$(selectmenu).html(function(){
-//		res = "";
-//		graphOne.langArray.forEach(function(v, i) {
-//			res += "<option value=" + v + ">" + v + "</option>";
-//		});
-//	});
-//	selectmenu.onchange=function(){ //run some code when "onchange" event fires
-//		graphOne.curLang = this.options[this.selectedIndex].value; 
-//		update(graphOne,graphOne.root);
-//		//changeLang = true;
-//	}
 	/*** end language management ***/
 	
 	function displayGraph(graphName, json){
@@ -262,7 +255,6 @@ function initGraphDisplay(){
 	
 	  graphName.root.children.forEach(collapse);
 	  update(graphName, graphName.root);
-	//});
 	
 	}
 	
@@ -278,7 +270,7 @@ function initGraphDisplay(){
 	  debugTest = 1;
 	  // Normalize for fixed-depth.
 	  //nodes.forEach(function(d) { d.y = d.depth * 180; });
-	  nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 });
+	  nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 ;});
 	
 	  // Update the nodes…
 	  var node = graphName.selectAll("g.node")
@@ -289,10 +281,9 @@ function initGraphDisplay(){
 	      .attr("class", "node")
 	      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
 	      //.on("click", click)
+	      .call(dragdrop)
+	        .on("mouseover", mo)
 	      ;
-	
-	  //event : drag and drop (on the g or on the text ?) :
-	 // change the parent of the node. See : https://github.com/mbostock/d3/wiki/Drag-Behavior#wiki-on
 	
 	  nodeEnter.append("circle")
 	      .attr("r", 1e-6)
@@ -312,8 +303,9 @@ function initGraphDisplay(){
 	        .style("fill-opacity", 1e-6)
 	        //double click event on the text : edit the node
 	  /*****      .on("dblclick", doubleClick(d,i,graphName))
-	        .on("mouseover", mo)
-	        .call(dragdrop) ***/
+	   * */
+	        /*.call(dragdrop)
+	        .on("mouseover", mo)*/
 	        ;
 	
 	  // Transition nodes to their new position.
@@ -360,32 +352,22 @@ function initGraphDisplay(){
 	      .attr("class", "link")
 	      .attr("text", function(d){ return "YO " + d.target.y;})
 	      .attr("d", function(d) {
-	        var o = {x: source.x0, y: source.y0};
-		//return diagonal({source: o, source: o});
-		//return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
-		return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
 	      })
 	    //TODO : voir pour avoir une transition clean
 	    .transition()
 	      .duration(duration)
 	     //.attr("d", diagonal)
 	    .attr("d", function(d) {
-	        var o = {x: source.x0, y: source.y0};
-		//return diagonal({source: o, source: o});
-		//return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
-		return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
 	      })
 		;
 	
 	  // Transition links to their new position.
 	  link.transition()
 	      .duration(duration)
-	      //.attr("d", diagonal)
 		.attr("d", function(d) {
-	        var o = {x: source.x0, y: source.y0};
-		//return diagonal({source: o, source: o});
-		
-		return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
 	      })
 		;
 		
@@ -394,9 +376,7 @@ function initGraphDisplay(){
 	  link.exit().transition()
 	      .duration(duration)
 	      .attr("d", function(d) {
-	        var o = {x: source.x, y: source.y};
-	        //return diagonal({source: o, target: o});
-		return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
+	    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
 	      })
 	      .remove();
 		
