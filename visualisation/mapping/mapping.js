@@ -181,6 +181,7 @@ function initGraphDisplay(){
 	//
 	
 	function buildDialog(d){
+		d.updatedTriples = {};
 		function createField(val){
 			res = $("<textarea rows='1' />");
 			//attributes to identify the field
@@ -192,11 +193,11 @@ function initGraphDisplay(){
 			 * see tabs for 1st part of workaround
 			 */
 			$(res).focus(function(d,i){
-				$(this).autoResize({
-					extraSpace : 5,
-					minHeight : "original",
+					$(this).autoResize({
+						extraSpace : 5,
+						minHeight : "original",
+					});
 				});
-			});
 			return res;
 		}
 		
@@ -206,7 +207,8 @@ function initGraphDisplay(){
 					$( "#dialog-form textarea" ).each(function(n){
 						$(this).attr("language",lang);
 						val = getPropValue($(this).attr("predicate"),d, lang);
-						val ? $(this).text(val) : $(this).text("");
+						
+						val ? $(this).val(val) : $(this).val("");
 					});
 		});
 		
