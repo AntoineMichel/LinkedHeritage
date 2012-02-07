@@ -3,6 +3,7 @@ var LOCAL_ID = "localID";
 var P_VALUE = "propertyValue";
 var P_REF = "propertyRef";
 
+/// TODO : use lh.skosProperties instead 
 var propertyRefArray;// = [ "skos:broader", "skos:narrower", "skos:sameAs" ];
 var propertyValArray;// = [ "skos:concept", "skos:scopeNote", "skos:definition" ];
 
@@ -26,6 +27,7 @@ function initPropArrays(){
 		}
 	});
 }
+/// end TODO : use lh.skosProperties instead 
 
 // functions that generate interface for subselection
 // general because call with "string to function" js capabilities

@@ -5,12 +5,10 @@ function initGraphDisplay(){
 	    i = 0,
 	    duration = 500
 	    ;
-	    //root;
 	
 	var tree = d3.layout.tree()
 	    .size([h, w])	
 		;
-	
 	
 	var diagonal = d3.svg.line()
 			.interpolate("step-before")
@@ -35,8 +33,6 @@ function initGraphDisplay(){
 	var graphOneURL = getURLargs()["uri"];
 
 	getGraph(graphOne,graphOneURL);
-	
-	
 	
 	//load graph list
 	$.ajax({
@@ -64,20 +60,48 @@ function initGraphDisplay(){
 	
 	
 	
-	/************** end initialisation of things *******/
+	/************** end initialization of things *******/
+	//TODO : use better nammings for properties
+	function getValues(propObj,prop){
+		if (propObj){
+			return propObj[prop];
+		}
+		else return undefined;
+	}
+	
+	function getPropValue(prop, d, lang){
+		if(!lang) lang = d.ingraph.curLang;
+		result = d[prop];
+		if (d[prop] instanceof Array){
+			result = d[prop].filter(function(p){ return p["@language"] == lang;})[0];
+		}
+		return getValues(result,"@literal");
+	}
+	
+	/*function getPropValue(prop, d){
+		return getPropValueSS(prop,d,d.ingraph.curLang);
+	}*/
+	
+	//TODO : create a generic SetPropValue on the getPropValue model
+    function setPropValue(d,label){
+		if (d.prefLabel == null){
+            return d;
+		}
+		else{
+			d.prefLabel.filter(function(p){ return p["@language"] == d.ingraph.curLang;})[0]["@literal"] = label
+			return d;
+                        
+		}
+	}
 	
 	/********** Get and set labels on d objects **/
-	//function get and set label to extract
-		function getLabel(d){
-			if (d.prefLabel == null){
-				//c'est la racine, voir commment on le traite
-				return "---racine---";
-			}
-			else{
-				preflab = d.prefLabel.filter(function(p){ return p["@language"] == d.ingraph.curLang;})
-				return preflab[0]["@literal"];
-			}
-		}
+	//commodity function to get and set label to extract
+	//TODO : use the getProp val inside
+	function getLabel(d){
+		res = getPropValue("prefLabel",d);
+		if (!res) res = "---racine---";
+		return res;
+	}
 	
 	        function setLabel(d,label){
 			if (d.prefLabel == null){
@@ -98,6 +122,145 @@ function initGraphDisplay(){
 	function collapsed(d){
 	    	 return d._children != null;
 	     }
+	
+	/*******************************
+	 * Interaction stuff
+	 */
+	
+	/**** clic and double clic */
+	
+	// Toggle children on click on circles
+	function click(d) {
+	  if (d.children) {
+	    d._children = d.children;
+	    d.children = null;
+	  } else {
+	    d.children = d._children;
+	    d._children = null;
+	  }
+	  update(d.ingraph, d);
+	}
+	
+	//jqueryui dialog box
+	$( "#dialog-form" ).dialog({
+		autoOpen: false,
+		height: 300,
+		width: 350,
+		modal: true,
+		buttons: {
+			"Save changes": function() {
+				var bValid = true;
+				allFields.removeClass( "ui-state-error" );
+
+				bValid = bValid && checkLength( name, "username", 3, 16 );
+				bValid = bValid && checkLength( email, "email", 6, 80 );
+				bValid = bValid && checkLength( password, "password", 5, 16 );
+
+				bValid = bValid && checkRegexp( name, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
+				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
+				bValid = bValid && checkRegexp( email, /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i, "eg. ui@jquery.com" );
+				bValid = bValid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+
+				if ( bValid ) {
+					$( "#users tbody" ).append( "<tr>" +
+						"<td>" + name.val() + "</td>" + 
+						"<td>" + email.val() + "</td>" + 
+						"<td>" + password.val() + "</td>" +
+					"</tr>" ); 
+					$( this ).dialog( "close" );
+				}
+			},
+			Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			allFields.val( "" ).removeClass( "ui-state-error" );
+		}
+	});
+	//
+	
+	function buildDialog(d){
+		function createField(val){
+			res = $("<textarea rows='1' />");
+			//attributes to identify the field
+			$(res).attr("predicate",val);
+			$(res).attr("language",d.ingraph.curLang);
+			data = getPropValue(val, d);
+			data ? $(res).text(data) : $(res).attr("placeholder","Value not set for this language");
+			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
+			 * see tabs for 1st part of workaround
+			 */
+			$(res).focus(function(d,i){
+				$(this).autoResize({
+					extraSpace : 5,
+					minHeight : "original",
+				});
+			});
+			return res;
+		}
+		
+		langSelector( $("#modifyLang"), d.ingraph.langArray,
+				function(){
+					var lang = this.options[this.selectedIndex].value; 
+					$( "#dialog-form textarea" ).each(function(n){
+						$(this).attr("language",lang);
+						val = getPropValue($(this).attr("predicate"),d, lang);
+						val ? $(this).text(val) : $(this).text("");
+					});
+		});
+		
+		ulTabs = 
+			'<ul>'+
+			'</ul>' ;
+		divs =
+			'<div id="tabs">' +
+			'</div>';
+		
+		var a = skosOnto.getValues();
+		txt = "";
+		a.forEach(function(val){ 
+			if(d[val]){
+				ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
+				
+				divs = $(divs).append($('<div id="tabs-'+val+'"> </div>').append(createField(val)));
+			} 
+			});
+			
+		divs = $(divs).prepend(ulTabs);
+		
+		$( "#dialog-form #tabZone" ).empty();
+		$( "#dialog-form #tabZone" ).append(divs);
+		
+		$("#tabs").tabs({
+			selected : 0,
+			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
+			 * see the focus event for 2 workaround part 
+			 */
+			show: function(event, ui) {
+				$(ui.panel).children("textarea").trigger("focus");
+			}
+		});
+		
+	}
+	
+	function doubleClick(d) {
+		//create the dialog form 
+		// 1) get avalaible language for the graph
+		// 2) get list of properties and existing properties in this object (see A)
+		// 3) display all properties as a tab
+		// 4) seek for modification and update only modified fields
+		// 5) propose adding of new languages and / or new properties (for avalaibles)
+		buildDialog(d);
+		//A) call the endpoint like in import then result.forEach(if(object[v] != null) ? createTab : addToPropertiesToAddList;);
+		$( "#dialog-form" ).dialog( "open" );
+		
+	
+	  /*setLabel(d,"changed");
+	
+	  update(d.ingraph, d);*/
+	}
+	/**** end clic and double clic */
 	
 	/*********** Drag and drop ****/
 	
@@ -155,6 +318,8 @@ function initGraphDisplay(){
 		childrenOfTarget.push(d);
 		update(target.ingraph, target);
 		}
+		//if not respect contraint, redraw
+		else{ update(d.ingraph,d);}
 		//onDragAndDrop = false;
 		
 	};
@@ -176,7 +341,6 @@ function initGraphDisplay(){
 			headers : {"Accept":"application/json"},
 			dataType : "json",
 			success: function(data){
-				
 				displayGraph(graphName, data);
 			}
 		});
@@ -185,9 +349,31 @@ function initGraphDisplay(){
 	/**** end get datas ****/
 	
 	/*** language management ***/
-	//language selection for the graphOne
-	function langSelector(graphName){
-		var selectmenu; 
+	
+	function langSelector(selectNode, langArray, changeFunc){
+		$(selectNode).html(function(){
+			res = "";
+			langArray.forEach(function(v, i) {
+				res += "<option value=" + v + ">" + v + "</option>";
+			});
+			return res;
+		});
+		$(selectNode).change(changeFunc);
+	}
+	
+	//language selection for graph
+	function graphLangSelector(graphName){
+		var selectmenu;
+		graphName === graphOne ? selectmenu =$("#graphOneLang") : selectmenu = $("#graphTwoLang");
+		langSelector( selectmenu,
+				graphName.langArray,
+				function(){ //run some code when "onchange" event fires
+					graphName.curLang = this.options[this.selectedIndex].value; 
+					update(graphName,graphName.root);
+				});
+	}
+	/*function graphLangSelector(graphName){
+		var selectmenu;
 		graphName === graphOne ? selectmenu =$("#graphOneLang") : selectmenu = $("#graphTwoLang");
 		
 		$(selectmenu).html(function(){
@@ -201,8 +387,7 @@ function initGraphDisplay(){
 			graphName.curLang = this.options[this.selectedIndex].value; 
 			update(graphName,graphName.root);
 		});
-		
-	}
+	}*/
 	/*** end language management ***/
 	
 	function displayGraph(graphName, json){
@@ -210,7 +395,7 @@ function initGraphDisplay(){
 		//TODO : retrive lang information from the json
 		graphName.langArray = ["fr","nl","en"];
 		graphName.curLang = graphName.langArray[0];
-		langSelector(graphName);
+		graphLangSelector(graphName);
 		
 		//get the root of all ld subjects... .@Context is about NS infos
 	     rootf = json["@subject"];
@@ -301,10 +486,8 @@ function initGraphDisplay(){
 	        .attr("text-anchor", function(d) { return "start"; })
 	        .text(getLabel)
 	        .style("fill-opacity", 1e-6)
-	        //double click event on the text : edit the node
-	  /*****      .on("dblclick", doubleClick(d,i,graphName))
-	   * */
 	        .call(dragdrop)
+	        .on("dblclick", doubleClick)
 	        .on("mouseover", mo)
 	        .on("mouseout", mout);
 	        ;
@@ -388,35 +571,4 @@ function initGraphDisplay(){
 	  });
 	}
 	
-	/************** clic and double clic 
-	 * 
-	 */
-	 
-	 function getGraphRef(ctxt){
-		 gId = ctxt.parentElement.parentElement.id;
-		 return gId == "graphOne" ? graphOne : graphTwo;
-	}
-	
-	// Toggle children on click on circles
-	function click(d) {
-	  if (d.children) {
-	    d._children = d.children;
-	    d.children = null;
-	  } else {
-	    d.children = d._children;
-	    d._children = null;
-	  }
-	  //get the parent graph, as we are in a circle, the parent of parent
-	  //pGraph = [[this.parentElement.parentElement]];
-	  //update(pGraph, d);
-	  update(getGraphRef(this), d);
-	}
-	
-	function doubleClick(d,i,graphName) {
-	  alert("Change the text");
-	
-	  setLabel(d,"changed");
-	
-	  update(graphName, d);
-	}
 }

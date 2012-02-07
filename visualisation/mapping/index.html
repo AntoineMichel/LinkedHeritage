@@ -8,15 +8,22 @@
 	<link rel="stylesheet" type="text/css" media="all" href="css/text.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="css/960.css" />
 	<!-- end 960 -->
+	<!-- jquery ui -->
+	<link rel="stylesheet" type="text/css" media="all" href="../import/css/jquery/cupertino/jquery-ui-1.8.17.custom.css" />
+	
     <script type="text/javascript" src="../d3/d3.js"></script>
     <script type="text/javascript" src="../d3/d3.layout.js"></script>
     <!-- TODO: extract commons libs from import -->
     <script type="text/javascript" src="../import/js/jquery-1.7.1.min.js"></script>
+    <script type="text/javascript" language="javascript" src="../import/js/jquery-ui-1.8.17.custom.min.js"></script>
     <script type="text/javascript" src="../import/js/urlInfo.js"></script>
+    <script type="text/javascript" src="../import/js/lh.skosProperties.js"></script>
+    <script type="text/javascript" src="../import/js/jquery.autoresize.js"></script>
     <script type="text/javascript" src="mapping.js"></script>
     <script type="text/javascript">
     	$(document).ready(function(){
     		initGraphDisplay();
+    		skosOnto.init();
     	});
 
 
@@ -49,21 +56,22 @@ path.linkflo {
     </style>
   </head>
   <body>
-  	<div class="container_12">
-  	<div id="devel" class="grid_12">
+  	<div class="container_16">
+  	<div id="devel" class="grid_16">
   		<div id="debug">Debug console</div>
     	<div id="mover">MouseOver</div>
     	<div id="dragend">Drag end</div>
   	</div>
   	<div class="clear"></div>
   	
+<!--   	<div id="infozone" class="grid_4"> -->
+<!--   		<h1>test info zone</h1> -->
+<!--   	</div> -->
+  	
   	<div id="graphOne" class="grid_6">
   		<h1>Configuration panel for graph One</h1>
   		Choose your language : 
   		<select id="graphOneLang" size="1">
-	  		<option value="fr" selected="selected">French</option>
-	  		<option value="nl">NL</option>
-	  		<option value="en">English</option>
 		</select>
     </div>
     
@@ -74,10 +82,22 @@ path.linkflo {
     	Choose your language : 
   		<select id="graphTwoLang" size="1"></select>
     </div>
-    <div class="clear"></div>
     
     <div id="chart"></div>
+    
     </div>
+    <div class="clear"></div>
+        
+    </div>
+    
+    <div id="dialog-form" title="Modify">
+    	<div id="modifyLangZone">
+    		<select id="modifyLang" size="1"></select>
+    	</div>
+    	<div id="tabZone">
+    	
+    	</div>
+	</div>
     
   </body>
 </html>
