@@ -1,3 +1,76 @@
+(function(){
+	lh.utils = {};
+	lh.utils.langSelector = function(selectNode, langArray, changeFunc){
+		$(selectNode).html(function(){
+			res = "";
+			langArray.forEach(function(v, i) {
+				res += "<option value=" + v + ">" + v + "</option>";
+			});
+			return res;
+		});
+		$(selectNode).change(changeFunc);
+	};
+	
+	/////semantic part
+	lh.sem = {};
+	//TODO : use better nammings for properties
+	//TODO : remove duplication in mapping .js for getValues and getPropValues
+	function getValues(propObj,prop){
+		if (propObj){
+			return propObj[prop];
+		}
+		else return undefined;
+	}
+	
+	//TODO : see how to deal with null propObj ?
+	function setValues(propObj,prop,value,lang){
+		if (propObj){
+			propObj[prop] = value;
+			if(lang){
+				propObj["@language"] = lang;
+			}
+			
+		}
+		//else : null object... fire an error ?
+		
+	}
+	
+	lh.sem.getPropValue = function(prop, d, lang){
+		if(!lang) lang = d.ingraph.curLang;
+		result = d[prop];
+		if (d[prop] instanceof Array){
+			result = d[prop].filter(function(p){ return p["@language"] == lang;})[0];
+		}
+		return getValues(result,"@literal");
+	};
+	
+	
+	lh.sem.setPropValue = function(d,p,label,lang){
+		/*if (d[p] == null){
+            return d;
+		}
+		result = d[p];*/
+		if (d[p] instanceof Array){
+			result = d[p].filter(function(z){ return z["@language"] == lang;})[0];
+			if(!result){ //if result is null
+				result = {};
+				d[p].push(result);
+			}
+		}
+		else {
+			result = d[p];
+			if(!result){
+				result = {};
+				d[p] = result;
+			}}
+		
+		//if (d[p])
+		
+		setValues(result,"@literal",label,lang);
+	}
+	
+})();
+
 function initGraphDisplay(){
 	var m = [20, 120, 20, 120],
 	    w = 1280 - m[1] - m[3],
@@ -83,7 +156,7 @@ function initGraphDisplay(){
 	}*/
 	
 	//TODO : create a generic SetPropValue on the getPropValue model
-    function setPropValue(d,label){
+    /*function setPropValue(d,label){
 		if (d.prefLabel == null){
             return d;
 		}
@@ -92,7 +165,7 @@ function initGraphDisplay(){
 			return d;
                         
 		}
-	}
+	}*/
 	
 	/********** Get and set labels on d objects **/
 	//commodity function to get and set label to extract
@@ -149,7 +222,11 @@ function initGraphDisplay(){
 		modal: true,
 		buttons: {
 			"Save changes": function() {
-				var bValid = true;
+				
+				n = lh.modify.save();
+				update(n.ingraph,n);
+				$( this ).dialog( "close" );
+				/*var bValid = true;
 				allFields.removeClass( "ui-state-error" );
 
 				bValid = bValid && checkLength( name, "username", 3, 16 );
@@ -168,9 +245,12 @@ function initGraphDisplay(){
 						"<td>" + password.val() + "</td>" +
 					"</tr>" ); 
 					$( this ).dialog( "close" );
-				}
+				}*/
 			},
 			Cancel: function() {
+				
+				n = lh.modify.cancel();
+				update(n.ingraph,n);
 				$( this ).dialog( "close" );
 			}
 		},
@@ -180,71 +260,71 @@ function initGraphDisplay(){
 	});
 	//
 	
-	function buildDialog(d){
-		d.updatedTriples = {};
-		function createField(val){
-			res = $("<textarea rows='1' />");
-			//attributes to identify the field
-			$(res).attr("predicate",val);
-			$(res).attr("language",d.ingraph.curLang);
-			data = getPropValue(val, d);
-			data ? $(res).text(data) : $(res).attr("placeholder","Value not set for this language");
-			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
-			 * see tabs for 1st part of workaround
-			 */
-			$(res).focus(function(d,i){
-					$(this).autoResize({
-						extraSpace : 5,
-						minHeight : "original",
-					});
-				});
-			return res;
-		}
-		
-		langSelector( $("#modifyLang"), d.ingraph.langArray,
-				function(){
-					var lang = this.options[this.selectedIndex].value; 
-					$( "#dialog-form textarea" ).each(function(n){
-						$(this).attr("language",lang);
-						val = getPropValue($(this).attr("predicate"),d, lang);
-						
-						val ? $(this).val(val) : $(this).val("");
-					});
-		});
-		
-		ulTabs = 
-			'<ul>'+
-			'</ul>' ;
-		divs =
-			'<div id="tabs">' +
-			'</div>';
-		
-		var a = skosOnto.getValues();
-		txt = "";
-		a.forEach(function(val){ 
-			if(d[val]){
-				ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
-				
-				divs = $(divs).append($('<div id="tabs-'+val+'"> </div>').append(createField(val)));
-			} 
-			});
-			
-		divs = $(divs).prepend(ulTabs);
-		
-		$( "#dialog-form #tabZone" ).empty();
-		$( "#dialog-form #tabZone" ).append(divs);
-		
-		$("#tabs").tabs({
-			selected : 0,
-			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
-			 * see the focus event for 2 workaround part 
-			 */
-			show: function(event, ui) {
-				$(ui.panel).children("textarea").trigger("focus");
-			}
-		});
-		
-	}
+//	function buildDialog(d){
+//		d.updatedTriples = {};
+//		function createField(val){
+//			res = $("<textarea rows='1' />");
+//			//attributes to identify the field
+//			$(res).attr("predicate",val);
+//			$(res).attr("language",d.ingraph.curLang);
+//			data = getPropValue(val, d);
+//			data ? $(res).text(data) : $(res).attr("placeholder","Value not set for this language");
+//			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
+//			 * see tabs for 1st part of workaround
+//			 */
+//			$(res).focus(function(d,i){
+//					$(this).autoResize({
+//						extraSpace : 5,
+//						minHeight : "original",
+//					});
+//				});
+//			return res;
+//		}
+//		
+//		langSelector( $("#modifyLang"), d.ingraph.langArray,
+//				function(){
+//					var lang = this.options[this.selectedIndex].value; 
+//					$( "#dialog-form textarea" ).each(function(n){
+//						$(this).attr("language",lang);
+//						val = getPropValue($(this).attr("predicate"),d, lang);
+//						
+//						val ? $(this).val(val) : $(this).val("");
+//					});
+//		});
+//		
+//		ulTabs = 
+//			'<ul>'+
+//			'</ul>' ;
+//		divs =
+//			'<div id="tabs">' +
+//			'</div>';
+//		
+//		var a = skosOnto.getValues();
+//		txt = "";
+//		a.forEach(function(val){ 
+//			if(d[val]){
+//				ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
+//				
+//				divs = $(divs).append($('<div id="tabs-'+val+'"> </div>').append(createField(val)));
+//			} 
+//			});
+//			
+//		divs = $(divs).prepend(ulTabs);
+//		
+//		$( "#dialog-form #tabZone" ).empty();
+//		$( "#dialog-form #tabZone" ).append(divs);
+//		
+//		$("#tabs").tabs({
+//			selected : 0,
+//			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
+//			 * see the focus event for 2 workaround part 
+//			 */
+//			show: function(event, ui) {
+//				$(ui.panel).children("textarea").trigger("focus");
+//			}
+//		});
+//		
+//	}
 	
 	function doubleClick(d) {
 		//create the dialog form 
@@ -253,7 +333,8 @@ function initGraphDisplay(){
 		// 3) display all properties as a tab
 		// 4) seek for modification and update only modified fields
 		// 5) propose adding of new languages and / or new properties (for avalaibles)
-		buildDialog(d);
+		//buildDialog(d);
+		lh.modify.buildDialog(d);
 		//A) call the endpoint like in import then result.forEach(if(object[v] != null) ? createTab : addToPropertiesToAddList;);
 		$( "#dialog-form" ).dialog( "open" );
 		
