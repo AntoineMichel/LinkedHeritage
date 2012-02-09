@@ -25,14 +25,15 @@
 	//lh = {};
 	lh.modify = {};
 	var changes;
-	var original;
-	//function lh.modify.buildDialog(d){
+	var node;
+
 	lh.modify.buildDialog = function(d){
-		//cloning stuff... Do shallow, here, see if deep clone needed
-		//http://stackoverflow.com/a/122704
-		original = jQuery.extend({}, d);
-		changes = [];
-		d.updatedTriples = {};
+		node = d;
+		//init the changes object
+		changes = {};
+		changes.values = [];
+		
+		//d.updatedTriples = {};
 		function createField(val){
 			res = $("<textarea rows='1' />");
 			//attributes to identify the field
@@ -57,10 +58,19 @@
 				//if value changed
 				//if(o != lh.sem.getPropValue(p,d,l)){
 				if(isValueChanged(o,p,d,l)){
-					changes.push([p,o,l, Date.now()]);
-					lh.sem.setPropValue(d,p,o,l);
-				
-					test = d;
+					//new atomic change
+					c = {};
+					c.crud = "u";
+					c.subject = d["@subject"];
+					c.predicate = p;
+					
+					//changes.push([p,o,l, Date.now()]);
+					modif = lh.sem.setPropValue(d,p,o,l);
+					
+					c.object = modif;
+					c.date = Date.now();
+					c.user ="defaultUser";
+					changes.values.push(c);
 				} 
 			});
 			
@@ -117,9 +127,17 @@
 		return d;
 	}
 		
+	lh.modify.revertChanges = function(){
+		changes.values.reverse().forEach(function(c){
+			//TODO : get setpropValue get directly the c.object[0] ==> create a js litteral(factory)
+			lh.sem.setPropValue(node,c.predicate,c.object[0]["@literal"],c.object[0]["@language"]);
+			test = "";
+		});
+	};
+	
 	lh.modify.cancel = function(){
-		d = original;
-		return d;
+		lh.modify.revertChanges();
+		return node;
 	}
 	
 })();

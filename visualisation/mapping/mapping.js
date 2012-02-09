@@ -31,6 +31,7 @@
 			}
 			
 		}
+		return propObj;
 		//else : null object... fire an error ?
 		
 	}
@@ -44,7 +45,8 @@
 		return getValues(result,"@literal");
 	};
 	
-	
+	//return an array with [{oldvalueOject},{newValueObject}]
+	//this object are clone of the originals ones
 	lh.sem.setPropValue = function(d,p,label,lang){
 		/*if (d[p] == null){
             return d;
@@ -65,8 +67,11 @@
 			}}
 		
 		//if (d[p])
-		
-		setValues(result,"@literal",label,lang);
+		//cloning stuff... Do shallow, here, see if deep clone needed
+		//http://stackoverflow.com/a/122704
+		var original = jQuery.extend({}, result);
+		modif = setValues(result,"@literal",label,lang);
+		return [original, jQuery.extend({}, modif)];
 	}
 	
 })();
