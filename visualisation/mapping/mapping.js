@@ -231,26 +231,6 @@ function initGraphDisplay(){
 				n = lh.modify.save();
 				update(n.ingraph,n);
 				$( this ).dialog( "close" );
-				/*var bValid = true;
-				allFields.removeClass( "ui-state-error" );
-
-				bValid = bValid && checkLength( name, "username", 3, 16 );
-				bValid = bValid && checkLength( email, "email", 6, 80 );
-				bValid = bValid && checkLength( password, "password", 5, 16 );
-
-				bValid = bValid && checkRegexp( name, /^[a-z]([0-9a-z_])+$/i, "Username may consist of a-z, 0-9, underscores, begin with a letter." );
-				// From jquery.validate.js (by joern), contributed by Scott Gonzalez: http://projects.scottsplayground.com/email_address_validation/
-				bValid = bValid && checkRegexp( email, /^((([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+(\.([a-z]|\d|[!#\$%&'\*\+\-\/=\?\^_`{\|}~]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])+)*)|((\x22)((((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(([\x01-\x08\x0b\x0c\x0e-\x1f\x7f]|\x21|[\x23-\x5b]|[\x5d-\x7e]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(\\([\x01-\x09\x0b\x0c\x0d-\x7f]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]))))*(((\x20|\x09)*(\x0d\x0a))?(\x20|\x09)+)?(\x22)))@((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?$/i, "eg. ui@jquery.com" );
-				bValid = bValid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
-
-				if ( bValid ) {
-					$( "#users tbody" ).append( "<tr>" +
-						"<td>" + name.val() + "</td>" + 
-						"<td>" + email.val() + "</td>" + 
-						"<td>" + password.val() + "</td>" +
-					"</tr>" ); 
-					$( this ).dialog( "close" );
-				}*/
 			},
 			Cancel: function() {
 				
@@ -260,76 +240,10 @@ function initGraphDisplay(){
 			}
 		},
 		close: function() {
-			allFields.val( "" ).removeClass( "ui-state-error" );
+			
 		}
 	});
-	//
 	
-//	function buildDialog(d){
-//		d.updatedTriples = {};
-//		function createField(val){
-//			res = $("<textarea rows='1' />");
-//			//attributes to identify the field
-//			$(res).attr("predicate",val);
-//			$(res).attr("language",d.ingraph.curLang);
-//			data = getPropValue(val, d);
-//			data ? $(res).text(data) : $(res).attr("placeholder","Value not set for this language");
-//			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
-//			 * see tabs for 1st part of workaround
-//			 */
-//			$(res).focus(function(d,i){
-//					$(this).autoResize({
-//						extraSpace : 5,
-//						minHeight : "original",
-//					});
-//				});
-//			return res;
-//		}
-//		
-//		langSelector( $("#modifyLang"), d.ingraph.langArray,
-//				function(){
-//					var lang = this.options[this.selectedIndex].value; 
-//					$( "#dialog-form textarea" ).each(function(n){
-//						$(this).attr("language",lang);
-//						val = getPropValue($(this).attr("predicate"),d, lang);
-//						
-//						val ? $(this).val(val) : $(this).val("");
-//					});
-//		});
-//		
-//		ulTabs = 
-//			'<ul>'+
-//			'</ul>' ;
-//		divs =
-//			'<div id="tabs">' +
-//			'</div>';
-//		
-//		var a = skosOnto.getValues();
-//		txt = "";
-//		a.forEach(function(val){ 
-//			if(d[val]){
-//				ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
-//				
-//				divs = $(divs).append($('<div id="tabs-'+val+'"> </div>').append(createField(val)));
-//			} 
-//			});
-//			
-//		divs = $(divs).prepend(ulTabs);
-//		
-//		$( "#dialog-form #tabZone" ).empty();
-//		$( "#dialog-form #tabZone" ).append(divs);
-//		
-//		$("#tabs").tabs({
-//			selected : 0,
-//			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
-//			 * see the focus event for 2 workaround part 
-//			 */
-//			show: function(event, ui) {
-//				$(ui.panel).children("textarea").trigger("focus");
-//			}
-//		});
-//		
-//	}
 	
 	function doubleClick(d) {
 		//create the dialog form 
@@ -460,22 +374,7 @@ function initGraphDisplay(){
 					update(graphName,graphName.root);
 				});
 	}
-	/*function graphLangSelector(graphName){
-		var selectmenu;
-		graphName === graphOne ? selectmenu =$("#graphOneLang") : selectmenu = $("#graphTwoLang");
-		
-		$(selectmenu).html(function(){
-			res = "";
-			graphName.langArray.forEach(function(v, i) {
-				res += "<option value=" + v + ">" + v + "</option>";
-			});
-			return res;
-		});
-		$(selectmenu).change(function(){ //run some code when "onchange" event fires
-			graphName.curLang = this.options[this.selectedIndex].value; 
-			update(graphName,graphName.root);
-		});
-	}*/
+	
 	/*** end language management ***/
 	
 	function displayGraph(graphName, json){

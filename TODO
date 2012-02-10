@@ -1,4 +1,10 @@
 
+== Thesaurus adding process ==
+
+* allow a "create from scratch process"
+
+* allow upload of "nested csv"
+
 == Form ==
 
 === Metadata informations ===
@@ -8,17 +14,11 @@
 
 ===  CSV import ===
 
-* get all possibles properties (skos:preflabel, ...) and get all possibles references (skos:broader,...) direclty from the server
-** see how to cleanly code the properties and references mapping
-
-
-* create a nice CSS for drop down list
+* create a nice CSS for drop down list (look at rd-intranet)
 
 * better integration of the configuration zone with the rest of the tab
 
 * do ckeck for well filled configuration before import
-
-
 
 * tutorial on CSV export from excel : 
 ** take care of encoding issues.
@@ -34,4 +34,19 @@ href="/jobs/1234"> (or JSON equivalent if that's useful)
 * URLencode all informations used to create the thesaurus and concept uri
 
 
+== Javascript ==
 
+
+* use "real" triple implementation : like this : https://github.com/IKS/rdfQuery [1]
+** the main issue here is that this implementation don't accept json-ld (turtle and json are okay)
+** but this one https://github.com/digitalbazaar/jsonld.js is a js implementation of json-ld
+*** but really lack of documentation and don't see for now how to get triples from here.
+
+[1] the main interresting part is : http://code.google.com/p/rdfquery/wiki/RdfPlugin
+Note : the git repository is a mirror of this google code, seem to be updated from git to gcode
+
+
+* about vie.js
+** document for 1.0.0 : http://viejs.org/docs/1.0.0/
+** website http://viejs.org
+** deals with rdfa in html page, don't put rda in page.
