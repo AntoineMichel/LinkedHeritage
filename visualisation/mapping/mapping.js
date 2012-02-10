@@ -77,9 +77,10 @@
 })();
 
 function initGraphDisplay(){
-	var m = [20, 120, 20, 120],
+	var m = [50, 120, 50, 120],
 	    w = 1280 - m[1] - m[3],
 	    h = 800 - m[0] - m[2],
+	    tby = 0,
 	    i = 0,
 	    duration = 500
 	    ;
@@ -105,6 +106,33 @@ function initGraphDisplay(){
 		graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")")
 		.attr("id", "graphTwo");	
 	}
+	
+	/** tool bar related code */
+	var toolBar = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
+					.attr("id", "toolBar");
+	
+	function initToolBar(){
+		
+		//TODO : build a data structure with elements :
+		/*
+		 * image
+		 * click : function();
+		 * 
+		 * and then pass this structure to the builder (that position elements automaticaly) and bind function
+		 */
+		
+		toolBar.append("image")
+			.attr("x",0).attr("y",0)
+			
+			.attr("preserveAspectRatio","xMidYMid meet")
+			.attr("viewBox","0 0 30 30")
+			.attr("width",30).attr("height",30)
+			.attr("xlink:href","img/bridge-stone-new.png")
+			.on("click", function(){alert("toto")});
+			;
+	}
+	
+	initToolBar();
 	
 	
 	/*** init display of the first graph ***/
@@ -139,7 +167,7 @@ function initGraphDisplay(){
 	
 	
 	/************** end initialization of things *******/
-	//TODO : use better nammings for properties
+	//TODO : REMOVE this and use lh.sem.getPropValue instead
 	function getValues(propObj,prop){
 		if (propObj){
 			return propObj[prop];
@@ -156,25 +184,9 @@ function initGraphDisplay(){
 		return getValues(result,"@literal");
 	}
 	
-	/*function getPropValue(prop, d){
-		return getPropValueSS(prop,d,d.ingraph.curLang);
-	}*/
-	
-	//TODO : create a generic SetPropValue on the getPropValue model
-    /*function setPropValue(d,label){
-		if (d.prefLabel == null){
-            return d;
-		}
-		else{
-			d.prefLabel.filter(function(p){ return p["@language"] == d.ingraph.curLang;})[0]["@literal"] = label
-			return d;
-                        
-		}
-	}*/
-	
 	/********** Get and set labels on d objects **/
 	//commodity function to get and set label to extract
-	//TODO : use the getProp val inside
+	//TODO : use the getProp val intead
 	function getLabel(d){
 		res = getPropValue("prefLabel",d);
 		if (!res) res = "---racine---";
@@ -273,12 +285,36 @@ function initGraphDisplay(){
 		target = d;
 		d3.select("#mover").text(getLabel(d));
 		d3.select(this).attr("fill", "orange"); 
+		
+		//var sel1 = d3.select(this).node().parentElement();
+		var tt = this;
+		//alert(this.getComputedTextLength());
+		//var sel1 = ;
+		//var sel2 = d3.select(this)[0][0].parentNode;
+		///test for add bridge function
+		//d3.select(this)
+		//insert("g","text")
+		d3.select(this.parentNode).append("g")
+		//sel1.append("g")
+			.attr("transform", "translate(" + (this.getComputedTextLength() + 10) + "," + (-25) + ")")
+			.attr("id", "localToolBar")
+			.append("image")
+				.attr("x",0).attr("y",0)
+				.attr("preserveAspectRatio","xMidYMid meet")
+				.attr("viewBox","0 0 30 30")
+				.attr("width",30).attr("height",30)
+				.attr("xlink:href","img/bridge-stone-new.png")
+				.on("click", function(){alert("toto")})
+			;
 	}
 	
 	function mout(d,i){
 		target = d;
 		d3.select("#mover").text(getLabel(d));
 		d3.select(this).attr("fill","");
+		
+		d3.select(this.parentNode).select("g #localToolBar").remove();
+		
 	}
 	////////////end mouseOver Related code
 	
