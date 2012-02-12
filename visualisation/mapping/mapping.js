@@ -11,6 +11,53 @@
 		$(selectNode).change(changeFunc);
 	};
 	
+	
+	////timer management
+	lh.utils.ta = new Array();
+	
+	lh.utils.addTevent = function(f,obj,t){
+		ev = new Array();
+		//ev[0] = Date.now()+t;
+		ev.push(Date.now()+t);
+		ev.push(f);
+		ev.push(obj);
+///		ev[1] = f;
+		//ev[1] = typeof f === "function" ? f.call() : f;
+		lh.utils.ta.push(ev);
+	}
+	
+	lh.utils.processEvent = function(){
+		//$("#mover").text("process " + Date.now());
+		
+		//$("#mover").text("process " + JSON.stringify(lh.utils.ta));
+		torm = new Array();
+		lh.utils.ta.forEach(function(r,i){
+			if( r[0] <= Date.now()){
+				//alert(JSON.stringify(r));
+				//$("#mover").text("PING " + d[1] + "  " + i);
+				val = typeof r[1] === "function" ? r[1].call(r[2]) : r[1];
+				val ? torm.push(i) : ""; 
+				
+				//torm.push(i);
+			}
+		});
+		//remove outdated element from array
+		torm.forEach(function(t,i){
+			lh.utils.ta.splice(t,1);
+		});
+		//$("#mover").text("process " + JSON.stringify(lh.utils.ta));
+	}
+	
+	var processID;
+	//
+	lh.utils.startProcess = function(interval){
+		processID = setInterval(
+				function(){lh.utils.processEvent();},
+				interval);
+	}
+	//TODO add a lh.utils.stopProcess
+	
+	
 	/////semantic part
 	lh.sem = {};
 	//TODO : use better nammings for properties
@@ -76,6 +123,9 @@
 	
 })();
 
+var tOut = Array();
+
+//TODO : make and object for this
 function initGraphDisplay(){
 	var m = [50, 120, 50, 120],
 	    w = 1280 - m[1] - m[3],
@@ -280,42 +330,72 @@ function initGraphDisplay(){
 	
 	//////////// mouseOver Related code
 	var target; 
+	var onltb = false;
 	
+	function moltb(d){
+		d3.select("#mover").text("MO TOOL BAR");
+		onltb = true;
+	}
+	
+	function moutltb(d){
+		onltb = false;
+	}
+	
+	//TODO : change references for new mo et mout
 	function mo(d,i){
-		target = d;
-		d3.select("#mover").text(getLabel(d));
-		d3.select(this).attr("fill", "orange"); 
 		
-		//var sel1 = d3.select(this).node().parentElement();
-		var tt = this;
-		//alert(this.getComputedTextLength());
-		//var sel1 = ;
-		//var sel2 = d3.select(this)[0][0].parentNode;
-		///test for add bridge function
-		//d3.select(this)
-		//insert("g","text")
-		d3.select(this.parentNode).append("g")
-		//sel1.append("g")
-			.attr("transform", "translate(" + (this.getComputedTextLength() + 10) + "," + (-25) + ")")
-			.attr("id", "localToolBar")
-			.append("image")
-				.attr("x",0).attr("y",0)
-				.attr("preserveAspectRatio","xMidYMid meet")
-				.attr("viewBox","0 0 30 30")
-				.attr("width",30).attr("height",30)
-				.attr("xlink:href","img/bridge-stone-new.png")
-				.on("click", function(){alert("toto")})
-			;
+		//if there is no already a localtoolbar, add one
+		if (d3.select(this).select("g #localToolBar").empty()){
+			target = d;
+			d3.select("#mover").text(getLabel(d));
+			var txtNode =  d3.select(this).select("text");
+			txtNode.attr("fill", "orange");
+			
+			d3.select(this).append("g")
+				.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
+				.attr("id", "localToolBar")
+				.append("image")
+					.attr("x",0).attr("y",0)
+					.attr("preserveAspectRatio","xMidYMid meet")
+					.attr("viewBox","0 0 30 30")
+					.attr("width",30).attr("height",30)
+					.attr("xlink:href","img/bridge-stone-new.png")
+					.on("click", function(){alert("toto")})
+					.on("mouseover",moltb)
+					.on("mouseout",moutltb)
+				;
+		}
+		
+		//reatach mo;
+		//d3.select(this).on("mouseover",mo);
+	}
+		
+	
+	lh.utils.startProcess(200);
+	
+	function rmTB(){
+		if(onltb) return false;
+		d3.select(this).select("text").attr("fill", null);
+		//d3.select(this).select("g #localToolBar").remove();
+		gnode = d3.select(this).selectAll("g #localToolBar");
+		if (gnode == []){
+			alert("null");
+		}
+		gnode.remove();
+		return true;
 	}
 	
 	function mout(d,i){
-		target = d;
-		d3.select("#mover").text(getLabel(d));
-		d3.select(this).attr("fill","");
-		
-		d3.select(this.parentNode).select("g #localToolBar").remove();
-		
+		//node = this;
+		lh.utils.addTevent(rmTB,this, 5000);
 	}
+	
+	/*function moutDelay(d,i){
+		node = this;
+		setInterval(function(){mout(d,node);},3000);
+		test = "yo";
+	  }*/
+	
 	////////////end mouseOver Related code
 	
 	function dragstart(d,i){
@@ -490,8 +570,16 @@ function initGraphDisplay(){
 	  var nodeEnter = node.enter().append("g")
 	      .attr("class", "node")
 	      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-	      //.on("click", click)
+	     
+	      //.style("padding-right", "200px")
+	      .on("mouseover", mo)
+	      //set a delay on the mouseOut as the toolbar don't diseapear immedialty and let the user the time to reach the toolbar
+	      //.on("mouseout", moutDelay)
+	      .on("mouseout", mout)
 	      ;
+	  
+	  //$(nodeEnter).delegate("mouseover", function(){mo(this);});
+	  //$(nodeEnter).delegate("mouseout", function(){mout(this);});
 	
 	  nodeEnter.append("circle")
 	      .attr("r", 1e-6)
@@ -511,8 +599,8 @@ function initGraphDisplay(){
 	        .style("fill-opacity", 1e-6)
 	        .call(dragdrop)
 	        .on("dblclick", doubleClick)
-	        .on("mouseover", mo)
-	        .on("mouseout", mout);
+	        //.on("mouseover", mo)
+	        //.on("mouseout", mout)
 	        ;
 	
 	  // Transition nodes to their new position.
