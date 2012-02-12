@@ -123,7 +123,9 @@
 	
 })();
 
-var tOut = Array();
+//var tOut = Array();
+var ltb ;
+var tout; // timeout variable
 
 //TODO : make and object for this
 function initGraphDisplay(){
@@ -334,6 +336,7 @@ function initGraphDisplay(){
 	
 	function moltb(d){
 		d3.select("#mover").text("MO TOOL BAR");
+		clearTimeout(tout);
 		onltb = true;
 	}
 	
@@ -341,8 +344,87 @@ function initGraphDisplay(){
 		onltb = false;
 	}
 	
-	//TODO : change references for new mo et mout
+	var curPnode;
+	//var ltb ;
+	//var tout; // timeout variable
+	 
+	function buildToolBar(parentNode){
+		
+		var txtNode =  d3.select(parentNode).select("text");
+		txtNode.attr("fill", "orange");
+		
+		ltbnode = d3.select(parentNode).append("g");
+		
+		ltbnode
+			.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
+			.attr("id", "localToolBar")
+			.append("image")
+				.attr("x",0).attr("y",0)
+				.attr("preserveAspectRatio","xMidYMid meet")
+				.attr("viewBox","0 0 30 30")
+				.attr("width",30).attr("height",30)
+				.attr("xlink:href","img/bridge-stone-new.png")
+				.on("click", function(){alert("toto");})
+				.on("mouseover",moltb)
+				.on("mouseout",moutltb)
+			;
+		result = ltbnode.node();
+	}
+		
+	
+	//TODO : rename to : attach
 	function mo(d,i){
+		
+		if (!onDragAndDrop){
+			yo = "";
+			if (ltb){
+				rmTB(ltb);
+				clearTimeout(tout);
+			}
+			ltb = buildToolBar(this);
+		}
+		
+		
+		/*if(curPnode){rmTB(curPnode)};
+		curPnode = this;
+		//if there is no already a localtoolbar, add one
+		if (d3.select(this).select("g #localToolBar").empty()){
+			target = d;
+			d3.select("#mover").text(getLabel(d));
+			//TODO : ltb(this)
+			ltb = buildToolBar(this);
+		}*/
+		
+		//reatach mo;
+		//d3.select(this).on("mouseover",mo);
+	}
+	
+	function rmTB(pnode){
+		//alert("totto");
+		
+		d3.select(pnode.parentNode).select("text").attr("fill", null);
+		
+		//pnode.remove();
+		gnode = d3.select(pnode).selectAll("g #localToolBar");
+		gnode.remove();
+		ltb = undefined;
+		return true;
+	}
+	
+	
+	function mout(d,i){
+		if(!onDragAndDrop){
+			node = this;
+			//lh.utils.addTevent(rmTB,this, 5000);
+			
+			//ltb.remove();
+			tout = setTimeout( function(){rmTB(node);}, 1000);
+		}
+		
+		
+	}
+	//TODO : change references for new mo et mout
+	/*function mo(d,i){
 		
 		//if there is no already a localtoolbar, add one
 		if (d3.select(this).select("g #localToolBar").empty()){
@@ -368,27 +450,29 @@ function initGraphDisplay(){
 		
 		//reatach mo;
 		//d3.select(this).on("mouseover",mo);
-	}
+	}*/
 		
+	
+	
 	
 	lh.utils.startProcess(200);
 	
-	function rmTB(){
-		if(onltb) return false;
-		d3.select(this).select("text").attr("fill", null);
-		//d3.select(this).select("g #localToolBar").remove();
-		gnode = d3.select(this).selectAll("g #localToolBar");
-		if (gnode == []){
-			alert("null");
-		}
-		gnode.remove();
-		return true;
-	}
+//	function rmTB(){
+//		if(onltb) return false;
+//		d3.select(this).select("text").attr("fill", null);
+//		//d3.select(this).select("g #localToolBar").remove();
+//		gnode = d3.select(this).selectAll("g #localToolBar");
+//		if (gnode == []){
+//			alert("null");
+//		}
+//		gnode.remove();
+//		return true;
+//	}
 	
-	function mout(d,i){
-		//node = this;
-		lh.utils.addTevent(rmTB,this, 5000);
-	}
+//	function mout(d,i){
+//		//node = this;
+//		lh.utils.addTevent(rmTB,this, 5000);
+//	}
 	
 	/*function moutDelay(d,i){
 		node = this;
@@ -401,7 +485,7 @@ function initGraphDisplay(){
 	function dragstart(d,i){
 		txt = "start Drag :" + getLabel(d);
 		//d3.select("#debug").text(txt);
-		//onDragAndDrop = true;
+		onDragAndDrop = true;
 	};
 	function dragmove(d,i){
 		pnode = d3.select(this.parentNode);
@@ -438,7 +522,7 @@ function initGraphDisplay(){
 		}
 		//if not respect contraint, redraw
 		else{ update(d.ingraph,d);}
-		//onDragAndDrop = false;
+		onDragAndDrop = false;
 		
 	};
 	
