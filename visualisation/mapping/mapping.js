@@ -333,6 +333,7 @@ function initGraphDisplay(){
 	//////////// mouseOver Related code
 	var target; 
 	var onltb = false;
+	var onDragAndDrop = false;
 	
 	function moltb(d){
 		d3.select("#mover").text("MO TOOL BAR");
@@ -368,7 +369,7 @@ function initGraphDisplay(){
 				.on("mouseover",moltb)
 				.on("mouseout",moutltb)
 			;
-		result = ltbnode.node();
+		return ltbnode.node();
 	}
 		
 	
@@ -383,7 +384,11 @@ function initGraphDisplay(){
 			}
 			ltb = buildToolBar(this);
 		}
-		
+		else {
+			target = d
+			var txtNode =  d3.select(this).select("text");
+			txtNode.attr("fill", "red");
+		};
 		
 		/*if(curPnode){rmTB(curPnode)};
 		curPnode = this;
@@ -416,9 +421,11 @@ function initGraphDisplay(){
 		if(!onDragAndDrop){
 			node = this;
 			//lh.utils.addTevent(rmTB,this, 5000);
-			
 			//ltb.remove();
 			tout = setTimeout( function(){rmTB(node);}, 1000);
+		}
+		else{
+			d3.select(this).select("text").attr("fill", null);
 		}
 		
 		
