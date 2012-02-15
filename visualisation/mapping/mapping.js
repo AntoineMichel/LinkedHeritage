@@ -134,7 +134,9 @@ function initGraphDisplay(){
 	    h = 800 - m[0] - m[2],
 	    tby = 0,
 	    i = 0,
-	    duration = 500
+	    duration = 500,
+	    //distance between the circle and the text
+	    textOffset = 10
 	    ;
 	
 	var tree = d3.layout.tree()
@@ -175,7 +177,6 @@ function initGraphDisplay(){
 		
 		toolBar.append("image")
 			.attr("x",0).attr("y",0)
-			
 			.attr("preserveAspectRatio","xMidYMid meet")
 			.attr("viewBox","0 0 30 30")
 			.attr("width",30).attr("height",30)
@@ -240,7 +241,7 @@ function initGraphDisplay(){
 	//commodity function to get and set label to extract
 	//TODO : use the getProp val intead
 	function getLabel(d){
-		res = getPropValue("prefLabel",d);
+		res = lh.sem.getPropValue("prefLabel",d);
 		if (!res) res = "---racine---";
 		return res;
 	}
@@ -282,6 +283,30 @@ function initGraphDisplay(){
 	  }
 	  update(d.ingraph, d);
 	}
+	
+	$("#info-box").dialog({
+		autoOpen: false,
+		height: 300,
+		width: 350,
+		//modal: true,
+		buttons: {
+			/*"Save changes": function() {
+				
+				n = lh.modify.save();
+				update(n.ingraph,n);
+				$( this ).dialog( "close" );
+			},*/
+			"Close": function() {
+				
+				//n = lh.modify.cancel();
+				//update(n.ingraph,n);
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			
+		}
+	});
 	
 	//jqueryui dialog box
 	$( "#dialog-form" ).dialog({
@@ -345,6 +370,116 @@ function initGraphDisplay(){
 		onltb = false;
 	}
 	
+	var onCreateLink = false;
+	
+	//TODO : remove this ??
+	function createLinkClick(d){
+		nl = {};
+		//nl.source = d;
+		//first parent is the localToolBar, second is the g.node
+		nl.source = this.parentNode.parentNode;
+		mapLinks.push(nl);
+		//alert("new link");
+		
+		onCreateLink = true
+	}
+	
+	function targetLinkClick(d){
+		//alert("click");
+		$( "#info-box" ).dialog( "open" );
+		log = "";
+		var ev = d3.event;
+		log += "<p> mouse x = "+d3.event.clientX + "  " + "mouse y = " +d3.event.clientY+"</p>"
+		
+		//var tbox = this.getBBox();
+  	  	//var tbox = d.target.getBoundingClientRect();
+  	  
+  	  	var sbox = this.getBBox();
+		log += "<p> bbox = " + sbox.x + "  " + sbox.y + "</p>";
+  	  	var sbox1 = this.getClientRects();
+  	  	log += "<p> clientsRects = " + sbox1[0].top + "  " + sbox1[0].left + "</p>";
+  	  	var sbox2 = this.getCTM();
+  	  	log += "<p> CTM = " + sbox2.f + "</p>";
+  	  
+  	  	var sbox0 = this.getBoundingClientRect();
+  	  	log += "<p> clientsRects = " + sbox0.top + "  " + sbox0.left + "</p>";
+  	  
+  	  	//var svg = document.getElementsByTagName('svg')[0];
+  	  	//var pt = svg.createSVGPoint();
+  	  	var pt = (this.ownerSVGElement || this).createSVGPoint();
+  	  	pt.x = sbox0.top;
+  	  	pt.y = sbox0.left;
+  	  	
+  	  	var matrix = this.getScreenCTM();
+  	  	var res = pt.matrixTransform(matrix);
+  	  	/*pt.x = sbox0.top;
+  	  	pt.y = sbox0.left;
+  	  	var res = pt.matrixTransform(matrix.inverse());
+  	  
+  	  	var gtl = this.getTransformToElement(svg).inverse();
+  	  	var res = res.matrixTransform(gtl);*/
+  	  	
+  	  	
+  	  	/*pt.x = sbox.x;
+	  	pt.y = sbox.y;
+	  	var res = pt.matrixTransform(sbox2);
+  	  	*/
+  	  	
+  	  	
+		$("#info-box #infoZone").html(log);
+		
+		res = d3.svg.mouse(this.parentNode);
+		
+		n = this;
+		
+		//var m2 = this.getTransformToElement(this.ownerSVGElement);
+		m = this.getCTM();
+		
+		//pt.x = d.x + n.getComputedTextLength() + textOffset;
+		//pt.y = d.y;
+		pt.x = this.getComputedTextLength() + textOffset;
+		pt.y = 0;
+		
+		pt = pt.matrixTransform(m);
+		
+		var graphLink = svgZone.append("g")
+			//.attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+			.attr("id", "graphLink");
+		graphLink.append("path")
+		//graphOne.append("path")
+			.attr("class", "link")
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
+	      .attr("d", function(r) {
+	    	  //return diagonal([[30,30],[res.x,res.y]]);
+	    	  //return diagonal([[60, 60],[d.x + n.getComputedTextLength() + textOffset,d.y]]);
+	    	  return diagonal([[60, 60],[pt.x,pt.y]]);
+	      });
+		
+		/*graphOne.append("g")
+			.attr("class", "node")
+			.attr("transform", "translate(" + res[0] + "," + res[1] + ")")
+			.append("circle")
+				.attr("r", 5);
+		*/
+		if(onCreateLink){
+			//alert("link target");
+			onCreateLink = false;
+			nl = mapLinks.pop();
+			//nl.target = d;
+			nl.target = this;
+			mapLinks.push(nl);
+			
+			//var bb = this.getBBox();
+			//alert(bb.x + "    " + bb.y);
+			
+			graphLink();
+		}
+		
+		
+		
+	}
+	
+	
 	var curPnode;
 	//var ltb ;
 	//var tout; // timeout variable
@@ -365,10 +500,25 @@ function initGraphDisplay(){
 				.attr("viewBox","0 0 30 30")
 				.attr("width",30).attr("height",30)
 				.attr("xlink:href","img/bridge-stone-new.png")
-				.on("click", function(){alert("toto");})
+				.on("click", createLinkClick)
 				.on("mouseover",moltb)
 				.on("mouseout",moutltb)
 			;
+		
+		ltbnode
+		.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
+		.attr("id", "localToolBar")
+		.append("image")
+			.attr("transform", "translate(30,0)")
+			.attr("x",0).attr("y",0)
+			.attr("preserveAspectRatio","xMidYMid meet")
+			.attr("viewBox","0 0 30 30")
+			.attr("width",30).attr("height",30)
+			.attr("xlink:href","img/redo_32x32.png")
+			//TODO : put the dragdrop event on the text, but as D3 V2.7.4 there is a conflict with click event
+			// start with this and do a bug example : http://bl.ocks.org/1378144
+			.call(dragdrop)
+		;
 		return ltbnode.node();
 	}
 		
@@ -462,7 +612,7 @@ function initGraphDisplay(){
 	
 	
 	
-	lh.utils.startProcess(200);
+	//lh.utils.startProcess(200);
 	
 //	function rmTB(){
 //		if(onltb) return false;
@@ -490,11 +640,13 @@ function initGraphDisplay(){
 	////////////end mouseOver Related code
 	
 	function dragstart(d,i){
-		txt = "start Drag :" + getLabel(d);
+		//alert("");
+		//txt = "start Drag :" + getLabel(d);
 		//d3.select("#debug").text(txt);
 		onDragAndDrop = true;
 	};
 	function dragmove(d,i){
+		
 		pnode = d3.select(this.parentNode);
 		
 		d.x += d3.event.x+10;
@@ -683,15 +835,17 @@ function initGraphDisplay(){
 	       ;
 	
 	  nodeEnter.append("text")
-	    	.attr("x", function(d) { return 10; })
+	    	.attr("x", function(d) { return textOffset; })
 	        .attr("dy", ".35em")
 	        .attr("text-anchor", function(d) { return "start"; })
 	        .text(getLabel)
 	        .style("fill-opacity", 1e-6)
-	        .call(dragdrop)
+	        //event management
+	        .on("click", targetLinkClick)
 	        .on("dblclick", doubleClick)
-	        //.on("mouseover", mo)
-	        //.on("mouseout", mout)
+	        //.call(dragdrop)
+	        
+	        //
 	        ;
 	
 	  // Transition nodes to their new position.
@@ -772,5 +926,94 @@ function initGraphDisplay(){
 	    d.y0 = d.y;
 	  });
 	}
+	
+	
+	////////// Graph for link
+	//l = {};
+	mapLinks = new Array();
+	//graphLink();
+	
+	function graphLink(){
+		var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+		.attr("id", "graphLink");
+		
+		
+		var link = graphLink.selectAll("path.link")
+	      //.data(tree.links(nodes), function(d) { return d.target.id; });
+		.data(mapLinks, function(d){return d.id || (d.id = ++i);});
+	
+	  // Enter any new links at the parent's previous position.
+	  link.enter().insert("path", "g")
+	      .attr("class", "link")
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
+	      .attr("d", function(d) {
+	    	  var tbox = d.target.getBBox();
+	    	  //var tbox = d.target.getBoundingClientRect();
+	    	  
+	    	  var sbox = d.target.getBBox();
+	    	  var sbox1 = d.target.getClientRects();
+	    	  var sbox2 = d.target.getCTM();
+	    	  var sbox3 = d.target.getScreenCTM();
+	    	  var sbox0 = d.target.getBoundingClientRect();
+	    	  
+	    	  var svg = document.getElementsByTagName('svg')[0];
+	    	  var pt = svg.createSVGPoint();
+	    	  pt.x = sbox.x;
+	    	  pt.y = sbox.y;
+	    	  //var res = pt.matrixTransform(svg.getScreenCTM().inverse());
+	    	  //var res = pt.matrixTransform(sbox3);
+	    	  //var res = pt.matrixTransform(sbox2);
+	    	  
+	    	  var gtl = d.target.getTransformToElement(svg);
+	    	  var res = pt.matrixTransform(gtl);
+	    	  
+	    	  return diagonal([[res.x,res.y],[10,10]]);
+	    	  //return diagonal([[50,50],[10,10]]);
+	    	  
+	        //return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	    	 // return diagonal([[sbox.top,sbox.left],[tbox.top,tbox.left]]);
+	    	  //return diagonal([[sbox.x,sbox.y],[tbox.x,tbox.y]]);
+	    	  //return diagonal([[sbox.x+sbox.height,sbox.y+sbox.width],[tbox.x+tbox.height,tbox.y+tbox.width]]);
+	      })
+	      ;
+	    //TODO : voir pour avoir une transition clean
+	    /*.transition()
+	      .duration(duration)
+	     //.attr("d", diagonal)
+	    .attr("d", function(d) {
+	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	      })
+		;
+	
+	  // Transition links to their new position.
+	  link.transition()
+	      .duration(duration)
+		.attr("d", function(d) {
+			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	      })
+		;
+		
+	
+	  // Transition exiting nodes to the parent's new position.
+	  link.exit().transition()
+	      .duration(duration)
+	      .attr("d", function(d) {
+	    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
+	      })
+	      .remove();
+	*/
+		
+		
+		/*
+		graphLink.append("path")
+	      .attr("class", "link")
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
+	      .attr("d", function(d) {
+	        //return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	    	  return diagonal([[15,20],[30,30]]);
+	      })
+		*/
+	}
+	
 	
 }
