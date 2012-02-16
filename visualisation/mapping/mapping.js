@@ -161,6 +161,10 @@ function initGraphDisplay(){
 		.attr("id", "graphTwo");	
 	}
 	
+	//init the graph zone for links
+	var graphLink = svgZone.append("g")
+		.attr("id", "graphLink");
+	
 	/** tool bar related code */
 	var toolBar = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
 					.attr("id", "toolBar");
@@ -246,25 +250,25 @@ function initGraphDisplay(){
 		return res;
 	}
 	
-	        function setLabel(d,label){
-			if (d.prefLabel == null){
-				//c'est la racine, voir commment on le traite
-				//return "---racine---";
-	            return d;
-			}
-			else{
-				d.prefLabel.filter(function(p){ return p["@language"] == d.ingraph.curLang;})[0]["@literal"] = label
-				return d;
-	                        
-			}
+    function setLabel(d,label){
+		if (d.prefLabel == null){
+			//c'est la racine, voir commment on le traite
+			//return "---racine---";
+            return d;
 		}
+		else{
+			d.prefLabel.filter(function(p){ return p["@language"] == d.ingraph.curLang;})[0]["@literal"] = label
+			return d;
+                        
+		}
+	}
 	     //end function to extract
 	
 	/*********** end get and set labels **/
 	
 	function collapsed(d){
-	    	 return d._children != null;
-	     }
+		return d._children != null;
+	}
 	
 	/*******************************
 	 * Interaction stuff
@@ -371,6 +375,23 @@ function initGraphDisplay(){
 	}
 	
 	var onCreateLink = false;
+	var nodeLinkObj = null;
+	
+	function linkMouseMove(){
+		//allow click event to passthrow the link
+		var offset = 3;
+		//log = "<p> create mouse mouve "+ Date.now() +"</p>";
+		//ev = d3.event;
+		mp = d3.svg.mouse(graphLink.node());
+		//log += "<p>"+ mp[0] + "  " + mp[1] + "</p>";
+		$("#info-box #infoZone").html(log);
+		//get the starting point coord
+		var pt = nodeLinkObj.node().getPointAtLength(0);
+		nodeLinkObj.attr("d", function(r) {
+			return diagonal([[pt.x,pt.y],[mp[0]+offset,mp[1]+offset]]);
+		});
+		
+	}
 	
 	//TODO : remove this ??
 	function createLinkClick(d){
@@ -381,98 +402,48 @@ function initGraphDisplay(){
 		mapLinks.push(nl);
 		//alert("new link");
 		
+		$( "#info-box" ).dialog( "open" );
+		log = "<p> create link </p>";
+		$("#info-box #infoZone").html(log);
+		
+		//create an svg point 
+		var pt = (nl.source.ownerSVGElement || nl.source).createSVGPoint();
+		
+		//TODO : use js native selector ? better perf than the D3 one ?
+		pt.x = d3.select(nl.source).select("text").node().getComputedTextLength() + textOffset;
+		pt.y = 0;
+		
+		m = nl.source.getCTM();
+		pt = pt.matrixTransform(m);
+		
+		nodeLinkObj = graphLink.append("path")
+			.attr("class", "tempLink")
+			.attr("d", function(r) {
+	    	  //return diagonal([[60, 60],[pt.x,pt.y]]);
+				return diagonal([[pt.x,pt.y],[pt.x,pt.y]]);
+	      });
+		
+		d3.select(nl.source.ownerSVGElement).on("mousemove",linkMouseMove);
 		onCreateLink = true
 	}
 	
 	function targetLinkClick(d){
-		//alert("click");
-		$( "#info-box" ).dialog( "open" );
-		log = "";
-		var ev = d3.event;
-		log += "<p> mouse x = "+d3.event.clientX + "  " + "mouse y = " +d3.event.clientY+"</p>"
-		
-		//var tbox = this.getBBox();
-  	  	//var tbox = d.target.getBoundingClientRect();
-  	  
-  	  	var sbox = this.getBBox();
-		log += "<p> bbox = " + sbox.x + "  " + sbox.y + "</p>";
-  	  	var sbox1 = this.getClientRects();
-  	  	log += "<p> clientsRects = " + sbox1[0].top + "  " + sbox1[0].left + "</p>";
-  	  	var sbox2 = this.getCTM();
-  	  	log += "<p> CTM = " + sbox2.f + "</p>";
-  	  
-  	  	var sbox0 = this.getBoundingClientRect();
-  	  	log += "<p> clientsRects = " + sbox0.top + "  " + sbox0.left + "</p>";
-  	  
-  	  	//var svg = document.getElementsByTagName('svg')[0];
-  	  	//var pt = svg.createSVGPoint();
-  	  	var pt = (this.ownerSVGElement || this).createSVGPoint();
-  	  	pt.x = sbox0.top;
-  	  	pt.y = sbox0.left;
-  	  	
-  	  	var matrix = this.getScreenCTM();
-  	  	var res = pt.matrixTransform(matrix);
-  	  	/*pt.x = sbox0.top;
-  	  	pt.y = sbox0.left;
-  	  	var res = pt.matrixTransform(matrix.inverse());
-  	  
-  	  	var gtl = this.getTransformToElement(svg).inverse();
-  	  	var res = res.matrixTransform(gtl);*/
-  	  	
-  	  	
-  	  	/*pt.x = sbox.x;
-	  	pt.y = sbox.y;
-	  	var res = pt.matrixTransform(sbox2);
-  	  	*/
-  	  	
-  	  	
-		$("#info-box #infoZone").html(log);
-		
-		res = d3.svg.mouse(this.parentNode);
-		
-		n = this;
-		
-		//var m2 = this.getTransformToElement(this.ownerSVGElement);
-		m = this.getCTM();
-		
-		//pt.x = d.x + n.getComputedTextLength() + textOffset;
-		//pt.y = d.y;
-		pt.x = this.getComputedTextLength() + textOffset;
-		pt.y = 0;
-		
-		pt = pt.matrixTransform(m);
-		
-		var graphLink = svgZone.append("g")
-			//.attr("transform", "translate(" + m[3] + "," + m[0] + ")")
-			.attr("id", "graphLink");
-		graphLink.append("path")
-		//graphOne.append("path")
-			.attr("class", "link")
-	      //.attr("text", function(d){ return "YO " + d.target.y;})
-	      .attr("d", function(r) {
-	    	  //return diagonal([[30,30],[res.x,res.y]]);
-	    	  //return diagonal([[60, 60],[d.x + n.getComputedTextLength() + textOffset,d.y]]);
-	    	  return diagonal([[60, 60],[pt.x,pt.y]]);
-	      });
-		
-		/*graphOne.append("g")
-			.attr("class", "node")
-			.attr("transform", "translate(" + res[0] + "," + res[1] + ")")
-			.append("circle")
-				.attr("r", 5);
-		*/
-		if(onCreateLink){
-			//alert("link target");
+		if (nodeLinkObj){
+			
 			onCreateLink = false;
 			nl = mapLinks.pop();
-			//nl.target = d;
-			nl.target = this;
+			
+			//the event is on the text, we want the parent g node
+			nl.target = this.parentElement;
 			mapLinks.push(nl);
 			
-			//var bb = this.getBBox();
-			//alert(bb.x + "    " + bb.y);
+			d3.select(nl.source.ownerSVGElement).on("mousemove",null);
 			
-			graphLink();
+			UpdateGraphLink();
+			
+			//remove the nodeLinkObj from the dom
+			nodeLinkObj.remove();
+			nodeLinkObj = null;
 		}
 		
 		
@@ -929,51 +900,47 @@ function initGraphDisplay(){
 	
 	
 	////////// Graph for link
+	
+	function getPointForLink(n){
+		var pt = (n.ownerSVGElement || n.source).createSVGPoint();
+		
+		//TODO : use js native selector ? better perf than the D3 one ?
+		pt.x = d3.select(n).select("text").node().getComputedTextLength() + textOffset;
+		pt.y = 0;
+		
+		m = n.getCTM();
+		return pt.matrixTransform(m);
+	}
+	
 	//l = {};
 	mapLinks = new Array();
 	//graphLink();
 	
-	function graphLink(){
-		var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
-		.attr("id", "graphLink");
+	function UpdateGraphLink(){
+		//var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+		//.attr("id", "graphLink");
+		//mapLinks = [1,2,3,4,5,6];
+		//var ll = graphLink.selectAll("path.link").remove();
 		
-		
-		var link = graphLink.selectAll("path.link")
+		var link = graphLink.selectAll("path.mapLink")
 	      //.data(tree.links(nodes), function(d) { return d.target.id; });
-		.data(mapLinks, function(d){return d.id || (d.id = ++i);});
+		.data(mapLinks, function(d,i){
+			//alert(JSON.stringify(d));
+			return d.id || (d.id = ++i);});
 	
 	  // Enter any new links at the parent's previous position.
 	  link.enter().insert("path", "g")
-	      .attr("class", "link")
+	      .attr("class", "mapLink")
 	      //.attr("text", function(d){ return "YO " + d.target.y;})
 	      .attr("d", function(d) {
-	    	  var tbox = d.target.getBBox();
-	    	  //var tbox = d.target.getBoundingClientRect();
 	    	  
-	    	  var sbox = d.target.getBBox();
-	    	  var sbox1 = d.target.getClientRects();
-	    	  var sbox2 = d.target.getCTM();
-	    	  var sbox3 = d.target.getScreenCTM();
-	    	  var sbox0 = d.target.getBoundingClientRect();
 	    	  
-	    	  var svg = document.getElementsByTagName('svg')[0];
-	    	  var pt = svg.createSVGPoint();
-	    	  pt.x = sbox.x;
-	    	  pt.y = sbox.y;
-	    	  //var res = pt.matrixTransform(svg.getScreenCTM().inverse());
-	    	  //var res = pt.matrixTransform(sbox3);
-	    	  //var res = pt.matrixTransform(sbox2);
+	    	  ptSource = getPointForLink(d.source);
+	    	  ptTarget = getPointForLink(d.target);
 	    	  
-	    	  var gtl = d.target.getTransformToElement(svg);
-	    	  var res = pt.matrixTransform(gtl);
-	    	  
-	    	  return diagonal([[res.x,res.y],[10,10]]);
-	    	  //return diagonal([[50,50],[10,10]]);
-	    	  
-	        //return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	    	 // return diagonal([[sbox.top,sbox.left],[tbox.top,tbox.left]]);
-	    	  //return diagonal([[sbox.x,sbox.y],[tbox.x,tbox.y]]);
-	    	  //return diagonal([[sbox.x+sbox.height,sbox.y+sbox.width],[tbox.x+tbox.height,tbox.y+tbox.width]]);
+	    	  //TODO : see if it's on the right or left graph
+	    	  //and then choose if target point is on the start or the end of the text
+	    	  return diagonal([[ptSource.x,ptSource.y],[ptTarget.x,ptTarget.y]]);
 	      })
 	      ;
 	    //TODO : voir pour avoir une transition clean
@@ -1002,7 +969,8 @@ function initGraphDisplay(){
 	      })
 	      .remove();
 	*/
-		
+	  
+	  link.exit().remove();
 		
 		/*
 		graphLink.append("path")
