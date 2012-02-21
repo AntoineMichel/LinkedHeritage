@@ -1,4 +1,13 @@
 (function(){
+	
+	//add the last() utility to array
+	if(!Array.prototype.last) {
+	    Array.prototype.last = function() {
+	        return this[this.length - 1];
+	    }
+	}
+
+	
 	lh.utils = {};
 	lh.utils.langSelector = function(selectNode, langArray, changeFunc){
 		$(selectNode).html(function(){
@@ -129,9 +138,11 @@ var tout; // timeout variable
 
 //TODO : make and object for this
 function initGraphDisplay(){
-	var m = [50, 120, 50, 120],
-	    w = 1280 - m[1] - m[3],
-	    h = 800 - m[0] - m[2],
+	var m = [10, 120, 50, 120],
+	    //w = 1280 - m[1] - m[3],
+	    //h = 800 - m[0] - m[2],
+		w = 1280,
+		h = 800,
 	    tby = 0,
 	    i = 0,
 	    duration = 500,
@@ -140,34 +151,64 @@ function initGraphDisplay(){
 	    ;
 	
 	var tree = d3.layout.tree()
-	    .size([h, w])	
+	    .size([h - m[0] - m[2], w - m[1] - m[3]])	
 		;
 	
 	var diagonal = d3.svg.line()
 			.interpolate("step-before")
 			;
 	
+	//build toolbar zone
+	var toolBarZone = d3.select("#chart").append("svg")
+						.attr("id","toolBarZone")
+						.attr("width", w)
+						//.attr("height", h + m[0] + m[2])
+						//TODO : define a global size for toolbar height
+						.attr("height", 30)
+						;
+	var toolBar = toolBarZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
+					.attr("id", "toolBar");
+	
+	//build graphics zone
 	var svgZone = d3.select("#chart").append("svg")
-			.attr("width", w + m[1] + m[3])
-			.attr("height", h + m[0] + m[2]);
+					.attr("id","graphicsZone")
+					.attr("width", w)
+					.attr("height", h);
 	
 	var graphOne = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 		.attr("id", "graphOne");
+	graphOne.transformArray = [m[3],m[0]];
+	
 	var graphTwo;
 	initGraphTwo();
 	
 	function initGraphTwo(){
 		graphTwo = svgZone.append("g").attr("transform", "translate(" + w/2 + "," + m[0] + ")")
-		.attr("id", "graphTwo");	
+		.attr("id", "graphTwo");
+		graphTwo.transformArray = [w/2,m[0]];
 	}
+	
+	//initscrollbarZone
+	var scrollWidth = 15,
+	scrollMargin = 15;
+	
+	function initScrollBarZone(graphName){
+		var xt = graphName.transformArray[0] - scrollWidth - scrollMargin;
+		graphName.hscroll = d3.select(graphName.node().ownerSVGElement).append("g")
+		.attr("class","hscroll")
+		.attr("transform","translate("+ xt +",0)");
+		//(m[3]-scrollWidth-scrollMargin)
+	}
+	//TODO : init for graphTwo
+	initScrollBarZone(graphOne);
+	initScrollBarZone(graphTwo);
+	//
 	
 	//init the graph zone for links
 	var graphLink = svgZone.append("g")
 		.attr("id", "graphLink");
 	
-	/** tool bar related code */
-	var toolBar = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
-					.attr("id", "toolBar");
+	
 	
 	function initToolBar(){
 		
@@ -413,8 +454,7 @@ function initGraphDisplay(){
 		pt.x = d3.select(nl.source).select("text").node().getComputedTextLength() + textOffset;
 		pt.y = 0;
 		
-		m = nl.source.getCTM();
-		pt = pt.matrixTransform(m);
+		pt = pt.matrixTransform(nl.source.getCTM());
 		
 		nodeLinkObj = graphLink.append("path")
 			.attr("class", "tempLink")
@@ -424,7 +464,7 @@ function initGraphDisplay(){
 	      });
 		
 		d3.select(nl.source.ownerSVGElement).on("mousemove",linkMouseMove);
-		onCreateLink = true
+		onCreateLink = true;
 	}
 	
 	function targetLinkClick(d){
@@ -762,20 +802,110 @@ function initGraphDisplay(){
 	
 	}
 	
+	//scroll bar related code
+	function scrollDrag(){
+		var y = parseInt(d3.select(this).attr("y")),
+        ny = y + d3.event.dy,
+        //w = parseInt(d3.select(this).attr("width")),
+        hb = parseInt(d3.select(this).attr("height")),
+        //factor = parseInt(d3.select(this).attr("factor"))
+        factor = d3.select(this).attr("factor")
+        //f, nf, new_data, rects;
+        ;
+
+		if ( ny < 0 || ny + hb > h ) return;
+
+		//d3.select(this).attr("x", nx);
+		d3.select(this).attr("y", ny);
+		//var yo = "g #"+d3.select(this).attr("graphRef");
+		
+		var gr = d3.select("g#"+d3.select(this).attr("graphRef"));
+			//.attr("transform","translate(" + m[3] + "," + (m[0] - y) + ")")
+		var xt = gr.node().getCTM();
+		gr.attr("transform","translate(" + xt.e + "," + (m[0] - (ny * factor)) + ")")
+			;
+		UpdateGraphLink();
+	}
 	
+	
+	
+	function scrollbar(graphName,nodes){
+		//horizontal scrollbar, y position of the last node is > of the graph size
+		var ygm = nodes.last().y;
+		//alert(ygm);
+		//TODO : clean the m[2], find a better / more close step
+		//have a look to attr height of the bar
+		var oversize = ygm - h +m[0] +m[2];
+		if (oversize > 0){
+			//alert("build scroll");
+			//TODO ? : put the g.hscroll as object of graphName ?? (as here we get the svg root of the graph)
+			//var nt =graphName.node().ownerSVGElement;
+			//n = graphName.node();
+			
+			/*var hscroll = d3.select(graphName.node().ownerSVGElement).append("g")
+							.attr("class","hscroll")
+							.attr("transform","translate("+ (m[3]-scrollWidth-scrollMargin) +",0)");
+			*/
+			//var rect = hscroll.append("rect")
+			//var scn = d3.select(graphName.hscroll.node()).select("rect");
+			var scn = graphName.hscroll.select("rect");
+			//set a min size for the scrollbar
+			var minSize = 50;
+			var targetSize = h-oversize < 0 ? minSize : h-oversize ;
+			var factor = oversize/h < 1 ? 1 : oversize/(h - minSize);
+			if(!scn.empty()){
+				scn.attr("height", targetSize);
+				scn.attr("factor", factor);
+			}
+			else{
+				graphName.hscroll.append("rect")
+	            //.attr("transform", "translate(0, " + (height + margin.bottom) + ")")
+				
+				//reference to graph in order to easyli access to transform when dragging
+				.attr("graphRef",d3.select(graphName.node()).attr("id"))
+	            .attr("class", "mover")
+	            .attr("x", 0)
+	            .attr("y", 0)
+	            //.attr("height", selectorHeight)
+	            //.attr("width", Math.round(parseFloat(numBars * width)/data.length))
+	            .attr("height", targetSize)
+	            .attr("factor", factor)
+	            .attr("width", scrollWidth)
+	            .attr("pointer-events", "all")
+	            //.attr("cursor", "ew-resize") // for horizontal
+	            .attr("cursor", "ns-resize")
+	            .call(d3.behavior.drag().on("drag", scrollDrag));
+			}
+		}
+		else{
+			//alert("too");
+			var sb = graphName.hscroll.select("rect");
+			if (!sb.empty()){
+				
+				//set tranform of the graph to origin
+				//d3.select("g#"+sb.attr("graphRef")).attr("transform","translate(" + m[3] + "," + m[0] + ")");
+				var xt = graphName.transformArray[0];
+				d3.select("g#"+sb.attr("graphRef")).attr("transform","translate(" + xt + "," + m[0] + ")");
+				//alert("do the remove of the bar");
+				sb.remove();
+			}
+			
+		}
+		
+	}
+	
+	//TODO : remove the source element as it's the graphName.root
 	function update(graphName, source) {
 	
 	  // Compute the new tree layout.
-	  //var nodes = tree.nodes(root).reverse();
-	  //TODO remplace root by source here
-	  //var nodes = tree.nodes(root);
 	  var nodes = tree.nodes(graphName.root);
-		
-	  debugTest = 1;
+	  
 	  // Normalize for fixed-depth.
-	  //nodes.forEach(function(d) { d.y = d.depth * 180; });
 	  nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 ;});
-	
+	  
+	  //build a scrollbar ?
+	  scrollbar(graphName,nodes);
+	  
 	  // Update the nodes…
 	  var node = graphName.selectAll("g.node")
 	      .data(nodes, function(d) { return d.id || (d.id = ++i); });
@@ -853,7 +983,10 @@ function initGraphDisplay(){
 	
 	  nodeExit.select("text")
 	      .style("fill-opacity", 1e-6);
-	
+	  
+	  //TODO : remove
+	  var test = tree.links(nodes);
+	  
 	  // Update the links…
 	  var link = graphName.selectAll("path.link")
 	      .data(tree.links(nodes), function(d) { return d.target.id; });
@@ -861,7 +994,7 @@ function initGraphDisplay(){
 	  // Enter any new links at the parent's previous position.
 	  link.enter().insert("path", "g")
 	      .attr("class", "link")
-	      .attr("text", function(d){ return "YO " + d.target.y;})
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
 	      .attr("d", function(d) {
 	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
 	      })
@@ -908,8 +1041,16 @@ function initGraphDisplay(){
 		pt.x = d3.select(n).select("text").node().getComputedTextLength() + textOffset;
 		pt.y = 0;
 		
-		m = n.getCTM();
-		return pt.matrixTransform(m);
+		return pt.matrixTransform(n.getCTM());
+	}
+	
+	function getCTMDiagonal(d){
+		ptSource = getPointForLink(d.source);
+  	  	ptTarget = getPointForLink(d.target);
+  	  
+  	  	//TODO : see if it's on the right or left graph
+  	  	//and then choose if target point is on the start or the end of the text
+  	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x,ptTarget.y]]);
 	}
 	
 	//l = {};
@@ -933,14 +1074,7 @@ function initGraphDisplay(){
 	      .attr("class", "mapLink")
 	      //.attr("text", function(d){ return "YO " + d.target.y;})
 	      .attr("d", function(d) {
-	    	  
-	    	  
-	    	  ptSource = getPointForLink(d.source);
-	    	  ptTarget = getPointForLink(d.target);
-	    	  
-	    	  //TODO : see if it's on the right or left graph
-	    	  //and then choose if target point is on the start or the end of the text
-	    	  return diagonal([[ptSource.x,ptSource.y],[ptTarget.x,ptTarget.y]]);
+	    	  return getCTMDiagonal(d);
 	      })
 	      ;
 	    //TODO : voir pour avoir une transition clean
@@ -950,10 +1084,14 @@ function initGraphDisplay(){
 	    .attr("d", function(d) {
 	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
 	      })
-		;
-	
+		;*/
+		
+		//update link position if nodes moved
+		link.transition().attr("d", function(d){
+			return getCTMDiagonal(d);
+		})
 	  // Transition links to their new position.
-	  link.transition()
+	  /*link.transition()
 	      .duration(duration)
 		.attr("d", function(d) {
 			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
