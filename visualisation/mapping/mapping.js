@@ -554,19 +554,6 @@ function initGraphDisplay(){
 			var txtNode =  d3.select(this).select("text");
 			txtNode.attr("fill", "red");
 		};
-		
-		/*if(curPnode){rmTB(curPnode)};
-		curPnode = this;
-		//if there is no already a localtoolbar, add one
-		if (d3.select(this).select("g #localToolBar").empty()){
-			target = d;
-			d3.select("#mover").text(getLabel(d));
-			//TODO : ltb(this)
-			ltb = buildToolBar(this);
-		}*/
-		
-		//reatach mo;
-		//d3.select(this).on("mouseover",mo);
 	}
 	
 	function rmTB(pnode){
@@ -592,66 +579,7 @@ function initGraphDisplay(){
 		else{
 			d3.select(this).select("text").attr("fill", null);
 		}
-		
-		
-	}
-	//TODO : change references for new mo et mout
-	/*function mo(d,i){
-		
-		//if there is no already a localtoolbar, add one
-		if (d3.select(this).select("g #localToolBar").empty()){
-			target = d;
-			d3.select("#mover").text(getLabel(d));
-			var txtNode =  d3.select(this).select("text");
-			txtNode.attr("fill", "orange");
-			
-			d3.select(this).append("g")
-				.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
-				.attr("id", "localToolBar")
-				.append("image")
-					.attr("x",0).attr("y",0)
-					.attr("preserveAspectRatio","xMidYMid meet")
-					.attr("viewBox","0 0 30 30")
-					.attr("width",30).attr("height",30)
-					.attr("xlink:href","img/bridge-stone-new.png")
-					.on("click", function(){alert("toto")})
-					.on("mouseover",moltb)
-					.on("mouseout",moutltb)
-				;
-		}
-		
-		//reatach mo;
-		//d3.select(this).on("mouseover",mo);
-	}*/
-		
-	
-	
-	
-	//lh.utils.startProcess(200);
-	
-//	function rmTB(){
-//		if(onltb) return false;
-//		d3.select(this).select("text").attr("fill", null);
-//		//d3.select(this).select("g #localToolBar").remove();
-//		gnode = d3.select(this).selectAll("g #localToolBar");
-//		if (gnode == []){
-//			alert("null");
-//		}
-//		gnode.remove();
-//		return true;
-//	}
-	
-//	function mout(d,i){
-//		//node = this;
-//		lh.utils.addTevent(rmTB,this, 5000);
-//	}
-	
-	/*function moutDelay(d,i){
-		node = this;
-		setInterval(function(){mout(d,node);},3000);
-		test = "yo";
-	  }*/
-	
+	}	
 	////////////end mouseOver Related code
 	
 	function dragstart(d,i){
@@ -899,8 +827,15 @@ function initGraphDisplay(){
 	}
 	
 	//TODO : remove the source element as it's the graphName.root
+	//TODO : rename as updateDisplay()
 	function update(graphName, source) {
+		updateGraphDisplay(graphName, source);
+		d3.transition().delay(duration).duration(duration/2)
+			.each("end", UpdateGraphLink);
+		//UpdateGraphLink();
+	}
 	
+	function updateGraphDisplay(graphName, source) {	
 	  // Compute the new tree layout.
 	  var nodes = tree.nodes(graphName.root);
 	  
@@ -963,7 +898,12 @@ function initGraphDisplay(){
 	  // Transition nodes to their new position.
 	  var nodeUpdate = node.transition()
 	      .duration(duration)
-	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+	      //after the endUpdateGraphLink(); of the first transition, a second one for link
+	      //.transition()
+	      //.duration(duration)
+	      //.
+	      ;
 	
 	  nodeUpdate.select("circle")
 	      .attr("r", 4.5)
@@ -1044,6 +984,7 @@ function initGraphDisplay(){
 	    d.x0 = d.x;
 	    d.y0 = d.y;
 	  });
+	  
 	}
 	
 	
@@ -1076,7 +1017,7 @@ function initGraphDisplay(){
   	  
   	  	//TODO : see if it's on the right or left graph
   	  	//and then choose if target point is on the start or the end of the text
-  	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x,ptTarget.y]]);
+  	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x/2,ptSource.y],[ptTarget.x,ptTarget.y]]);
 	}
 	
 	//l = {};
@@ -1118,7 +1059,7 @@ function initGraphDisplay(){
 		;*/
 		
 		//update link position if nodes moved
-		link.transition().attr("d", function(d){
+		link.transition().duration(duration).attr("d", function(d){
 			return getCTMDiagonal(d);
 		})
 	  // Transition links to their new position.
