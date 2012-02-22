@@ -439,7 +439,10 @@ function initGraphDisplay(){
 		nl = {};
 		//nl.source = d;
 		//first parent is the localToolBar, second is the g.node
-		nl.source = this.parentNode.parentNode;
+		//nl.source = this.parentNode.parentNode;
+		nl.source = d;
+		//TODO : see how to remove the use of nl.sourceDOM
+		nl.sourceDOM = this.parentNode.parentNode;
 		mapLinks.push(nl);
 		//alert("new link");
 		
@@ -448,13 +451,13 @@ function initGraphDisplay(){
 		$("#info-box #infoZone").html(log);
 		
 		//create an svg point 
-		var pt = (nl.source.ownerSVGElement || nl.source).createSVGPoint();
+		var pt = (nl.sourceDOM.ownerSVGElement || nl.sourceDOM).createSVGPoint();
 		
 		//TODO : use js native selector ? better perf than the D3 one ?
-		pt.x = d3.select(nl.source).select("text").node().getComputedTextLength() + textOffset;
+		pt.x = d3.select(nl.sourceDOM).select("text").node().getComputedTextLength() + textOffset;
 		pt.y = 0;
 		
-		pt = pt.matrixTransform(nl.source.getCTM());
+		pt = pt.matrixTransform(nl.sourceDOM.getCTM());
 		
 		nodeLinkObj = graphLink.append("path")
 			.attr("class", "tempLink")
@@ -463,7 +466,7 @@ function initGraphDisplay(){
 				return diagonal([[pt.x,pt.y],[pt.x,pt.y]]);
 	      });
 		
-		d3.select(nl.source.ownerSVGElement).on("mousemove",linkMouseMove);
+		d3.select(nl.sourceDOM.ownerSVGElement).on("mousemove",linkMouseMove);
 		onCreateLink = true;
 	}
 	
@@ -474,10 +477,11 @@ function initGraphDisplay(){
 			nl = mapLinks.pop();
 			
 			//the event is on the text, we want the parent g node
-			nl.target = this.parentElement;
+			nl.target = d;
+			nl.targetDOM = this.parentElement;
 			mapLinks.push(nl);
 			
-			d3.select(nl.source.ownerSVGElement).on("mousemove",null);
+			d3.select(nl.sourceDOM.ownerSVGElement).on("mousemove",null);
 			
 			UpdateGraphLink();
 			
@@ -901,7 +905,9 @@ function initGraphDisplay(){
 	  var nodes = tree.nodes(graphName.root);
 	  
 	  // Normalize for fixed-depth.
-	  nodes.forEach(function(d , i) { d.x = d.depth * 20 ; d.y = i * 15 ;});
+	  nodes.forEach(function(d , i) { 
+		  d.x = d.depth * 20 ; d.y = i * 15 ;
+		  });
 	  
 	  //build a scrollbar ?
 	  scrollbar(graphName,nodes);
@@ -920,7 +926,12 @@ function initGraphDisplay(){
 	      //set a delay on the mouseOut as the toolbar don't diseapear immedialty and let the user the time to reach the toolbar
 	      //.on("mouseout", moutDelay)
 	      .on("mouseout", mout)
+	      /*.call(function(d){
+	    	  var toto = "yo";
+	      })*/
 	      ;
+	  
+	  nodeEnter.each(function(d){d.displayed = true;});
 	  
 	  //$(nodeEnter).delegate("mouseover", function(){mo(this);});
 	  //$(nodeEnter).delegate("mouseout", function(){mout(this);});
@@ -976,13 +987,17 @@ function initGraphDisplay(){
 	  var nodeExit = node.exit().transition()
 	      .duration(duration)
 	      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-	      .remove();
+	      .remove()
+	      ;
 	
 	  nodeExit.select("circle")
 	      .attr("r", 1e-6);
 	
 	  nodeExit.select("text")
 	      .style("fill-opacity", 1e-6);
+	  
+	  //nodeExit.remove();
+	  nodeExit.each(function(d){d.displayed = false;});
 	  
 	  //TODO : remove
 	  var test = tree.links(nodes);
@@ -1035,7 +1050,8 @@ function initGraphDisplay(){
 	////////// Graph for link
 	
 	function getPointForLink(n){
-		var pt = (n.ownerSVGElement || n.source).createSVGPoint();
+		//var pt = (n.ownerSVGElement || n.source).createSVGPoint();
+		var pt = n.ownerSVGElement.createSVGPoint();
 		
 		//TODO : use js native selector ? better perf than the D3 one ?
 		pt.x = d3.select(n).select("text").node().getComputedTextLength() + textOffset;
@@ -1045,8 +1061,18 @@ function initGraphDisplay(){
 	}
 	
 	function getCTMDiagonal(d){
-		ptSource = getPointForLink(d.source);
-  	  	ptTarget = getPointForLink(d.target);
+		/*ptSource = getPointForLink(d.sourceDOM);
+  	  	ptTarget = getPointForLink(d.targetDOM);*/
+		var tt = d.source.ingraph.selectAll("g.node");
+		var oneN = tt.data([d.source], function(v){
+			return v.id;
+		});
+		var sourceDOM = d.source.ingraph.selectAll("g.node").data([d.source], function(v){
+			return v.id;
+			});
+		var targetDOM = d.target.ingraph.selectAll("g.node").data([d.target], function(v){return v.id;});
+		ptSource = getPointForLink(sourceDOM.node());
+  	  	ptTarget = getPointForLink(targetDOM.node());
   	  
   	  	//TODO : see if it's on the right or left graph
   	  	//and then choose if target point is on the start or the end of the text
@@ -1063,10 +1089,15 @@ function initGraphDisplay(){
 		//mapLinks = [1,2,3,4,5,6];
 		//var ll = graphLink.selectAll("path.link").remove();
 		
+		var filtered = mapLinks.filter(function(d,i){
+			var test = "tt";
+			var n = d3.select(d.source);
+			return (d.source.displayed && d.target.displayed);
+		});
+		
 		var link = graphLink.selectAll("path.mapLink")
-	      //.data(tree.links(nodes), function(d) { return d.target.id; });
-		.data(mapLinks, function(d,i){
-			//alert(JSON.stringify(d));
+		//.data(mapLinks, function(d,i){
+			.data(filtered, function(d,i){
 			return d.id || (d.id = ++i);});
 	
 	  // Enter any new links at the parent's previous position.
