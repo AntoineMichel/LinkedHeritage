@@ -1,4 +1,21 @@
 
+== For alpha 0.0.1 ==
+
+integration into stanbol pages
+save modification on server
+
+improve local toolbox display
+cleaning old code
+
+
+== Visualisation ==
+
+
+adding properties
+add mouse rool event to deal with scrollbar
+display properties of link with text along link
+manage links displays for link in the same graph
+
 == Thesaurus adding process ==
 
 * allow a "create from scratch process"

@@ -12,11 +12,15 @@
 	//just for init the object and get all async call finished
 	skosOnto.init = function(){};
 	
+	skosOnto.getReferencesOK = false;
+	//IDEA : skosOnto.addToWaitList() : add function to a waitlist processed when data retrieval is ok.
+	
 	//TODO : create error messages when null, wait a wile more
 	skosOnto.getReferences = function(){
 	if (propertyRefArray == null){
 		//TODO : error message
-		initPropArrays();}
+		initPropArrays();
+		}
 		return propertyRefArray;
 	};
 
@@ -36,6 +40,7 @@
 			dataType : "json",
 			success: function(data){
 				propertyValArray = data.values;
+				skosOnto.getReferencesOK = true;
 			}
 		});
 
@@ -44,10 +49,9 @@
 			type : "GET",
 			dataType : "json",
 			success: function(data){
-				skosOnto.propertyRefArray = data.values;
+				propertyRefArray = data.values;
 			}
 		});
 }
 
 })();
-var sko = new skosOnto();

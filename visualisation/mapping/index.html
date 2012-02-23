@@ -24,8 +24,11 @@
     <script type="text/javascript" src="lh.mapping.modify.js"></script>
     <script type="text/javascript">
     	$(document).ready(function(){
+    		//init the skos skosOnto object
+    		//TODO : clean this, as futher references are on skosOnto and not on var sko
+    		var sko = new skosOnto();
+    		
     		initGraphDisplay();
-    		skosOnto.init();
     	});
 
 
@@ -74,6 +77,8 @@ rect.mover {
             fill-opacity: 0.1;
         }
 
+/** Jquery ui style overwrite **/
+#tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
 
 
     </style>
@@ -118,13 +123,19 @@ rect.mover {
     		<select id="modifyLang" size="1"></select>
     	</div>
     	<div id="tabZone">
-    	
+    		<div id="tabs">
+    			<ul></ul>
+			</div>
     	</div>
 	</div>
     
     <div id="info-box" title="Informations">
     	<div id="infoZone">
     	</div>
+	</div>
+    
+    <div id="TOL-box" title="Select the type of the link">
+    	<p>drop down with type of links</p>
 	</div>
     
   </body>

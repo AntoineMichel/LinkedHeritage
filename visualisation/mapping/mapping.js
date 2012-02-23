@@ -11,7 +11,7 @@
 	lh.utils = {};
 	lh.utils.langSelector = function(selectNode, langArray, changeFunc){
 		$(selectNode).html(function(){
-			res = "";
+			var res = "";
 			langArray.forEach(function(v, i) {
 				res += "<option value=" + v + ">" + v + "</option>";
 			});
@@ -120,7 +120,8 @@
 			if(!result){
 				result = {};
 				d[p] = result;
-			}}
+			}
+		}
 		
 		//if (d[p])
 		//cloning stuff... Do shallow, here, see if deep clone needed
@@ -128,9 +129,12 @@
 		var original = jQuery.extend({}, result);
 		modif = setValues(result,"@literal",label,lang);
 		return [original, jQuery.extend({}, modif)];
-	}
+	};
 	
 })();
+
+//NS for graph function
+lh.graph = {};
 
 //var tOut = Array();
 var ltb ;
@@ -209,6 +213,15 @@ function initGraphDisplay(){
 		.attr("id", "graphLink");
 	
 	
+	/*****
+	 * Tool bar related code
+	 */
+	
+	function openInfoBox(){
+		$( "#info-box" ).dialog( "open" );
+		log = "<p> Detailled information of the selected node </p>";
+		$("#info-box #infoZone").html(log);
+	}
 	
 	function initToolBar(){
 		
@@ -225,13 +238,16 @@ function initGraphDisplay(){
 			.attr("preserveAspectRatio","xMidYMid meet")
 			.attr("viewBox","0 0 30 30")
 			.attr("width",30).attr("height",30)
-			.attr("xlink:href","img/bridge-stone-new.png")
-			.on("click", function(){alert("toto")});
+			.attr("xlink:href","img/info_32x32.png")
+			.on("click", openInfoBox);
 			;
 	}
 	
 	initToolBar();
 	
+	/**
+	 * en toolbar related code
+	 */
 	
 	/*** init display of the first graph ***/
 	var graphOneURL = getURLargs()["uri"];
@@ -326,7 +342,7 @@ function initGraphDisplay(){
 	    d.children = d._children;
 	    d._children = null;
 	  }
-	  update(d.ingraph, d);
+	  lh.graph.update(d.ingraph, d);
 	}
 	
 	$("#info-box").dialog({
@@ -353,31 +369,8 @@ function initGraphDisplay(){
 		}
 	});
 	
-	//jqueryui dialog box
-	$( "#dialog-form" ).dialog({
-		autoOpen: false,
-		height: 300,
-		width: 350,
-		modal: true,
-		buttons: {
-			"Save changes": function() {
-				
-				n = lh.modify.save();
-				update(n.ingraph,n);
-				$( this ).dialog( "close" );
-			},
-			Cancel: function() {
-				
-				n = lh.modify.cancel();
-				update(n.ingraph,n);
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			
-		}
-	});
 	
+	lh.modify.initModifyUI("#dialog-form");
 	
 	function doubleClick(d) {
 		//create the dialog form 
@@ -418,14 +411,65 @@ function initGraphDisplay(){
 	var onCreateLink = false;
 	var nodeLinkObj = null;
 	
+	var $tolBox = $("#TOL-box").dialog({
+		autoOpen: false,
+		autoSize : true,
+		/*height: 300,
+		width: 350,*/
+		//modal: true,
+		buttons: {
+			"Save changes": function() {
+				alert("TODO : function that save");
+				/*n = lh.modify.save();
+				update(n.ingraph,n);*/
+				$( this ).dialog( "close" );
+			},
+			"Close": function() {
+				
+				//n = lh.modify.cancel();
+				//update(n.ingraph,n);
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function() {
+			
+		}
+	});
+	
+	//init the content of the TOLDialog
+	function initTOLDialogContent(){
+		if (skosOnto.getReferencesOK){
+			var reflinks = skosOnto.getReferences();
+			var valSelectText = "Select a value"; 
+			if (reflinks[0] != valSelectText){
+				reflinks.splice(0, 0, valSelectText);
+			}
+			var opt = $("<select id='tolSelect' size='1'> </option>");
+			lh.utils.langSelector(opt,reflinks, function(){
+				alert("value changed !");
+			});
+			$tolBox.html(opt);
+		}
+		else{
+			setTimeout(function(){initTOLDialogContent();},100);
+		}
+		
+		
+	}
+	setTimeout(function(){initTOLDialogContent();},100);
+	
+	//end init the TOLDialog content
+	function TOLdialog(x,y){
+		
+		$tolBox.dialog("option", "position", [x,y] );
+		$tolBox.dialog("open");
+	}
+	
 	function linkMouseMove(){
 		//allow click event to passthrow the link
 		var offset = 3;
-		//log = "<p> create mouse mouve "+ Date.now() +"</p>";
-		//ev = d3.event;
 		mp = d3.svg.mouse(graphLink.node());
-		//log += "<p>"+ mp[0] + "  " + mp[1] + "</p>";
-		$("#info-box #infoZone").html(log);
+		
 		//get the starting point coord
 		var pt = nodeLinkObj.node().getPointAtLength(0);
 		nodeLinkObj.attr("d", function(r) {
@@ -446,9 +490,7 @@ function initGraphDisplay(){
 		mapLinks.push(nl);
 		//alert("new link");
 		
-		$( "#info-box" ).dialog( "open" );
-		log = "<p> create link </p>";
-		$("#info-box #infoZone").html(log);
+		
 		
 		//create an svg point 
 		var pt = (nl.sourceDOM.ownerSVGElement || nl.sourceDOM).createSVGPoint();
@@ -488,10 +530,11 @@ function initGraphDisplay(){
 			//remove the nodeLinkObj from the dom
 			nodeLinkObj.remove();
 			nodeLinkObj = null;
+			
+			var x = d3.event.clientX+10;
+			var y = d3.event.clientY+10;
+			TOLdialog(x,y);	
 		}
-		
-		
-		
 	}
 	
 	
@@ -620,10 +663,10 @@ function initGraphDisplay(){
 			childrenOfTarget = target.children;
 		}
 		childrenOfTarget.push(d);
-		update(target.ingraph, target);
+		lh.graph.update(target.ingraph, target);
 		}
 		//if not respect contraint, redraw
-		else{ update(d.ingraph,d);}
+		else{ lh.graph.update(d.ingraph,d);}
 		onDragAndDrop = false;
 		
 	};
@@ -673,7 +716,7 @@ function initGraphDisplay(){
 				graphName.langArray,
 				function(){ //run some code when "onchange" event fires
 					graphName.curLang = this.options[this.selectedIndex].value; 
-					update(graphName,graphName.root);
+					lh.graph.update(graphName,graphName.root);
 				});
 	}
 	
@@ -730,7 +773,7 @@ function initGraphDisplay(){
 	  }
 	
 	  graphName.root.children.forEach(collapse);
-	  update(graphName, graphName.root);
+	  lh.graph.update(graphName, graphName.root);
 	
 	}
 	
@@ -828,7 +871,7 @@ function initGraphDisplay(){
 	
 	//TODO : remove the source element as it's the graphName.root
 	//TODO : rename as updateDisplay()
-	function update(graphName, source) {
+	lh.graph.update = function(graphName, source) {
 		updateGraphDisplay(graphName, source);
 		d3.transition().delay(duration).duration(duration/2)
 			.each("end", UpdateGraphLink);
