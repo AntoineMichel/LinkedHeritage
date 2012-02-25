@@ -1,0 +1,52 @@
+{
+  "@context": {
+    "closeMatch": "http://www.w3.org/2004/02/skos/core#closeMatch",
+    "@coerce": {
+      "@iri": [
+        "http://www.culture-terminology.org/ontoHisto/change",
+        "http://www.culture-terminology.org/ontoHisto/comment",
+        "http://www.culture-terminology.org/ontoHisto/date",
+        "http://www.culture-terminology.org/ontoHisto/diff",
+        "http://www.culture-terminology.org/ontoHisto/element",
+        "http://www.culture-terminology.org/ontoHisto/from",
+        "http://www.culture-terminology.org/ontoHisto/historyOf",
+        "http://www.culture-terminology.org/ontoHisto/newValue",
+        "http://www.culture-terminology.org/ontoHisto/subject",
+        "http://www.culture-terminology.org/ontoHisto/user"
+      ]
+    }
+  },
+  "@subject": [
+    {
+      "@subject": "http://diff1.yo",
+      "@type": "http://www.culture-terminology.org/ontoHisto/diff",
+      "http://www.culture-terminology.org/ontoHisto/element": "http://useAlitteral.here.OR.a-property-in-the-histo-onto/property",
+      "http://www.culture-terminology.org/ontoHisto/newValue": "closeMatch"
+    },
+    {
+      "@subject": "http://diff2.yo",
+      "@type": "http://www.culture-terminology.org/ontoHisto/diff",
+      "http://www.culture-terminology.org/ontoHisto/element": "http://useAlitteral.here.OR.a-property-in-the-histo-onto/object",
+      "http://www.culture-terminology.org/ontoHisto/newValue": "http://culture-heritage/existing/SKOS/concept/TARGETofLINK"
+    },
+    {
+      "@subject": "http://www.culture-terminology.org/mapping/152bdeac-2b6a-4d43-985f-5dddb9368805",
+      "@type": "http://www.culture-terminology.org/ontoHisto/history",
+      "http://www.culture-terminology.org/ontoHisto/change": "urn:change-id-1",
+      "http://www.culture-terminology.org/ontoHisto/historyOf": "http://cuture-heritage.org/thesaurus/organisationID/nameTest2"
+    },
+    {
+      "@subject": "urn:change-id-1",
+      "@type": "http://www.culture-terminology.org/ontoHisto/change",
+      "http://www.culture-terminology.org/ontoHisto/comment": "http://useAlitteral.here/a-user-comment-here",
+      "http://www.culture-terminology.org/ontoHisto/date": "http://useAlitteral.here/Date-XML-Format",
+      "http://www.culture-terminology.org/ontoHisto/diff": [
+        "http://diff1.yo",
+        "http://diff2.yo"
+      ],
+      "http://www.culture-terminology.org/ontoHisto/from": "http://useAlitteral.here/0.0.1",
+      "http://www.culture-terminology.org/ontoHisto/subject": "http://culture-heritage/existing/SKOS/concept/1234",
+      "http://www.culture-terminology.org/ontoHisto/user": "http://useAlitteral.here/USER-ID"
+    }
+  ]
+}

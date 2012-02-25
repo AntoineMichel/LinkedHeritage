@@ -56,7 +56,7 @@ public class Skosify implements Skosifier{
 	private String thesaurusName;
 	
 	//TODO : make it configurable
-    private String NSroot = "http://cuture-heritage.org/thesaurus/";
+    private String NSroot = LHbaseURL.lhBaseThesaurus;
     
     //private String jsonConfig;
     
