@@ -52,8 +52,12 @@ curl -X POST --data-urlencode change@add-a-close-match-triple.xml http://localho
 curl -X POST --data-urlencode change@change-a-close-match-triple.xml http://localhost:8080/skosifer/changes
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 3) delete *one* close match property && delete a concept
 =======
 3) delete a close match property && delete a concept
 >>>>>>> a working version of the change ontology with test (have to be automated)
+=======
+3) delete *one* close match property && delete a concept
+>>>>>>> little wording
 curl -X POST --data-urlencode change@delete-a-close-match-triple.xml http://localhost:8080/skosifer/changes
