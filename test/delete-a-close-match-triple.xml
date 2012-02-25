@@ -1,0 +1,53 @@
+<rdf:RDF
+    xmlns:j.0="http://www.culture-terminology.org/ontoHisto/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	> 
+
+<rdf:Description rdf:about="http://www.culture-terminology.org/mapping/711f897f-c971-4c5f-bd9a-d0b5853efc92">
+    <rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/history"/>
+    <j.0:historyOf rdf:resource="http://www.culture-terminology.org/mapping/537d64d8-3b67-4a45-91a1-f0fac24f73f9"/>
+	<!-- TODO : rename change in changeSet ?? -->
+    <j.0:change rdf:resource="urn:change-id-1"/>
+  </rdf:Description>
+
+  <rdf:Description rdf:about="urn:change-id-1">
+    <rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/change"/>
+    <j.0:from rdf:resource="http://useAlitteral.here/0.0.1"/>
+    <j.0:date rdf:resource="http://useAlitteral.here/Date-XML-Format"/>
+    <j.0:user rdf:resource="http://useAlitteral.here/USER-ID"/>
+    <j.0:comment rdf:resource="http://useAlitteral.here/a-user-comment-here"/>
+
+    <j.0:subject rdf:resource="http://subject1.yo"/>
+	<j.0:subject rdf:resource="http://subject2.yo"/>
+    <!--<j.0:diff rdf:resource="http://diff2.yo"/>-->
+  </rdf:Description>
+
+<!-- subject 1 : delete *one* close match property -->
+<rdf:Description rdf:about="http://subject1.yo">
+	<rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/subject"/>
+	<j.0:element rdf:resource="http://culture-heritage/existing/SKOS/concept/1234"/>
+	<j.0:property rdf:resource="http://prop1.1.yo"/>
+  </rdf:Description>
+
+<rdf:Description rdf:about="http://prop1.1.yo">
+	<rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/property"/>
+	<j.0:element rdf:resource="http://www.w3.org/2004/02/skos/core#closeMatch"/>
+	<j.0:newValue rdf:resource="http://www.culture-terminology.org/ontoHisto/delete"/>
+	<j.0:object rdf:resource="http://object1.1.1.yo"/>
+  </rdf:Description>
+	
+<rdf:Description rdf:about="http://object1.1.1.yo">
+    <rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/object"/>
+    <j.0:element rdf:resource="http://culture-heritage/existing/SKOS/concept/TARGET--CHANGED"/>
+  </rdf:Description>
+
+<!-- subject 2: delete a complete subject/concept -->
+<rdf:Description rdf:about="http://subject2.yo">
+	<rdf:type rdf:resource="http://www.culture-terminology.org/ontoHisto/subject"/>
+	<j.0:element rdf:resource="http://culture-heritage/existing/SKOS/concept/CCP2"/>
+	<j.0:newValue rdf:resource="http://www.culture-terminology.org/ontoHisto/delete"/>
+  </rdf:Description>
+
+</rdf:RDF>
+
+

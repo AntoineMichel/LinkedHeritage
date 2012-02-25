@@ -24,8 +24,8 @@ uri:123
 change-id-1
 	a change
 	from versionNumber .
-	crud c|u|d .
-	subject urn:graph-subject-id .
+	crud c|u|d . // removed ??//
+	subject urn:graph-subject-id . //can't be null, if not exist in the graph, parser have to create it//
 	date date-value .
 	user user-id .
 	comment "create a new subject"
@@ -36,3 +36,20 @@ urn:diff-change-id-1-1 .
 	element subject|propertie|object
 	new-value urn:1234|skos:prefLabel|objectValue
 	old-value urn:0000|skos:altLabel|oldObjectValue
+
+
+===== TEST  :
+
+0) create the empty graph
+curl -H "Accept: application/json" "http://localhost:8080/skosifier/graphlink?graphOne=http://cuture-heritage.org/thesaurus/organisationID/nameTest2&graphTwo=http://cuture-heritage.org/thesaurus/organisationID/nameTest6"
+
+0') copy the graph id in test files in history-of node
+
+1) add one concept with 2 closeMatch && one another concept with broaderMatch
+curl -X POST --data-urlencode change@add-a-close-match-triple.xml http://localhost:8080/skosifer/changes
+
+2) modify a close match object && change a property (from broaderMatch to a narrower)
+curl -X POST --data-urlencode change@change-a-close-match-triple.xml http://localhost:8080/skosifer/changes
+
+3) delete a close match property && delete a concept
+curl -X POST --data-urlencode change@delete-a-close-match-triple.xml http://localhost:8080/skosifer/changes

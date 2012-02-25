@@ -24,6 +24,14 @@ curl -H "Accept: application/json" http://localhost:8080/skosifier?uri=http://cu
 
 curl -H "Accept: application/json" http://localhost:8080/skosifier/skosdefinition?type=all|reference|properties
 
+== get graphLink for 2 graphs ==
+
+* curl -H "Accept: application/json" "http://localhost:8080/skosifier/graphlink?graphOne=http://cuture-heritage.org/thesaurus/florent/testFullCSVimport&graphTwo=http://cuture-heritage.org/thesaurus/organisationID/nameTest3"
+
+== send changes set ==
+
+curl -X POST --data-urlencode file@horn1.csv http://localhost:8080/skosifier/changes
+
 == Mapping ==
 //TODO : review it
 
