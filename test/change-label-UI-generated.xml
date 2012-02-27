@@ -1,0 +1,27 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:skos="http://www.w3.org/2004/02/skos/core#" xmlns:h="http://www.culture-terminology.org/ontoHisto/">
+	<h:history rdf:about="http://www.culture-terminology.org/ontoHisto/3ea169ba-9580-4faa-8a47-8822d358191d">
+		<h:historyOf rdf:resource="http://cuture-heritage.org/thesaurus/florent/testFullCSVimport"/>
+	</h:history>
+	
+	<h:change rdf:about="urn:HISTOFILEROOT/4a787f84-1f38-4dbb-9abe-a8a31c52624f">
+		<h:from rdf:resource="http://define.GRAPH.VERSION"/>
+		<h:date rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1330379789385</h:date>
+		<h:user>default user</h:user>
+		<h:subject rdf:resource="urn:HISTOFILEROOT/173c09be-d051-44b8-ab81-ab4a8a4858e1"/>
+	</h:change>
+	
+	<h:subject rdf:about="urn:HISTOFILEROOT/173c09be-d051-44b8-ab81-ab4a8a4858e1">
+		<h:element rdf:resource="http://cuture-heritage.org/thesaurus/florent/testFullCSVimport/1db73638-4c68-42ba-b7f0-4fb2ac9f30b7"/>
+		<h:property rdf:resource="urn:HISTOFILEROOT/af10ea6b-04cb-4417-9e65-28ab4ed7a8f1"/>
+	</h:subject>
+	
+	<h:property rdf:about="urn:HISTOFILEROOT/af10ea6b-04cb-4417-9e65-28ab4ed7a8f1">
+		<h:element rdf:resource="http://www.w3.org/2004/02/skos/core#prefLabel"/>
+		<h:object rdf:resource="urn:HISTOFILEROOT/ef0ea6f4-4d5c-44e0-95ff-4e167d236431"/>
+	</h:property>
+	
+	<h:object rdf:about="urn:HISTOFILEROOT/ef0ea6f4-4d5c-44e0-95ff-4e167d236431">
+		<h:element xml:lang="fr">Quincaillerie FR</h:element>
+		<h:newValue xml:lang="fr">Quincaillerie TTT</h:newValue>
+	</h:object>
+</rdf:RDF>

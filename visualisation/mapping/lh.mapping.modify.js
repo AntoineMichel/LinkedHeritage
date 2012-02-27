@@ -18,6 +18,9 @@
 		    }
 	  };
 	
+	//root node of the current history, need to be initialized with the databank
+	lh.history.hRootNode = {};	
+
 	lh.history.rdfChanges = {};
 	
 	
@@ -44,7 +47,8 @@
 		}
 		
 		
-		
+		//add the change node to the history triple
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:change",changeNode,lh.history.ns));
 		
 		
 		//change triples initialisation
@@ -172,9 +176,9 @@
                   skos: 'http://www.w3.org/2004/02/skos/core#',
                   h: 'http://www.culture-terminology.org/ontoHisto/'} });
 		
-		var hNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
-		lh.history.rdfChanges.add($.rdf.triple(hNode,"a","h:history",lh.history.ns));
-		lh.history.rdfChanges.add($.rdf.triple(hNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
+		lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
 		
 		//d.updatedTriples = {};
 		function createField(val){

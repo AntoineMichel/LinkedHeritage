@@ -287,6 +287,55 @@ public class SkosifierRootResource<e> extends BaseStanbolResource {
     	return res;
     }
     
+    //end point for getting history of a graph
+    @Path("/history")
+    @GET
+    @Consumes(WILDCARD)
+    public Response history(@QueryParam(value = "for") String forgraph,
+    		//@QueryParam(value = "complete") boolean complete,
+            @Context HttpHeaders headers){
+    	
+    	Set<UriRef> l = tcManager.listMGraphs();
+    	Iterator<UriRef> iter = l.iterator();
+    	UriRef o1 = new UriRef(forgraph);
+		System.out.println(o1);
+		boolean finded = false;
+		UriRef graphRef = null;
+    	MGraph mg = null;
+    	while (iter.hasNext() && !finded){
+    		graphRef = iter.next();
+    		mg = tcManager.getMGraph(graphRef);
+    		
+    		Triple tun = new TripleImpl(graphRef, LHOntology.historyOf.getProperty(), o1);
+    		Triple tde = new TripleImpl(graphRef, Properties.RDF_TYPE, LHOntology.history.getProperty());
+    		Collection<Triple> cl = new ArrayList<Triple>();
+    		cl.add(tun);
+    		cl.add(tde);
+    		System.out.print(graphRef);
+    		System.out.print("  ");
+    		System.out.println(mg.containsAll(cl));
+    		
+			if(mg.containsAll(cl)){
+				finded = true;
+			}
+    	}
+    	if(!finded){
+    		//UriRef gref = new UriRef("http://testgraph.com/testLink");
+    		graphRef = new UriRef(LHbaseURL.lhBaseHistory + UUID.randomUUID().toString());
+    		mg = tcManager.createMGraph(graphRef);
+        	mg.add(new TripleImpl(graphRef, Properties.RDF_TYPE, LHOntology.history.getProperty()));
+        	mg.add(new TripleImpl(graphRef, LHOntology.historyOf.getProperty(), o1));
+    	}
+    	
+    	/*if(!complete){
+    		//filter to only get history "metadata's, ie triples of the root
+    		Iterator<Triple> trp = mg.filter(graphRef, null, null);
+    		return okGraphResponse(headers, toCollection(trp));
+    	}*/
+
+    	return okGraphResponse(headers, mg);
+    }
+    
     //end point for commiting changes
     @Path("/changes")
     @POST
@@ -294,23 +343,28 @@ public class SkosifierRootResource<e> extends BaseStanbolResource {
     public Response changeCommit(@FormParam(value ="change") String jsonConfig, 
     								@Context HttpHeaders headers) throws EngineException, IOException {
         
-    	/*String format = TEXT_PLAIN;
-        if (headers.getMediaType() != null) {
-            format = headers.getMediaType().toString();
-        }*/
-        
     	MGraph gToChange = null;
     	
         //TODO : get format from the headers
     	//TODO : check if the json format is created as a parser
         Graph changeGraph = parser.parse(IOUtils.toInputStream(jsonConfig), "application/rdf+xml");
-        
+                
+        //processing history file
         //get history "root"
         Iterator<Triple> histories = changeGraph.filter(null, Properties.RDF_TYPE, LHOntology.history.getProperty());
         
         System.out.println("get histories");
         while(histories.hasNext()){
         	Triple h = histories.next();
+        	
+            //add this changes to the stored graph(s) history(ies)
+        	//TODO : this piece of code add all the history graph, potentially many histories
+        	//... ask clerezza how to get all related triples of a "base"/"root" triple
+        	MGraph historyG = tcManager.getMGraph((UriRef)h.getSubject());
+        	historyG.addAll(toCollection(changeGraph.filter(null, null, null)));
+        	//end adding the change graph to the global history graph
+        	
+        	//process
         	//get the related graph, only get the first one (no mean to have many graphs here ?)
         	Triple trpForGraphToChange = changeGraph.filter(h.getSubject(),LHOntology.historyOf.getProperty(),null).next();
         	//get the modifiable graph

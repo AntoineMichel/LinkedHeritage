@@ -26,7 +26,12 @@ curl -H "Accept: application/json" http://localhost:8080/skosifier/skosdefinitio
 
 == get graphLink for 2 graphs ==
 
-* curl -H "Accept: application/json" "http://localhost:8080/skosifier/graphlink?graphOne=http://cuture-heritage.org/thesaurus/florent/testFullCSVimport&graphTwo=http://cuture-heritage.org/thesaurus/organisationID/nameTest3"
+curl -H "Accept: application/json" "http://localhost:8080/skosifier/graphlink?graphOne=http://cuture-heritage.org/thesaurus/florent/testFullCSVimport&graphTwo=http://cuture-heritage.org/thesaurus/organisationID/nameTest3"
+
+== get an history file for a graph (create a new one if not existing) ==
+
+curl -H "Accept: application/rdf+xml" "http://localhost:8080/skosifier/history?for=http://cuture-heritage.org/thesaurus/florent/testFullCSVimport
+
 
 == send changes set ==
 
