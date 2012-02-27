@@ -9,7 +9,79 @@
 	lh.history.changes = {};
 	lh.history.changes.values = [];
 	
+	///RDF management
+	lh.history.ns = {
+		    namespaces: { h: 'http://www.culture-terminology.org/ontoHisto/'
+		    	//,rdf:"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+		    }
+	  };
+	
+	lh.history.rdfChanges = {};
+	
+	
 	lh.history.crudop = function(op, objectNode,p,o,l){
+		
+		
+		var changeNode = $.rdf.resource("<urn:changeNODE-DO-DYN-ID>");
+		var changeSubject = $.rdf.resource("<urn:changeSUBJECT-do-DYN-UUID>");
+		var changeProperty = $.rdf.resource("<urn:changePROPERTY-do-DYN-UUID>");
+		var changeObject = $.rdf.resource("<urn:changeOBJECT-do-DYN-UUID>");
+		
+		var nodeSubject = $.rdf.resource("<"+objectNode["@subject"]+">");
+		var nodeProperty = $.rdf.resource("<"+p+">");
+		var oldval = lh.sem.getPropValue(p,objectNode,l);
+		var nodeObjectOldVal = null;
+		if(oldval != null){
+			var nodeObjectOldVal = $.rdf.literal(oldval,{lang:l});
+		}
+		//delete the object if new val = "";
+		var nodeObjectNewVal = $.rdf.literal(o,{lang:l});
+		if (o == ""){
+			nodeObjectNewVal = $.rdf.resource("h:delete",lh.history.ns);
+		}
+		
+		
+		
+		
+		
+		//change triples initialisation
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"a","h:change",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:from","<http://define.GRAPH.VERSION>",lh.history.ns));
+		//TODO : deal with proper date format
+		var dt = $.rdf.literal(Date.now());
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:date",dt,lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:user",'"default user"',lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:subject",changeSubject,lh.history.ns));
+		
+		//subject triples
+		lh.history.rdfChanges.add($.rdf.triple(changeSubject,"a","h:subject",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeSubject,"h:element",nodeSubject,lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeSubject,"h:property",changeProperty,lh.history.ns));
+		
+		//property triples
+		lh.history.rdfChanges.add($.rdf.triple(changeProperty,"a","h:property",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeProperty,"h:element",nodeProperty,lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeProperty,"h:object",changeObject,lh.history.ns));
+		
+		//object triples
+		lh.history.rdfChanges.add($.rdf.triple(changeObject,"a","h:object",lh.history.ns));
+		if(nodeObjectOldVal != null){
+			lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:element",nodeObjectOldVal,lh.history.ns));
+			lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:newValue",nodeObjectNewVal,lh.history.ns));
+		}
+		else{
+			lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:element",nodeObjectNewVal,lh.history.ns));
+		}
+		
+		
+		
+		var yo = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+		var serializer = new XMLSerializer();
+		alert(serializer.serializeToString(yo));
+		alert("after");
+		
+		/****** old style generation and property change (see setpropvalue ***/
+		/** TODO : remove generation but keep value changing **/
 		c = {};
 		c.crud = op;
 		c.subject = objectNode["@subject"];
@@ -22,6 +94,7 @@
 		c.date = Date.now();
 		c.user ="defaultUser";
 		lh.history.changes.values.push(c);
+		
 	};
 	
 	lh.history.update = function(objectNode,p,o,l){
@@ -91,8 +164,22 @@
 	lh.modify.buildDialog = function(d){
 		node = d;
 		//init the changes object
-		//changes = {};
-		//changes.values = [];
+		lh.history.rdfChanges = $.rdf.databank([
+               /*'<photo1.jpg> dc:creator <http://www.blogger.com/profile/1109404> .',
+                '<http://www.blogger.com/profile/1109404> foaf:img <photo1.jpg> .'
+                ,'<http://www.blogger.com/profile/1109404> a foaf:Person .'*/
+                //,
+                //'<urn:change-DO-DYN-ID> a <urn:TEST>'
+              ], 
+              { base: 'http://www.example.org/',
+                namespaces: { 
+                  dc: 'http://purl.org/dc/elements/1.1/', 
+                  foaf: 'http://xmlns.com/foaf/0.1/',
+                  h: 'http://www.culture-terminology.org/ontoHisto/'} });
+		
+		var hNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
+		lh.history.rdfChanges.add($.rdf.triple(hNode,"a","h:history",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(hNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
 		
 		//d.updatedTriples = {};
 		function createField(val){
@@ -201,8 +288,6 @@
 			var langSel = $("#modifyLang")[0];
 			var l = langSel.options[langSel.selectedIndex].value;
 			lh.history.create(node,propName,null,l);
-			
-			test = "tabbas";
 		}
 		
 		function getActiveLinks(){

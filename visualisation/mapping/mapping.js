@@ -688,6 +688,7 @@ function initGraphDisplay(){
 			headers : {"Accept":"application/json"},
 			dataType : "json",
 			success: function(data){
+				graphName.graphURI = graphURI;
 				displayGraph(graphName, data);
 			}
 		});
