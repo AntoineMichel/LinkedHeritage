@@ -11,7 +11,9 @@
 	
 	///RDF management
 	lh.history.ns = {
-		    namespaces: { h: 'http://www.culture-terminology.org/ontoHisto/'
+		    namespaces: { 
+		    	h: 'http://www.culture-terminology.org/ontoHisto/',
+		    	skos: 'http://www.w3.org/2004/02/skos/core#'
 		    	//,rdf:"http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 		    }
 	  };
@@ -22,13 +24,14 @@
 	lh.history.crudop = function(op, objectNode,p,o,l){
 		
 		
-		var changeNode = $.rdf.resource("<urn:changeNODE-DO-DYN-ID>");
-		var changeSubject = $.rdf.resource("<urn:changeSUBJECT-do-DYN-UUID>");
-		var changeProperty = $.rdf.resource("<urn:changePROPERTY-do-DYN-UUID>");
-		var changeObject = $.rdf.resource("<urn:changeOBJECT-do-DYN-UUID>");
+		var changeNode = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
+		var changeSubject = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
+		var changeProperty = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
+		var changeObject = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
 		
 		var nodeSubject = $.rdf.resource("<"+objectNode["@subject"]+">");
-		var nodeProperty = $.rdf.resource("<"+p+">");
+		//var nodeProperty = $.rdf.resource("<"+p+">");
+		var nodeProperty = $.rdf.resource("skos:"+p,lh.history.ns);
 		var oldval = lh.sem.getPropValue(p,objectNode,l);
 		var nodeObjectOldVal = null;
 		if(oldval != null){
@@ -72,13 +75,6 @@
 		else{
 			lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:element",nodeObjectNewVal,lh.history.ns));
 		}
-		
-		
-		
-		var yo = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
-		var serializer = new XMLSerializer();
-		alert(serializer.serializeToString(yo));
-		alert("after");
 		
 		/****** old style generation and property change (see setpropvalue ***/
 		/** TODO : remove generation but keep value changing **/
@@ -173,8 +169,7 @@
               ], 
               { base: 'http://www.example.org/',
                 namespaces: { 
-                  dc: 'http://purl.org/dc/elements/1.1/', 
-                  foaf: 'http://xmlns.com/foaf/0.1/',
+                  skos: 'http://www.w3.org/2004/02/skos/core#',
                   h: 'http://www.culture-terminology.org/ontoHisto/'} });
 		
 		var hNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
@@ -315,7 +310,23 @@
 	};
 	
 	lh.modify.save = function(){
-		alert(JSON.stringify(lh.history.changes));
+		var dump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+		var serializer = new XMLSerializer();
+		var xmldump = serializer.serializeToString(dump); 
+		alert(xmldump);
+		//send change history to the server
+		$.ajax({
+			url : "http://localhost:8080/skosifier/changes",
+			type : "POST",
+			data : {change : xmldump},
+		}).done(function( msg ) {
+			  alert( "Data Saved: " + msg );
+		});
+			
+		
+		
+		alert("after");
+		//alert(JSON.stringify(lh.history.changes));
 		return d;
 	};
 		
