@@ -30,7 +30,7 @@ curl -H "Accept: application/json" http://localhost:8080/skosifier/skosdefinitio
 
 == send changes set ==
 
-curl -X POST --data-urlencode file@horn1.csv http://localhost:8080/skosifier/changes
+curl -X POST --data-urlencode change@delete-a-close-match-triple.xml http://localhost:8080/skosifier/changes
 
 == Mapping ==
 //TODO : review it
