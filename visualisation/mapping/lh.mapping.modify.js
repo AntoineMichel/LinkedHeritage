@@ -159,6 +159,11 @@
 			tabTemplate: tabTemplateWithClose,
 			add: function( event, ui ) {
 				$( ui.panel ).append(tab_content);
+				$(ui.tab.nextElementSibling).click(function(){
+					var index = $( "li", $tabs ).index( $( this ).parent() );
+					$tabs.tabs( "remove", index );
+					return false;
+				});
 			},
 			selected : 0,
 			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
@@ -222,31 +227,12 @@
 		$tabs.tabs( "option", "tabTemplate", tabTemplateWithClose);
 		
 		
-		//$("#tabs").tabs().addClass('ui-tabs-vertical ui-helper-clearfix');
-		//$("#tabs li").removeClass('ui-corner-top').addClass('ui-corner-left');
-		/*addContent = $(addContent).append(propLink);
-		divs = $(divs).append($('<div id="tabs-add"> </div>').append(addContent));
-		
-		divs = $(divs).prepend(ulTabs);
-		
-		$( "#dialog-form #tabZone" ).empty();
-		$( "#dialog-form #tabZone" ).append(divs);
-		*/
-		
-		
-		// close icon: removing the tab on click
-		// note: closable tabs gonna be an option in the future - see http://dev.jqueryui.com/ticket/3924
-		$( "#tabs span.ui-icon-close" ).live( "click", function() {
-			var index = $( "li", $tabs ).index( $( this ).parent() );
-			$tabs.tabs( "remove", index );
-		});
-		
 	};
 	
 	lh.modify.save = function(){
 		alert(JSON.stringify(lh.history.changes));
 		return d;
-	}
+	};
 		
 	/*lh.modify.revertChanges = function(){
 		lh.history.changes.values.reverse().forEach(function(c){
