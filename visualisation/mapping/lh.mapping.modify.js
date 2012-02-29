@@ -27,12 +27,12 @@
 	lh.history.crudop = function(op, objectNode,p,o,l){
 		
 		
-		var changeNode = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
-		var changeSubject = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
-		var changeProperty = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
-		var changeObject = $.rdf.resource("<urn:HISTOFILEROOT/"+uuid.v4()+">");
+		var changeNode = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeSubject = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeProperty = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeObject = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
 		
-		var nodeSubject = $.rdf.resource("<"+objectNode["@subject"]+">");
+		var nodeSubject = $.rdf.resource("<"+objectNode["@subject"]+">",lh.history.ns);
 		//var nodeProperty = $.rdf.resource("<"+p+">");
 		var nodeProperty = $.rdf.resource("skos:"+p,lh.history.ns);
 		var oldval = lh.sem.getPropValue(p,objectNode,l);
@@ -163,22 +163,26 @@
 	
 	lh.modify.buildDialog = function(d){
 		node = d;
-		//init the changes object
-		lh.history.rdfChanges = $.rdf.databank([
-               /*'<photo1.jpg> dc:creator <http://www.blogger.com/profile/1109404> .',
-                '<http://www.blogger.com/profile/1109404> foaf:img <photo1.jpg> .'
-                ,'<http://www.blogger.com/profile/1109404> a foaf:Person .'*/
-                //,
-                //'<urn:change-DO-DYN-ID> a <urn:TEST>'
-              ], 
-              { base: 'http://www.example.org/',
-                namespaces: { 
-                  skos: 'http://www.w3.org/2004/02/skos/core#',
-                  h: 'http://www.culture-terminology.org/ontoHisto/'} });
 		
-		lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
+		//define the base for this localhistory
+		lh.history.ns.base = d.ingraph.history.hroot.toString();
+		lh.history.hRootNode = $.rdf.resource("<"+d.ingraph.history.hroot+">");
+		
+		lh.history.rdfChanges = $.rdf.databank([],lh.history.ns);
+		
+		//lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
+		//lh.history.hRootNode = "<"+d.ingraph.history.hroot+">";
+		alert(lh.history.hRootNode);
 		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
 		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
+		
+		alert("test if != databank");
+		var serializer = new XMLSerializer();
+		var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+		var graphdump = d.ingraph.history.rdfChanges.dump({format:'application/rdf+xml'});
+		alert(serializer.serializeToString(localdump));
+		alert(serializer.serializeToString(graphdump));
+		alert("end test");
 		
 		//d.updatedTriples = {};
 		function createField(val){
@@ -202,23 +206,9 @@
 				o = $(this).val(); 
 				p = $(this).attr("predicate");
 				l = $(this).attr("language");
-				//if value changed
-				//if(o != lh.sem.getPropValue(p,d,l)){
+				
 				if(isValueChanged(o,p,d,l)){
 					lh.history.update(d,p,o,l);
-					//new atomic change
-					/*c = {};
-					c.crud = "u";
-					c.subject = d["@subject"];
-					c.predicate = p;
-					
-					//changes.push([p,o,l, Date.now()]);
-					modif = lh.sem.setPropValue(d,p,o,l);
-					
-					c.object = modif;
-					c.date = Date.now();
-					c.user ="defaultUser";
-					lh.history.changes.values.push(c);*/
 				} 
 			});
 			
