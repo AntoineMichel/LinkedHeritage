@@ -26,6 +26,11 @@ cleaning old code
 
 * solve bug about uncolorization of words
 
+== Create graph from scratch ==
+
+* for creating a graph from nothing : 
+** displayGraph(graphTwo,{"@subject" : []});
+
 == Visualisation ==
 
 

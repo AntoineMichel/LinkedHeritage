@@ -256,7 +256,7 @@ function initGraphDisplay(){
 	
 	//load graph list
 	$.ajax({
-		url : "http://localhost:8080/skosifier/graphlist/",
+		url : lh.server+"skosifier/graphlist/",
 		dataType : "json",
 		success: function(data){
 			opt = "";
@@ -269,10 +269,30 @@ function initGraphDisplay(){
 			$("#graphChoice").change(function(){
 				val = $(this).attr("value");
 				if(val == '-1'){
-					graphTwo.remove();
-					initGraphTwo();
+					graphTwo.selectAll("g.node,path.link")
+						.transition()
+						.duration(duration*2)
+						//.attr("style", "fill:red")
+						.attr("transform", "rotate(45 50 50) scale(1,1)")
+					.remove();
+					//remove the graph lang content
+					$("#graphTwoLang").empty();
 				}else {
+					function loadGraphLink(){
+						//alert("load graphlink");
+						if(!graphTwo.graphURI){
+							setTimeout(loadGraphLink,200);
+						}
+						else{
+							getGraphLink(graphOne,graphTwo);
+						}
+					}
+					
 					getGraph(graphTwo, val);
+					//when a graph is selected, get the graphLink
+					//use timeout as graphTwo as to be loaded before process
+					setTimeout(loadGraphLink,300);
+					
 				}
 			});
 		}
@@ -391,22 +411,7 @@ function initGraphDisplay(){
 	}
 	/**** end clic and double clic */
 	
-	/*********** Drag and drop ****/
-	
-	//////////// mouseOver Related code
-	var target; 
-	var onltb = false;
-	var onDragAndDrop = false;
-	
-	function moltb(d){
-		d3.select("#mover").text("MO TOOL BAR");
-		clearTimeout(tout);
-		onltb = true;
-	}
-	
-	function moutltb(d){
-		onltb = false;
-	}
+	/*********** link creation ***********/
 	
 	var onCreateLink = false;
 	var nodeLinkObj = null;
@@ -481,16 +486,10 @@ function initGraphDisplay(){
 	//TODO : remove this ??
 	function createLinkClick(d){
 		nl = {};
-		//nl.source = d;
-		//first parent is the localToolBar, second is the g.node
-		//nl.source = this.parentNode.parentNode;
 		nl.source = d;
 		//TODO : see how to remove the use of nl.sourceDOM
 		nl.sourceDOM = this.parentNode.parentNode;
 		mapLinks.push(nl);
-		//alert("new link");
-		
-		
 		
 		//create an svg point 
 		var pt = (nl.sourceDOM.ownerSVGElement || nl.sourceDOM).createSVGPoint();
@@ -536,6 +535,150 @@ function initGraphDisplay(){
 			TOLdialog(x,y);	
 		}
 	}
+	
+	
+	/*********** end link creation ***********/
+	
+	/******** graphlink display **********/
+	//l = {};
+	mapLinks = new Array();
+	//graphLink();
+	
+	function getGraphLink(g1,g2){
+		
+		$.ajax({
+			url : lh.server+"skosifier/graphlink?graphOne="+g1.graphURI+"&graphTwo="+g2.graphURI,
+			dataType : "json",
+			success: function(data){
+				alert("get graphLink");
+				alert(JSON.stringify(data));
+				
+				//TODO : get history for this linkgraph
+			}
+		});
+		
+	}
+	
+	function UpdateGraphLink(){
+		//var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+		//.attr("id", "graphLink");
+		//mapLinks = [1,2,3,4,5,6];
+		//var ll = graphLink.selectAll("path.link").remove();
+		
+		var filtered = mapLinks.filter(function(d,i){
+			return (d.source.displayed && d.target.displayed);
+		});
+		
+		var link = graphLink.selectAll("path.mapLink")
+		//.data(mapLinks, function(d,i){
+			.data(filtered, function(d,i){
+			return d.id || (d.id = ++i);});
+	
+	  // Enter any new links at the parent's previous position.
+	  link.enter().insert("path", "g")
+	      .attr("class", "mapLink")
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
+	      .attr("d", function(d) {
+	    	  return getCTMDiagonal(d);
+	      })
+	      ;
+	    //TODO : voir pour avoir une transition clean
+	    /*.transition()
+	      .duration(duration)
+	     //.attr("d", diagonal)
+	    .attr("d", function(d) {
+	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	      })
+		;*/
+		
+		//update link position if nodes moved
+		link.transition().duration(duration).attr("d", function(d){
+			return getCTMDiagonal(d);
+		})
+	  // Transition links to their new position.
+	  /*link.transition()
+	      .duration(duration)
+		.attr("d", function(d) {
+			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	      })
+		;
+		
+	
+	  // Transition exiting nodes to the parent's new position.
+	  link.exit().transition()
+	      .duration(duration)
+	      .attr("d", function(d) {
+	    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
+	      })
+	      .remove();
+	*/
+	  
+	  link.exit().remove();
+		
+		/*
+		graphLink.append("path")
+	      .attr("class", "link")
+	      //.attr("text", function(d){ return "YO " + d.target.y;})
+	      .attr("d", function(d) {
+	        //return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+	    	  return diagonal([[15,20],[30,30]]);
+	      })
+		*/
+	}
+	
+////////// Graph for link
+	
+	function getPointForLink(n){
+		//var pt = (n.ownerSVGElement || n.source).createSVGPoint();
+		var pt = n.ownerSVGElement.createSVGPoint();
+		
+		//TODO : use js native selector ? better perf than the D3 one ?
+		pt.x = d3.select(n).select("text").node().getComputedTextLength() + textOffset;
+		pt.y = 0;
+		
+		return pt.matrixTransform(n.getCTM());
+	}
+	
+	function getCTMDiagonal(d){
+		/*ptSource = getPointForLink(d.sourceDOM);
+  	  	ptTarget = getPointForLink(d.targetDOM);*/
+		var tt = d.source.ingraph.selectAll("g.node");
+		var oneN = tt.data([d.source], function(v){
+			return v.id;
+		});
+		var sourceDOM = d.source.ingraph.selectAll("g.node").data([d.source], function(v){
+			return v.id;
+			});
+		var targetDOM = d.target.ingraph.selectAll("g.node").data([d.target], function(v){return v.id;});
+		ptSource = getPointForLink(sourceDOM.node());
+  	  	ptTarget = getPointForLink(targetDOM.node());
+  	  
+  	  	//TODO : see if it's on the right or left graph
+  	  	//and then choose if target point is on the start or the end of the text
+  	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x/2,ptSource.y],[ptTarget.x,ptTarget.y]]);
+	}
+	
+	/********* end graphLink display ****/
+	
+	
+	/*********** Drag and drop ****/
+	
+	//////////// mouseOver Related code
+	var target; 
+	var onltb = false;
+	var onDragAndDrop = false;
+	
+	function moltb(d){
+		d3.select("#mover").text("MO TOOL BAR");
+		clearTimeout(tout);
+		onltb = true;
+	}
+	
+	function moutltb(d){
+		onltb = false;
+	}
+	
+	
 	
 	
 	var curPnode;
@@ -716,7 +859,7 @@ function initGraphDisplay(){
 					})*/
 					[0].root.value
 					;
-				alert(graphName.history.hroot);
+				//alert(graphName.history.hroot);
 				//graphName.history.hroot = //TODO: DEFINE;
 			}
 		});
@@ -728,8 +871,8 @@ function initGraphDisplay(){
 			headers : {"Accept":"application/json"},
 			dataType : "json",
 			success: function(data){
-				graphName.graphURI = graphURI;
 				displayGraph(graphName, data);
+				graphName.graphURI = graphURI;
 			}
 		});
 	}
@@ -933,7 +1076,10 @@ function initGraphDisplay(){
 	  
 	  // Update the nodes…
 	  var node = graphName.selectAll("g.node")
-	      .data(nodes, function(d) { return d.id || (d.id = ++i); });
+	      .data(nodes, function(d) { 
+	    	  //return d.id || (d.id = ++i); 
+	    	  return d.id || (d.id = ++i);
+	    	  });
 	
 	  // Enter any new nodes at the parent's previous position.
 	  var nodeEnter = node.enter().append("g")
@@ -1072,110 +1218,7 @@ function initGraphDisplay(){
 	}
 	
 	
-	////////// Graph for link
 	
-	function getPointForLink(n){
-		//var pt = (n.ownerSVGElement || n.source).createSVGPoint();
-		var pt = n.ownerSVGElement.createSVGPoint();
-		
-		//TODO : use js native selector ? better perf than the D3 one ?
-		pt.x = d3.select(n).select("text").node().getComputedTextLength() + textOffset;
-		pt.y = 0;
-		
-		return pt.matrixTransform(n.getCTM());
-	}
-	
-	function getCTMDiagonal(d){
-		/*ptSource = getPointForLink(d.sourceDOM);
-  	  	ptTarget = getPointForLink(d.targetDOM);*/
-		var tt = d.source.ingraph.selectAll("g.node");
-		var oneN = tt.data([d.source], function(v){
-			return v.id;
-		});
-		var sourceDOM = d.source.ingraph.selectAll("g.node").data([d.source], function(v){
-			return v.id;
-			});
-		var targetDOM = d.target.ingraph.selectAll("g.node").data([d.target], function(v){return v.id;});
-		ptSource = getPointForLink(sourceDOM.node());
-  	  	ptTarget = getPointForLink(targetDOM.node());
-  	  
-  	  	//TODO : see if it's on the right or left graph
-  	  	//and then choose if target point is on the start or the end of the text
-  	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x/2,ptSource.y],[ptTarget.x,ptTarget.y]]);
-	}
-	
-	//l = {};
-	mapLinks = new Array();
-	//graphLink();
-	
-	function UpdateGraphLink(){
-		//var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
-		//.attr("id", "graphLink");
-		//mapLinks = [1,2,3,4,5,6];
-		//var ll = graphLink.selectAll("path.link").remove();
-		
-		var filtered = mapLinks.filter(function(d,i){
-			var test = "tt";
-			var n = d3.select(d.source);
-			return (d.source.displayed && d.target.displayed);
-		});
-		
-		var link = graphLink.selectAll("path.mapLink")
-		//.data(mapLinks, function(d,i){
-			.data(filtered, function(d,i){
-			return d.id || (d.id = ++i);});
-	
-	  // Enter any new links at the parent's previous position.
-	  link.enter().insert("path", "g")
-	      .attr("class", "mapLink")
-	      //.attr("text", function(d){ return "YO " + d.target.y;})
-	      .attr("d", function(d) {
-	    	  return getCTMDiagonal(d);
-	      })
-	      ;
-	    //TODO : voir pour avoir une transition clean
-	    /*.transition()
-	      .duration(duration)
-	     //.attr("d", diagonal)
-	    .attr("d", function(d) {
-	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	      })
-		;*/
-		
-		//update link position if nodes moved
-		link.transition().duration(duration).attr("d", function(d){
-			return getCTMDiagonal(d);
-		})
-	  // Transition links to their new position.
-	  /*link.transition()
-	      .duration(duration)
-		.attr("d", function(d) {
-			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	      })
-		;
-		
-	
-	  // Transition exiting nodes to the parent's new position.
-	  link.exit().transition()
-	      .duration(duration)
-	      .attr("d", function(d) {
-	    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
-	      })
-	      .remove();
-	*/
-	  
-	  link.exit().remove();
-		
-		/*
-		graphLink.append("path")
-	      .attr("class", "link")
-	      //.attr("text", function(d){ return "YO " + d.target.y;})
-	      .attr("d", function(d) {
-	        //return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	    	  return diagonal([[15,20],[30,30]]);
-	      })
-		*/
-	}
 	
 	
 }
