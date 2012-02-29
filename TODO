@@ -1,7 +1,8 @@
 
 == For alpha 0.0.1 ==
 
-* manage modification commits
+* define and create the js workflow for getting the history file
+** the pb is related to the fact to only get "metadata" of the graph... because server side don't manage changes order
 
 
 * loading gadget during thesaurus loading
@@ -17,7 +18,6 @@
 * filtering graph mapping when request the second graph (server side modifications)
 
 integration into stanbol pages
-save modification on server
 
 create graph from scratch
 

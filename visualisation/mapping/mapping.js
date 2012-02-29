@@ -682,8 +682,48 @@ function initGraphDisplay(){
 	/**** get datas ****/
 	
 	function getGraph(graphName, graphURI){
+		
+		//get Graph history
 		$.ajax({
-			url : "http://localhost:8080/skosifier?uri="+graphURI,
+			url : lh.server+"skosifier/history?for="+graphURI,
+			headers : {"Accept":"application/rdf+xml"},
+			dataType : "xml",
+			success: function(data){
+				graphName.history = {};
+				graphName.history.rdfChanges = $.rdf.databank([],
+				//$(graphName.history).rdf.databank([],
+				//graphName.history.rdfChanges.databank([],
+				                      { base: 'http://www.example.org/',
+				                      namespaces: { 
+				                      	skos: 'http://www.w3.org/2004/02/skos/core#',
+				                        h: 'http://www.culture-terminology.org/ontoHisto/'} }
+					);
+				
+				graphName.history.rdfChanges.load(data,{});
+				
+				//graphName.history.rdfChanges.load(data,{});
+				//var hroot = $(graphName.history).rdf
+				//var hroot = $g.rdf
+				//alert(graphName.history.rdfChanges().toString());
+				//var hroot = graphName.history.rdfChanges
+				graphName.history.hroot = $.rdf({databank : graphName.history.rdfChanges})
+					.prefix('h', 'http://www.culture-terminology.org/ontoHisto/')
+					.where("?root a h:history")
+					.where("?root h:historyOf <"+graphURI+">")
+					/*.each(function(d,i){
+						alert("ddd");
+						alert(i);
+					})*/
+					[0].root.value
+					;
+				alert(graphName.history.hroot);
+				//graphName.history.hroot = //TODO: DEFINE;
+			}
+		});
+		
+		//get Graph data
+		$.ajax({
+			url : lh.server+"skosifier?uri="+graphURI,
 			//accepts : "application/json",
 			headers : {"Accept":"application/json"},
 			dataType : "json",
