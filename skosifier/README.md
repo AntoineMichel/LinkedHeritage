@@ -35,15 +35,7 @@ curl -H "Accept: application/rdf+xml" "http://localhost:8080/skosifier/history?f
 
 == send changes set ==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 curl -X POST --data-urlencode change@delete-a-close-match-triple.xml http://localhost:8080/skosifier/changes
-=======
-curl -X POST --data-urlencode file@horn1.csv http://localhost:8080/skosifier/changes
->>>>>>> a working version of the change ontology with test (have to be automated)
-=======
-curl -X POST --data-urlencode change@delete-a-close-match-triple.xml http://localhost:8080/skosifier/changes
->>>>>>> docu
 
 == Mapping ==
 //TODO : review it
