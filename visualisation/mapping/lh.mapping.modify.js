@@ -23,10 +23,67 @@
 
 	lh.history.rdfChanges = {};
 	
+	__ElementNode = function(s,v){
+		//if(Object.prototype.toString.call( v ) === '[object Array]'){
+		if(v[0]){
+			lh.history.rdfChanges.add($.rdf.triple(s,"h:element",v[0],lh.history.ns));
+			if(v[1]){
+				lh.history.rdfChanges.add($.rdf.triple(s,"h:newValue",v[1],lh.history.ns));
+			}
+			//v[1] is null so it's the delete action that is call
+			else{
+				lh.history.rdfChanges.add($.rdf.triple(s,"h:newValue","h:delete",lh.history.ns));
+			}
+		}
+		else{
+			lh.history.rdfChanges.add($.rdf.triple(s,"h:element",v,lh.history.ns));
+		}
+	}
+	
+	//here s,p and o are already resource or literal
+	//if s,p or o is an array this mean new value or deleted.
+	// structure is [oldValue,newValue] : for a new value
+	// [oldValue, null] : for delete a value
+	lh.history.newTriple= function(s,p,o){
+		
+		var changeNode = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeSubject = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeProperty = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		var changeObject = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
+		
+		//add the change node to the history triple
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:change",changeNode,lh.history.ns));
+		
+		//change triples initialisation
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"a","h:change",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:from","<http://define.GRAPH.VERSION>",lh.history.ns));
+		//TODO : deal with proper date format
+		var dt = $.rdf.literal(Date.now());
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:date",dt,lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:user",'"default user"',lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(changeNode,"h:subject",changeSubject,lh.history.ns));
+		
+		//subject triples
+		lh.history.rdfChanges.add($.rdf.triple(changeSubject,"a","h:subject",lh.history.ns));
+		//lh.history.rdfChanges.add($.rdf.triple(changeSubject,"h:element",s,lh.history.ns));
+		__ElementNode(changeSubject,s);
+		lh.history.rdfChanges.add($.rdf.triple(changeSubject,"h:property",changeProperty,lh.history.ns));
+		
+		//property triples
+		lh.history.rdfChanges.add($.rdf.triple(changeProperty,"a","h:property",lh.history.ns));
+		//lh.history.rdfChanges.add($.rdf.triple(changeProperty,"h:element",p,lh.history.ns));
+		__ElementNode(changeProperty,p);
+		lh.history.rdfChanges.add($.rdf.triple(changeProperty,"h:object",changeObject,lh.history.ns));
+		
+		//object triples
+		lh.history.rdfChanges.add($.rdf.triple(changeObject,"a","h:object",lh.history.ns));
+		//lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:element",o,lh.history.ns));
+		__ElementNode(changeObject,o);
+	};
 	
 	lh.history.crudop = function(op, objectNode,p,o,l){
 		
-		
+		//****** TODO : remove this and remplace by lh.history.newTriple();
 		var changeNode = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
 		var changeSubject = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
 		var changeProperty = $.rdf.resource("<#"+uuid.v4()+">",lh.history.ns);
@@ -80,6 +137,8 @@
 			lh.history.rdfChanges.add($.rdf.triple(changeObject,"h:element",nodeObjectNewVal,lh.history.ns));
 		}
 		
+		//****** END TODO : remove this and remplace by lh.history.createChange();
+		
 		/****** old style generation and property change (see setpropvalue ***/
 		/** TODO : remove generation but keep value changing **/
 		c = {};
@@ -87,7 +146,7 @@
 		c.subject = objectNode["@subject"];
 		c.predicate = p;
 		
-		//changes.push([p,o,l, Date.now()]);
+		//change the value of the object
 		modif = lh.sem.setPropValue(objectNode,p,o,l);
 		
 		c.object = modif;
@@ -112,6 +171,18 @@
 			lh.sem.setPropValue(node,c.predicate,c.object[0]["@literal"],c.object[0]["@language"]);
 			test = "";
 		});
+	};
+	
+	
+	lh.history.createLocalChange = function(graph){
+		lh.history.ns.base = graph.history.hroot.toString();
+		lh.history.hRootNode = $.rdf.resource("<"+graph.history.hroot+">");
+		
+		lh.history.rdfChanges = $.rdf.databank([],lh.history.ns);
+		
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+graph.graphURI+">",lh.history.ns));
+		
 	};
 	
 })();
@@ -164,6 +235,7 @@
 	lh.modify.buildDialog = function(d){
 		node = d;
 		
+		//**** TODO : use lh.history.createLocalChange
 		//define the base for this localhistory
 		lh.history.ns.base = d.ingraph.history.hroot.toString();
 		lh.history.hRootNode = $.rdf.resource("<"+d.ingraph.history.hroot+">");
@@ -172,17 +244,19 @@
 		
 		//lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
 		//lh.history.hRootNode = "<"+d.ingraph.history.hroot+">";
-		alert(lh.history.hRootNode);
+		//alert(lh.history.hRootNode);
 		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
 		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
 		
-		alert("test if != databank");
+		/*alert("test if != databank");
 		var serializer = new XMLSerializer();
 		var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
 		var graphdump = d.ingraph.history.rdfChanges.dump({format:'application/rdf+xml'});
 		alert(serializer.serializeToString(localdump));
 		alert(serializer.serializeToString(graphdump));
-		alert("end test");
+		alert("end test");*/
+		
+		//**** TODO : end use lh.history.createLocalChange
 		
 		//d.updatedTriples = {};
 		function createField(val){
@@ -307,10 +381,9 @@
 		var dump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
 		var serializer = new XMLSerializer();
 		var xmldump = serializer.serializeToString(dump); 
-		alert(xmldump);
 		//send change history to the server
 		$.ajax({
-			url : "http://localhost:8080/skosifier/changes",
+			url : lh.server+"skosifier/changes",
 			type : "POST",
 			data : {change : xmldump},
 		}).done(function( msg ) {

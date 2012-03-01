@@ -4,7 +4,6 @@
 * define and create the js workflow for getting the history file
 ** the pb is related to the fact to only get "metadata" of the graph... because server side don't manage changes order
 
-
 * loading gadget during thesaurus loading
 * clean screen top : debug messages
 * create real tool bar : add graph selection and lang selection
@@ -14,6 +13,8 @@
 * create from scratch
 
 * simplification of the form : only name, organisation name, and languages
+
+* manage language creation : on the first questionnaire and on the import
 
 * filtering graph mapping when request the second graph (server side modifications)
 
@@ -25,6 +26,22 @@ improve local toolbox display
 cleaning old code
 
 * solve bug about uncolorization of words
+
+== Bug existing graph loading ==
+
+* use branch existing-graph-loading
+
+* l'activation du code commenté dans 	function displayGraphLink(gr){
+** "corrupt" les index des datas et le graph ne peut plus se mettre à jour
+** le mieux serait d'utiliser les datas sous forme de triples et les indexes par les subjects
+
+= tester la différence entre le select et le databank
+
+= voir le résultat d'un sélect avec un contruct
+
+= voir quelle possibilité pour définir le data comme le triple
+==> rewrite de la fonction "children" avec a.s = b.o
+
 
 == Create graph from scratch ==
 
