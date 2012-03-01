@@ -416,36 +416,33 @@ function initGraphDisplay(){
 	var onCreateLink = false;
 	var nodeLinkObj = null;
 	
-	var $tolBox = $("#TOL-box").dialog({
-		autoOpen: false,
-		autoSize : true,
-		/*height: 300,
-		width: 350,*/
-		//modal: true,
-		buttons: {
-			"Save changes": function() {
-				alert("TODO : function that save");
-				/*n = lh.modify.save();
-				update(n.ingraph,n);*/
-				$( this ).dialog( "close" );
-			},
-			"Close": function() {
-				
-				//n = lh.modify.cancel();
-				//update(n.ingraph,n);
-				$( this ).dialog( "close" );
-			}
-		},
-		close: function() {
-			
-		}
-	});
-	
+//	var $tolBox = $("#TOL-box").dialog({
+//		autoOpen: false,
+//		autoSize : true,
+//		buttons: {
+//			"Save changes": function() {
+//				alert("TODO : function that save");
+//				/*n = lh.modify.save();
+//				update(n.ingraph,n);*/
+//				$( this ).dialog( "close" );
+//			},
+//			"Close": function() {
+//				
+//				//n = lh.modify.cancel();
+//				//update(n.ingraph,n);
+//				$( this ).dialog( "close" );
+//			}
+//		},
+//		close: function() {
+//			
+//		}
+//	});
+	var selectAValueMessage = "Select a value";
 	//init the content of the TOLDialog
-	function initTOLDialogContent(){
+	function initTOLDialogContent(tolBox){
 		if (skosOnto.getReferencesOK){
 			var reflinks = skosOnto.getReferences();
-			var valSelectText = "Select a value"; 
+			var valSelectText = selectAValueMessage; 
 			if (reflinks[0] != valSelectText){
 				reflinks.splice(0, 0, valSelectText);
 			}
@@ -453,20 +450,68 @@ function initGraphDisplay(){
 			lh.utils.langSelector(opt,reflinks, function(){
 				alert("value changed !");
 			});
-			$tolBox.html(opt);
+			tolBox.html(opt);
 		}
 		else{
-			setTimeout(function(){initTOLDialogContent();},100);
+			setTimeout(function(){initTOLDialogContent(tolBox);},100);
 		}
-		
-		
 	}
-	setTimeout(function(){initTOLDialogContent();},100);
+	//setTimeout(function(){initTOLDialogContent();},100);
 	
 	//end init the TOLDialog content
-	function TOLdialog(x,y){
+	function TOLdialog(nl,x,y){
 		
-		$tolBox.dialog("option", "position", [x,y] );
+		var $tolBox = $("#TOL-box").dialog({
+			autoOpen: false,
+			autoSize : true,
+			position : [x,y],
+			buttons: {
+				"Save changes": function() {
+					alert("TODO : function that save");
+					/*create a suitable object*/
+					//TODO : put the creation of this object before : this could be the nl object
+					var selNode = $("#tolSelect")[0];
+					var selectedProp = selNode.options[selNode.selectedIndex].value;
+					if(selectedProp != selectAValueMessage){
+						var semObj = {
+								"@subject" : nl.source["@subject"],
+								selectedProp : nl.target["@subject"]
+						};
+						
+						var s = $.rdf.resource("<"+nl.source["@subject"]+">",lh.history.ns);
+						var p = $.rdf.resource("skos:"+selectedProp,lh.history.ns);
+						var o = $.rdf.resource("<"+nl.target["@subject"]+">",lh.history.ns);
+						lh.history.newTriple(s,p,o);
+						
+						/*alert("test results");
+						var serializer = new XMLSerializer();
+						var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+						alert(serializer.serializeToString(localdump));
+						*/
+						//commit changes to the server
+						lh.modify.save();
+						
+					}
+					
+					
+					$( this ).dialog( "close" );
+				},
+				"Close": function() {
+					
+					//n = lh.modify.cancel();
+					//update(n.ingraph,n);
+					$( this ).dialog( "close" );
+				}
+			},
+			close: function() {
+				
+			}
+		});
+		
+		initTOLDialogContent($tolBox);
+		
+		//$tolBox.dialog("option", "position", [x,y] );
+		lh.history.createLocalChange(graphLink);
 		$tolBox.dialog("open");
 	}
 	
@@ -532,7 +577,7 @@ function initGraphDisplay(){
 			
 			var x = d3.event.clientX+10;
 			var y = d3.event.clientY+10;
-			TOLdialog(x,y);	
+			TOLdialog(nl,x,y);	
 		}
 	}
 	
@@ -548,14 +593,119 @@ function initGraphDisplay(){
 		
 		$.ajax({
 			url : lh.server+"skosifier/graphlink?graphOne="+g1.graphURI+"&graphTwo="+g2.graphURI,
-			dataType : "json",
+			//dataType : "json",
+			headers : {"Accept":"application/rdf+xml"},
+			dataType : "xml",
 			success: function(data){
-				alert("get graphLink");
-				alert(JSON.stringify(data));
+				//alert("get graphLink");
+				//alert(JSON.stringify(data));
+				
+				graphLink.rdf = {};
+				graphLink.rdf.databank = $.rdf.databank([],
+	                      	{ base: 'http://www.example.org/',
+                    		namespaces: { 
+                    			skos: 'http://www.w3.org/2004/02/skos/core#',
+                    			map: 'http://www.culture-terminology.org/ontology/mapping#'} }
+				);
+
+				graphLink.rdf.databank.load(data,{});
+				//get the graphURI, normally unique for this graph
+				graphLink.graphURI = $.rdf({databank : graphLink.rdf.databank})
+					.prefix('map', 'http://www.culture-terminology.org/ontology/mapping#')
+					.where("?root a map:graphMapping")
+					[0].root.value
+					;
+				//"@type": "http://www.culture-terminology.org/ontology/mapping#graphMapping",
 				
 				//TODO : get history for this linkgraph
+				//var graphLinkURI = data["@subject"];
+				///alert("GRAPH LINK URI");
+				//alert(graphLink.graphURI);
+				//graphLink.graphURI = data["@subject"];
+				//alert(JSON.stringify(data));
+				getGraphHistory(graphLink, graphLink.graphURI);
+				//Diplay of this graphLink
+				//TODO : see display graph
+				graphLink.root = data;
+				displayGraphLink(graphLink);
+				
+				//displayGraph(graphLink,data);
 			}
 		});
+		
+	}
+	
+	function displayGraphLink(gr){
+		alert("TODO : display existing");
+		
+		var semNodes = $.rdf({databank : gr.rdf.databank})
+				.prefix('map', 'http://www.culture-terminology.org/ontology/mapping#')
+				//.where("?id ?p ?children")
+				.where("?sourceURI ?p ?targetURI")
+				.filter(function(){
+					//alert(this.id.value+" ; "+this.id.toString() + " : " + gr.graphURI);
+					//alert(this.id.value != gr.graphURI);
+					return this.sourceURI.value != gr.graphURI;
+				})
+		;
+		
+		//TODO : as on D3 for optimize it : who to link 2 independant graphs with a third one ?
+		var allNodes = svgZone.selectAll("g.node");
+		
+		semNodes.each(function(i,v){
+			alert(i);
+			/*v.source = svgZone.selectAll("g.node").data([v.sourceURI],function(d){
+				//TODO : remove this little hack when graph will be sem managed
+				if(d["@subject"]){return d["@subject"];}
+				return d.value;
+			});
+			v.target = svgZone.selectAll("g.node").data([v.targetURI],function(d){
+				//TODO : remove this little hack when graph will be sem managed
+				if(d["@subject"]){return d["@subject"];}
+				return d.value;
+			});*/
+		});
+		
+		//TODO : have a clean impl beetween stored links and created ones
+		// !!! use another property "storedMapLink"
+		var link = graphLink.selectAll("path.maplink").data(semNodes, function(d){
+			return d.id || (d.id == ++i);
+		});
+		
+		// Enter any new links at the parent's previous position.
+		  link.enter().insert("path", "g")
+		      .attr("class", "mapLink")
+		      //.attr("text", function(d){ return "YO " + d.target.y;})
+		      .attr("d", function(d) {
+		    	  //return getCTMDiagonal(d);
+		    	  return getCTMdiag(d.source,d.target);
+		      })
+		      ;
+			
+			//update link position if nodes moved
+			link.transition().duration(duration).attr("d", function(d){
+				return getCTMDiagonal(d);
+			})
+		
+		  link.exit().remove();
+		
+		/*var nid = graphOne.selectAll("g.node").data(semNodes,function(d){
+			//TODO : remove this little hack when graph will be sem managed
+			if(d.source){return d.source.value;}
+			return d["@subject"];
+		});
+		
+		//get nodes from the children
+		var nchild = graphTwo.selectAll("g.node").data(semNodes,function(d){
+			//TODO : remove this little hack when graph will be sem managed
+			if(d.target){return d.target.value;}
+			return d["@subject"];
+		});
+		
+		var l = tree.links(nid);*/
+		
+		alert("end display");
+		///test with node.id
 		
 	}
 	
@@ -640,22 +790,37 @@ function initGraphDisplay(){
 	}
 	
 	function getCTMDiagonal(d){
-		/*ptSource = getPointForLink(d.sourceDOM);
-  	  	ptTarget = getPointForLink(d.targetDOM);*/
-		var tt = d.source.ingraph.selectAll("g.node");
+		
+		/*var tt = d.source.ingraph.selectAll("g.node");
 		var oneN = tt.data([d.source], function(v){
 			return v.id;
-		});
+		});*/
 		var sourceDOM = d.source.ingraph.selectAll("g.node").data([d.source], function(v){
-			return v.id;
+			//return v.id;
+			return v["@subject"];
 			});
-		var targetDOM = d.target.ingraph.selectAll("g.node").data([d.target], function(v){return v.id;});
+		var targetDOM = d.target.ingraph.selectAll("g.node").data([d.target], function(v){
+			//return v.id;
+			return v["@subject"];
+			});
+		
+		//return getCTMdiag(sourceDOM,targetDOM);
 		ptSource = getPointForLink(sourceDOM.node());
   	  	ptTarget = getPointForLink(targetDOM.node());
   	  
   	  	//TODO : see if it's on the right or left graph
   	  	//and then choose if target point is on the start or the end of the text
   	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x/2,ptSource.y],[ptTarget.x,ptTarget.y]]);
+  	  	
+	}
+	
+	function getCTMdiag(sourceDOM,targetDOM){
+		ptSource = getPointForLink(sourceDOM.node());
+	  	ptTarget = getPointForLink(targetDOM.node());
+	  
+	  	//TODO : see if it's on the right or left graph
+	  	//and then choose if target point is on the start or the end of the text
+	  	return diagonal([[ptSource.x,ptSource.y],[ptTarget.x/2,ptSource.y],[ptTarget.x,ptTarget.y]]);
 	}
 	
 	/********* end graphLink display ****/
@@ -821,48 +986,46 @@ function initGraphDisplay(){
 	
 	/*********** End drag and drop ****/
 	
-	
-	/**** get datas ****/
-	
-	function getGraph(graphName, graphURI){
-		
-		//get Graph history
+	/********* History ******/
+	function getGraphHistory(graphName, graphURI){
 		$.ajax({
 			url : lh.server+"skosifier/history?for="+graphURI,
 			headers : {"Accept":"application/rdf+xml"},
 			dataType : "xml",
 			success: function(data){
 				graphName.history = {};
+				//TODO : use the lh.history.ns for databank's options
 				graphName.history.rdfChanges = $.rdf.databank([],
-				//$(graphName.history).rdf.databank([],
-				//graphName.history.rdfChanges.databank([],
 				                      { base: 'http://www.example.org/',
 				                      namespaces: { 
 				                      	skos: 'http://www.w3.org/2004/02/skos/core#',
 				                        h: 'http://www.culture-terminology.org/ontoHisto/'} }
 					);
+				/*alert("history");
+				alert(graphURI);
+				var serializer = new XMLSerializer();
+				alert(serializer.serializeToString(data));
+				alert("END history");*/
 				
 				graphName.history.rdfChanges.load(data,{});
-				
-				//graphName.history.rdfChanges.load(data,{});
-				//var hroot = $(graphName.history).rdf
-				//var hroot = $g.rdf
-				//alert(graphName.history.rdfChanges().toString());
-				//var hroot = graphName.history.rdfChanges
+				//get the first history node, normally unique for this graph
 				graphName.history.hroot = $.rdf({databank : graphName.history.rdfChanges})
 					.prefix('h', 'http://www.culture-terminology.org/ontoHisto/')
 					.where("?root a h:history")
 					.where("?root h:historyOf <"+graphURI+">")
-					/*.each(function(d,i){
-						alert("ddd");
-						alert(i);
-					})*/
 					[0].root.value
 					;
-				//alert(graphName.history.hroot);
-				//graphName.history.hroot = //TODO: DEFINE;
 			}
 		});
+	}
+	/********* end history *****/
+	
+	/**** get datas ****/
+	
+	function getGraph(graphName, graphURI){
+		
+		//get Graph history
+		getGraphHistory(graphName, graphURI);
 		
 		//get Graph data
 		$.ajax({
@@ -1078,7 +1241,7 @@ function initGraphDisplay(){
 	  var node = graphName.selectAll("g.node")
 	      .data(nodes, function(d) { 
 	    	  //return d.id || (d.id = ++i); 
-	    	  return d.id || (d.id = ++i);
+	    	  return d["@subject"];
 	    	  });
 	
 	  // Enter any new nodes at the parent's previous position.
