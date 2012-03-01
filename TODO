@@ -43,6 +43,10 @@ cleaning old code
 ==> rewrite de la fonction "children" avec a.s = b.o
 
 
+== Project organisation ==*
+
+* mouve all css, images and js into the global "resources" folder.
+
 == Create graph from scratch ==
 
 * for creating a graph from nothing : 

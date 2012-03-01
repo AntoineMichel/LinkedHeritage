@@ -56,9 +56,11 @@ margin:2px 0 20px 10px;
 #stylized button{
 clear:both;
 margin-left:150px;
+margin-top: 30px;
 width:125px;
 height:31px;
-background:#666666 url(img/button.png) no-repeat;
+/*background:#666666 url(img/button.png) no-repeat;*/
+background:#666666;
 text-align:center;
 line-height:31px;
 color:#FFFFFF;

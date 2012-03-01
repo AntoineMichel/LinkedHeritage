@@ -1,59 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<!-- @import "../../media/css/demo_page.css";
-@import "css/form.css";
--->
-<style type="text/css" title="currentStyle">
-@import "css/demo_table.css";
+	<head>
+		<meta charset="utf-8" />
 
-@import "css/jquery/cupertino/jquery-ui-1.8.17.custom.css";
-@import "css/form.css";
-/*#tabs-2{
-height:500px;
-}*/
+		<style type="text/css" title="currentStyle">
+			@import "css/demo_table.css";
+
+			@import "css/jquery/cupertino/jquery-ui-1.8.17.custom.css";
+
+			@import "css/form.css";
+			
+			@import "../resources/css/header-footer.css";
 </style>
-<script type="text/javascript" language="javascript" src="js/jquery-1.7.1.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/jquery.csv.min.js"></script>
-<script type="text/javascript" language="javascript" src="js/lh.importUI.js"></script>
-<script type="text/javascript" language="javascript" src="js/lh.import.js"></script>
-<script type="text/javascript" language="javascript" src="js/isoLang.js"></script>
-<script type="text/javascript" language="javascript" src="js/jquery.validate.min.js"></script>
-	
-<script type="text/javascript">
-	//gobal var for the json mapping file
-	var jmapping = {"metadata":{},"mapping":[]}
-	
-	$(document).ready(function() {
-		
-		//importDCForm();
-		$.validator.setDefaults({
-			submitHandler : function(form) {
-				/*var jo = {
-					"metadata" : {}
-				};*/
+	<script type="text/javascript" language="javascript" src="js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/jquery.csv.min.js"></script>
+	<script type="text/javascript" language="javascript" src="js/lh.importUI.js"></script>
+	<script type="text/javascript" language="javascript" src="js/lh.import.js"></script>
+	<script type="text/javascript" language="javascript" src="js/isoLang.js"></script>
+	<script type="text/javascript" language="javascript" src="js/jquery.validate.min.js"></script>
 
-				$(form).find("input:filled").each(function(i, d) {
-					jmapping.metadata[d.name] = d.value;
-				});
-				
+	<script type="text/javascript">
+		//gobal var for the json mapping file
+		var jmapping = {"metadata":{},"mapping":[]}
+	
+		$(document).ready(function() {
+			//validator definition
+			$.validator.setDefaults({
+				submitHandler : function(form) {
+					$(form).find("input:filled").each(function(i, d) {
+						jmapping.metadata[d.name] = d.value;
+					});
 				$("#tabs").tabs("enable", 1).tabs("select", 1);
-				
 			}
+			
 		});
 
-		//tabs management
+		//validation enablement
 		$().ready(function() {
 			$("#metadataForm").validate();
-
 		});
-		// save metada fields
-		/*$("#validMetadata").live("click", function() {
-			$("#tabs").tabs("enable", 1).tabs("select", 1);
-		});*/
 
 		//tab build
 		$("#tabs").tabs({
@@ -69,15 +56,28 @@ height:500px;
 
 		$("#goToimport").click(function() {
 			$("#import-acc").accordion("activate", 2);
-		})
+		});
 
 		$('#files').change(handleFileSelect);
+		
 		addSubmitEvent();
 
 	});
-</script>
+	</script>
 </head>
 <body>
+	<div id="header">
+		<div id="lhLogo"><a href="/"><image src="../resources/images/LinkedHeritage_logo.jpg"/></a></div>
+		<div id="imageHeader"></div>
+		<div id="header-menu">
+			<ul class="menu">
+				<li><a href="/import">Import your files</a></li>
+				<li><a href="/mapping">Map your thesaurus</a></li>
+				<li>&nbsp;</li>
+			</ul>
+		</div>
+	</div>
+	<div class="c"></div>
 	<div id="tabs">
 		<ul>
 			<li><a href="#tabs-1">1) Information</a></li>
@@ -85,161 +85,188 @@ height:500px;
 			<li><a href="#tabs-3">3) Modify and map</a></li>
 		</ul>
 		<div id="tabs-1">
-				<div id="stylized" class="myform">
+			<div id="stylized" class="myform">
 				<form action="" method="post" id="metadataForm" novalidate="novalidate">
-<h1>Sign-up form</h1>
-<h2>This is the basic look of my form without table</h2>
-<p>
-<label for="dctitle">Title
-<span class="small">A name given to the resource. </span>
-</label>
-<input id="dctitle" type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/title"/>
+					<h1>New Thesaurus form</h1>
+					<h2>Please fill this fields in order to import a new Thesaurus</h2>
+					<p>
+						<label for="dctitle">
+							Title 
+							<span class="small">A name given to the resource. </span>
+						</label> 
+						<input id="dctitle" type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/title" />
+					</p>
+					<p>
+						<label>Creator 
+							<span class="small">An entity primarily responsible for making the resource.</span>
+						</label> 
+						<input type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/creator" />
+					</p>
+					<!-- 					<p> -->
+<!-- 						<label>Language <span class="small">A language of -->
+<!-- 								the resource.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/language" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Subject  -->
+<!-- 							<span class="small">The topic of the resource.</span> -->
+<!-- 						</label>  -->
+<!-- 						<input type="text" name="http://purl.org/dc/elements/1.1/subject" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Description  -->
+<!-- 							<span class="small">An account of the resource.</span> -->
+<!-- 						</label>  -->
+<!-- 						<input type="text" name="http://purl.org/dc/elements/1.1/description" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Publisher <span class="small">An entity -->
+<!-- 								responsible for making the resource available.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/publisher" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Contributor <span class="small">An entity -->
+<!-- 								responsible for making contributions to the resource.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/contributor" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Date <span class="small">A point or period -->
+<!-- 								of time associated with an event in the lifecycle of the -->
+<!-- 								resource. </span> -->
+<!-- 						</label> <input type="text" name="http://purl.org/dc/elements/1.1/date" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Type <span class="small">Recommended best -->
+<!-- 								practice is to use a controlled vocabulary such as the DCMI Type -->
+<!-- 								Vocabulary [DCMITYPE]. To describe the file format, physical -->
+<!-- 								medium, or dimensions of the resource, use the Format element.</span> -->
+<!-- 						</label> <input type="text" name="http://purl.org/dc/elements/1.1/type" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Format <span class="small">The file format, -->
+<!-- 								physical medium, or dimensions of the resource.</span> -->
+<!-- 						</label> <input type="text" name="http://purl.org/dc/elements/1.1/format" /> -->
+<!-- 					</p> -->
 
-</p>
-<p>
-<label>Creator
-<span class="small">An entity primarily responsible for making the resource.</span>
-</label>
-<input type="text" class="required" minlength="2" name="http://purl.org/dc/elements/1.1/creator"/>
-</p>
-<p>
-<label>Subject
-<span class="small">The topic of the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/subject" />
-</p>
-<p>
-<label>Description
-<span class="small">An account of the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/description" />
-</p>
-<p>
-<label>Publisher
-<span class="small">An entity responsible for making the resource available.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/publisher" />
-</p>
-<p>
-<label>Contributor
-<span class="small">An entity responsible for making contributions to the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/contributor" />
-</p>
-<p>
-<label>Date
-<span class="small">A point or period of time associated with an event in the lifecycle of the resource. </span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/date" />
-</p>
-<p>
-<label>Type
-<span class="small">Recommended best
-			practice is to use a controlled vocabulary such as the DCMI Type
-			Vocabulary [DCMITYPE]. To describe the file format, physical medium,
-			or dimensions of the resource, use the Format element.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/type" />
-</p>
-<p>
-<label>Format
-<span class="small">The file format, physical medium, or dimensions of the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/format" />
-</p>
+<!-- 					<p> -->
+<!-- 						<label>Identifier <span class="small">An -->
+<!-- 								unambiguous reference to the resource within a given context.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/identifier" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Source <span class="small">A related -->
+<!-- 								resource from which the described resource is derived.</span> -->
+<!-- 						</label> <input type="text" name="http://purl.org/dc/elements/1.1/source" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Relation <span class="small">A related -->
+<!-- 								resource.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/relation" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Coverage <span class="small">Spatial topic -->
+<!-- 								and spatial applicability may be a named place or a location -->
+<!-- 								specified by its geographic coordinates.</span> -->
+<!-- 						</label> <input type="text" -->
+<!-- 							name="http://purl.org/dc/elements/1.1/coverage" /> -->
+<!-- 					</p> -->
+<!-- 					<p> -->
+<!-- 						<label>Rights <span class="small">Information about -->
+<!-- 								rights held in and over the resource.</span> -->
+<!-- 						</label> <input type="text" name="http://purl.org/dc/elements/1.1/rights" /> -->
+<!-- 					</p> -->
+					<button id="validMetadata">Import file</button>
+					<div class="spacer"></div>
 
-<p>
-<label>Identifier
-<span class="small">An unambiguous reference to the resource within a given context.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/identifier" />
-</p>
-<p>
-<label>Source
-<span class="small">A related resource from which the described resource is derived.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/source" />
-</p>
-<p>
-<label>Language
-<span class="small">A language of the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/language" />
-</p>
-<p>
-<label>Relation
-<span class="small">A related resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/relation" />
-</p>
-<p>
-<label>Coverage
-<span class="small">Spatial topic and spatial applicability may be a named place or a location specified by its geographic coordinates.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/coverage" />
-</p>
-<p>
-<label>Rights
-<span class="small">Information about rights held in and over the resource.</span>
-</label>
-<input type="text" name="http://purl.org/dc/elements/1.1/rights" />
-</p>
-<button id="validMetadata">Import file</button>
-<div class="spacer"></div>
-
-</form>
-</div>
+				</form>
+			</div>
 
 		</div>
 		<div id="tabs-2">
 			<div id="import-acc">
-				<h3><a href="#">1) Upload your datas</a></h3>
-					<div id="input">
-						<input type="file" id="files" name="csvFile" />
-					</div>
-				<h3><a href="#">2) Configure your import</a></h3>
+				<h3>
+					<a href="#">1) Upload your datas</a>
+				</h3>
+				<div id="input">
+					<input type="file" id="files" name="csvFile" />
+				</div>
+				<h3>
+					<a href="#">2) Configure your import</a>
+				</h3>
 				<div id="l3">
 					<div style="margin-bottom: 20px;">
-						<p>Does your import look good ? <a href="#" id="showCSVConfig">No</a></p>
+						<p>
+							Does your import look good ? <a href="#" id="showCSVConfig">No</a>
+						</p>
 						<div class="CSVConfig" style="display: none;">
 							<p>TODO : CSV param config ; On save update the table view</p>
 						</div>
-						<p>Map you data on the underlying table with drop-down lists and <a href="#" id="goToimport">when you mapping is OK click here.</a></p>
+						<p>
+							Map you data on the underlying table with drop-down lists and <a
+								href="#" id="goToimport">when you mapping is OK click here.</a>
+						</p>
 					</div>
 					<div id="csv-import">
 						<p>You need to import a file first</p>
 					</div>
 				</div>
-				<h3><a href="#">3) Import !</a></h3>	
+				<h3>
+					<a href="#">3) Import !</a>
+				</h3>
 				<div id="#import-3">
 					<p>Your data is now ready to be import ?</p>
-					<p>Click on the button wait a minute and you can edit and map your thesaurus.</p>
-					<p><input type="submit" id="submit" /></p>
+					<p>Click on the button wait a minute and you can edit and map
+						your thesaurus.</p>
+					<p>
+						<input type="submit" id="submit" />
+					</p>
 				</div>
 			</div>
 		</div>
 		<div id="tabs-3">
-			<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse
-				potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque
-				rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante.
-				Class aptent taciti sociosqu ad litora torquent per conubia nostra,
-				per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim
-				commodo pellentesque. Praesent eu risus hendrerit ligula tempus
-				pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a,
-				lacus.</p>
-			<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at,
-				semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra
-				justo vitae neque. Praesent blandit adipiscing velit. Suspendisse
-				potenti. Donec mattis, pede vel pharetra blandit, magna ligula
-				faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque.
-				Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi
-				lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean
-				vehicula velit eu tellus interdum rutrum. Maecenas commodo.
-				Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus
-				hendrerit hendrerit.</p>
+<!-- 			<p>Mauris eleifend est et turpis. Duis id erat. Suspendisse -->
+<!-- 				potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque -->
+<!-- 				rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. -->
+<!-- 				Class aptent taciti sociosqu ad litora torquent per conubia nostra, -->
+<!-- 				per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim -->
+<!-- 				commodo pellentesque. Praesent eu risus hendrerit ligula tempus -->
+<!-- 				pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, -->
+<!-- 				lacus.</p> -->
+<!-- 			<p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, -->
+<!-- 				semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra -->
+<!-- 				justo vitae neque. Praesent blandit adipiscing velit. Suspendisse -->
+<!-- 				potenti. Donec mattis, pede vel pharetra blandit, magna ligula -->
+<!-- 				faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. -->
+<!-- 				Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi -->
+<!-- 				lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean -->
+<!-- 				vehicula velit eu tellus interdum rutrum. Maecenas commodo. -->
+<!-- 				Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus -->
+<!-- 				hendrerit hendrerit.</p> -->
 		</div>
 	</div>
-
+	
+	<div class="c"></div>
+	<div id="footer">
+		<div id="eu">
+		<table class="footerTable">
+		<tr>
+			<td>A project of</td><td><a href="http://www.linkedheritage.org/"><img src="../resources/images/LinkedHeritage_logo.jpg"  width="90" height="50"  alt="Linked Heritage Project"></a></td><td> Co-funded by the</td><td><img src="../resources/images/eu_icon.jpg"  width="40" height="30"  alt="European Union"></td>
+			</tr>
+		</table>
+		</div>
+		<div id="iks">
+		<table class="footerTable">
+			<tr>
+				<td>Powered by</td><td><a href="http://incubator.apache.org/stanbol/"><img src="../resources/images/stanbol-2010-12-14.png"  width="90" height="50"  alt="Apache Stanbol Project"></a></td><td>A product created by</td><td><a href="http://www.iks-project.eu/"><img src="../resources/images/iks_logo.jpg"  width="90" height="50"  alt="Interactive Knowledge Stack"></a></td>
+			</tr>
+		</table>
+		</div>
+	</div>
 
 
 </body>
