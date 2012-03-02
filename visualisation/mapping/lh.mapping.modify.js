@@ -387,12 +387,13 @@
 			type : "POST",
 			data : {change : xmldump},
 		}).done(function( msg ) {
-			  alert( "Data Saved: " + msg );
+			//TODO : a fadin fadout message for says ok
+			  //alert( "Data Saved: " + msg );
 		});
 			
 		
 		
-		alert("after");
+		//alert("after");
 		//alert(JSON.stringify(lh.history.changes));
 		return d;
 	};

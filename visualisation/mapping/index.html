@@ -54,6 +54,11 @@
     </script>
     <style type="text/css">
 
+	#chart{
+		margin-top : 30px;
+		margin-left : 10%;
+	}
+
 .node circle {
   cursor: pointer;
   fill: #fff;
@@ -135,26 +140,20 @@ rect.mover {
 <!--   	</div> -->
   	<div class="clear"></div>
   	
-  	
-  	<div id="graphOne" class="grid_6">
-  		<h1>Configuration panel for graph One</h1>
+  	<div id="configurationPanel">
   		
   		<div id="graphOneChoiceBox" class="panel" style="display:none">
     		<p>Choose you graph :</p>
     		<select id="graphOneChoice"></select>
     		<button title="ok">ok</button>
     	</div>
-  		
   		<div id="graphOneLangBox" class="panel" style="display:none">
   			<p>Choose your language :</p> 
   			<select id="graphOneLang" size="1"></select>
   			<button title="ok">ok</button>
   		</div>
-    </div>
-    
-    <div id="graphTwo" class="grid_6">
-    <h1>Configuration panel for graph Two</h1>
-    	<div id="graphTwoChoiceBox" class="panel" style="display:none">
+  		
+  		<div id="graphTwoChoiceBox" class="panel" style="display:none">
     		<p>Choose you graph :</p>
     		<select id="graphTwoChoice"></select>
     		<button title="ok">ok</button>
@@ -165,8 +164,8 @@ rect.mover {
   			<select id="graphTwoLang" size="1"></select>
   			<button title="ok">ok</button>
   		</div>
-    </div>
-    
+  	</div>
+  	    
     <div id="chart"></div>
     
     </div>

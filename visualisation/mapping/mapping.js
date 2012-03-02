@@ -304,21 +304,87 @@ function initGraphDisplay(){
 		getGraph(graphOne,graphOneURL);
 	}
 	
+	//loading the graphLink
+	// !! use this when the 2 graphs are loaded or near to be loaded
+	function loadGraphLink(){
+		//alert("load graphlink");
+		if((!graphOne.graphURI) || (!graphTwo.graphURI)){
+			setTimeout(loadGraphLink,200);
+		}
+		else{
+			getGraphLink(graphOne,graphTwo);
+		}
+	}
 	
+	//manage retrieve/destroy of graph when value changed
+	//manage retrieve/destroy of graphLink
+	//TODO : see how to use less parameters
+	function graphChoiceChange(curGraphSelector,curLangSelector,curGraph,otherGraphSelector,otherLangSelector,otherGraph){
+			var curVal = $(curGraphSelector).attr("value");
+			var otherVal = $(otherGraphSelector).attr("value");
+			//delete the curent graph
+			if(curVal == '-1'){
+				curGraph.selectAll("g.node,path.link")
+					.transition()
+					.duration(duration*2)
+					//.attr("style", "fill:red")
+					.attr("transform", "rotate(45 50 50) scale(1,1)")
+					.remove();
+				//remove the graph lang content
+				$(curLangSelector).empty();
+				//remove the graphLink content
+				graphLink.selectAll("path.mapLink")
+					.transition()
+					.duration(duration*2)
+					//.attr("style", "fill:red")
+					.attr("transform", "rotate(45 50 50) scale(1,1)")
+					.remove();
+			}else {
+				getGraph(curGraph, curVal);
+				//if another graph is already selected, get the graphLink
+				if(otherVal != '-1'){
+					//use timeout as graphTwo as to be loaded before process
+					setTimeout(loadGraphLink,300);
+				}
+			}
+	}
+	
+	$wait = $("<div id='waitBox' title='Please wait'><p>Data curently loading please wait...</p><p>Try to reload if it take too much time</div>")
+				.dialog({
+					autoOpen: false,
+					autosize : true,
+					modal: true
+				});
+	var wTout;
 	//load graph list
 	$.ajax({
 		url : lh.server+"skosifier/graphlist/",
 		dataType : "json",
+		beforeSend : function(){
+				wTout = setTimeout(function(){$wait.dialog("open");},300);},
+		complete : function(){
+			clearTimeout(wTout);
+			$wait.dialog("close");},
 		success: function(data){
+			//clearTimeout(wTout);
+			//$wait.dialog("close");
 			opt = "";
 			//default value
 			opt += "<option value='-1'>Choose the graph you want to map to.</option>";
 			data.graphUri.forEach(function (d){
 				opt += "<option value="+d+">"+d+"</option>";
 			});
+			$("#graphOneChoice").html(opt);
 			$("#graphTwoChoice").html(opt);
+			$("#graphOneChoice").change(function(){
+				graphChoiceChange("#graphOneChoice","#graphOneLang",graphOne,"#graphTwoChoice","#graphTwoLang",graphTwo);
+			});
 			$("#graphTwoChoice").change(function(){
+				graphChoiceChange("#graphTwoChoice","#graphTwoLang",graphTwo,"#graphOneChoice","#graphOneLang",graphOne);
+			});
+			/*$("#graphTwoChoice").change(function(){
 				val = $(this).attr("value");
+				//delete the curent graph
 				if(val == '-1'){
 					graphTwo.selectAll("g.node,path.link")
 						.transition()
@@ -329,23 +395,12 @@ function initGraphDisplay(){
 					//remove the graph lang content
 					$("#graphTwoLang").empty();
 				}else {
-					function loadGraphLink(){
-						//alert("load graphlink");
-						if(!graphTwo.graphURI){
-							setTimeout(loadGraphLink,200);
-						}
-						else{
-							getGraphLink(graphOne,graphTwo);
-						}
-					}
-					
 					getGraph(graphTwo, val);
 					//when a graph is selected, get the graphLink
 					//use timeout as graphTwo as to be loaded before process
 					setTimeout(loadGraphLink,300);
-					
 				}
-			});
+			});*/
 		}
 	});
 	
@@ -501,7 +556,7 @@ function initGraphDisplay(){
 			}
 			var opt = $("<select id='tolSelect' size='1'> </option>");
 			lh.utils.langSelector(opt,reflinks, function(){
-				alert("value changed !");
+				//alert("value changed !");
 			});
 			tolBox.html(opt);
 		}
@@ -520,7 +575,7 @@ function initGraphDisplay(){
 			position : [x,y],
 			buttons: {
 				"Save changes": function() {
-					alert("TODO : function that save");
+					//alert("TODO : function that save");
 					/*create a suitable object*/
 					//TODO : put the creation of this object before : this could be the nl object
 					var selNode = $("#tolSelect")[0];
@@ -689,7 +744,7 @@ function initGraphDisplay(){
 	}
 	
 	function displayGraphLink(gr){
-		alert("TODO : display existing");
+		//alert("TODO : display existing");
 		
 		var semNodes = $.rdf({databank : gr.rdf.databank})
 				.prefix('map', 'http://www.culture-terminology.org/ontology/mapping#')
@@ -706,7 +761,7 @@ function initGraphDisplay(){
 		var allNodes = svgZone.selectAll("g.node");
 		
 		semNodes.each(function(i,v){
-			alert(i);
+			//alert(i);
 			/*v.source = svgZone.selectAll("g.node").data([v.sourceURI],function(d){
 				//TODO : remove this little hack when graph will be sem managed
 				if(d["@subject"]){return d["@subject"];}
@@ -757,7 +812,7 @@ function initGraphDisplay(){
 		
 		var l = tree.links(nid);*/
 		
-		alert("end display");
+		//alert("end display");
 		///test with node.id
 		
 	}
