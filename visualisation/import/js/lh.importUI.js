@@ -10,7 +10,7 @@ var propertyValArray;// = [ "skos:concept", "skos:scopeNote", "skos:definition" 
 //initialisation of properties Arrays
 function initPropArrays(){
 	$.ajax({
-		url : "http://localhost:8080/skosifier/skosdefinition?type=properties",
+		url : lh.server+"skosifier/skosdefinition?type=properties",
 		type : "GET",
 		dataType : "json",
 		success: function(data){
@@ -19,7 +19,7 @@ function initPropArrays(){
 	});
 
 	$.ajax({
-		url : "http://localhost:8080/skosifier/skosdefinition?type=references",
+		url : lh.server+"skosifier/skosdefinition?type=references",
 		type : "GET",
 		dataType : "json",
 		success: function(data){

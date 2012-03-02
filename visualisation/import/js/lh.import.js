@@ -105,7 +105,7 @@ $("#submit").click(function(){
 	//send json to the serveur
 	//load graph list
 	$.ajax({
-		url : "http://localhost:8080/skosifier",
+		url : lh.server+"skosifier",
 		type : "POST",
 		data : {"conf" : JSON.stringify(jmapping), "file" : stringFile},
 		
