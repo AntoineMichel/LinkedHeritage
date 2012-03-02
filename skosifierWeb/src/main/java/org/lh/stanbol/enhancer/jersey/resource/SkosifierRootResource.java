@@ -164,7 +164,12 @@ public class SkosifierRootResource<e> extends BaseStanbolResource {
     	Set<UriRef> l = tcManager.listMGraphs();
     	Iterator<UriRef> iter = l.iterator(); 
     	while (iter.hasNext()){
-    		jo.accumulate("graphUri", iter.next().getUnicodeString());
+    		//TODO : find a better filter for that...
+    		UriRef gURI = iter.next();
+    		Iterator<Triple> res = tcManager.getMGraph(gURI).filter(null, Properties.RDF_TYPE,SkosEnum.Concept.getProperty());
+    		if(res.hasNext()){
+    			jo.accumulate("graphUri", gURI.getUnicodeString());
+    		}
     	}
     	ResponseBuilder rb = Response.ok(jo.toString());
     	addCORSOrigin(servletContext,rb, headers);
