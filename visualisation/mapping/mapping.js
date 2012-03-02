@@ -170,8 +170,11 @@ function initGraphDisplay(){
 						//TODO : define a global size for toolbar height
 						.attr("height", 30)
 						;
-	var toolBar = toolBarZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
-					.attr("id", "toolBar");
+	var toolBarGraphOne = toolBarZone.append("g").attr("transform", "translate(" + m[3] + "," + tby + ")")
+					.attr("id", "toolBarGraphOne");
+	
+	var toolBarGraphTwo = toolBarZone.append("g").attr("transform", "translate(" + w/2 + "," + tby + ")")
+					.attr("id", "toolBarGraphTwo");
 	
 	//build graphics zone
 	var svgZone = d3.select("#chart").append("svg")
@@ -223,26 +226,64 @@ function initGraphDisplay(){
 		$("#info-box #infoZone").html(log);
 	}
 	
-	function initToolBar(tb){
+	function ltbBox(selector){
+		var offset = 25;
+		$(selector).css({
+			'z-index': 10,
+			'position':'absolute', 
+			'top':(d3.event.pageY-offset),
+			'left':(d3.event.pageX-offset)
+			}).fadeIn('slow');
+		$(selector+" button").click(function(){$(selector).fadeOut('slow')});
+	}
+	
+	function initToolBar(tb,graphChoiceSelector,graphLangSelector){
+		//TODO : see if we can create a data structure and build this toolbar automatically 
+		var tPad = 40;
 		
-		//TODO : build a data structure with elements :
-		/*
-		 * image
-		 * click : function();
-		 * 
-		 * and then pass this structure to the builder (that position elements automaticaly) and bind function
-		 */
-		
+		//graph button
 		tb.append("image")
+			.attr("transform", "translate("+(tPad*0)+",0)")
 			.attr("x",0).attr("y",0)
 			.attr("preserveAspectRatio","xMidYMid meet")
 			.attr("viewBox","0 0 30 30")
 			.attr("width",30).attr("height",30)
-			.attr("xlink:href","img/info_32x32.png")
-			.on("click", openInfoBox)
+			.attr("xlink:href","img/document_32x32.png")
+			.on("click", function(){
+				ltbBox(graphChoiceSelector);
+			})
 		;
-			
+		
+		//lang button
 		tb.append("image")
+			.attr("transform", "translate("+(tPad*1)+",0)")
+			.attr("x",0).attr("y",0)
+			.attr("preserveAspectRatio","xMidYMid meet")
+			.attr("viewBox","0 0 30 30")
+			.attr("width",30).attr("height",30)
+			.attr("xlink:href","img/flag_32x32.png")
+			.on("click", function(){
+				ltbBox(graphLangSelector);
+			})
+			//TODO : use mouseover/mouseout in place of click : see how to get the panel static while in
+			/*
+			.on("mouseover", function(){
+				var test = this;
+				var t= this.getBoundingClientRect();
+				var y = this.getScreenCTM()
+				var val = d3.event.pageX;
+				$("#graphOneLangBox").css({'z-index': 10,'position':'relative', 'top':t.top,'left':t.left}).fadeIn('slow');
+				$("#graphOneLangBox").mouseover(function(){this.show();});
+				$("#graphOneLangBox").mouseout(function(){this.hide();});
+			})
+			.on("mouseout",function(){
+				$("#graphOneLangBox").fadeOut('slow');
+			})*/
+		;
+		
+		//info button
+		tb.append("image")
+			.attr("transform", "translate("+(tPad*2)+",0)")
 			.attr("x",0).attr("y",0)
 			.attr("preserveAspectRatio","xMidYMid meet")
 			.attr("viewBox","0 0 30 30")
@@ -252,16 +293,17 @@ function initGraphDisplay(){
 		;
 	}
 	
-	initToolBar(toolBar);
+	initToolBar(toolBarGraphOne,"#graphOneChoiceBox","#graphOneLangBox");
+	initToolBar(toolBarGraphTwo,"#graphTwoChoiceBox","#graphTwoLangBox");
 	
-	/**
-	 * en toolbar related code
-	 */
 	
-	/*** init display of the first graph ***/
+	
+	/*** init display of the first graph if graph uri in parameter***/
 	var graphOneURL = getURLargs()["uri"];
-
-	getGraph(graphOne,graphOneURL);
+	if(graphOneURL){
+		getGraph(graphOne,graphOneURL);
+	}
+	
 	
 	//load graph list
 	$.ajax({
@@ -274,8 +316,8 @@ function initGraphDisplay(){
 			data.graphUri.forEach(function (d){
 				opt += "<option value="+d+">"+d+"</option>";
 			});
-			$("#graphChoice").html(opt);
-			$("#graphChoice").change(function(){
+			$("#graphTwoChoice").html(opt);
+			$("#graphTwoChoice").change(function(){
 				val = $(this).attr("value");
 				if(val == '-1'){
 					graphTwo.selectAll("g.node,path.link")
@@ -307,7 +349,9 @@ function initGraphDisplay(){
 		}
 	});
 	
-	
+	/**
+	 * end toolbar related code
+	 */
 	
 	/************** end initialization of things *******/
 	//TODO : REMOVE this and use lh.sem.getPropValue instead
@@ -954,12 +998,16 @@ function initGraphDisplay(){
 	};
 	function dragmove(d,i){
 		
-		pnode = d3.select(this.parentNode);
+		//if drag-drop directly on the text (see bug describe in this file) : 
+		//pnode = d3.select(this.parentNode);
+		//when drag-drop call on the localTool bar
+		pnode = d3.select(this.parentNode.parentNode);
 		
 		d.x += d3.event.x+10;
 		d.y += d3.event.y+10;
 		
-		d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
+		//d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
+		pnode.attr("transform", "translate(" + d.x + "," + d.y + ")");
 	};
 	
 	function dragend(d,i){
