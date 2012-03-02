@@ -35,7 +35,7 @@
 	initPropArrays = function(){
 		
 		$.ajax({
-			url : "http://localhost:8080/skosifier/skosdefinition?type=properties",
+			url : lh.server+"skosifier/skosdefinition?type=properties",
 			type : "GET",
 			dataType : "json",
 			success: function(data){
@@ -45,7 +45,7 @@
 		});
 
 		$.ajax({
-			url : "http://localhost:8080/skosifier/skosdefinition?type=references",
+			url : lh.server+"skosifier/skosdefinition?type=references",
 			type : "GET",
 			dataType : "json",
 			success: function(data){
