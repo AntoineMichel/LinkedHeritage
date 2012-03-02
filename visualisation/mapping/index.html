@@ -100,6 +100,15 @@ rect.mover {
 #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
 
 
+	/*** style for panel that are displayed on click **/
+	.panel{
+		padding : 10px;
+		background-color : white;
+		border: 1px solid #fff;
+		border-radius:10px;
+		box-shadow: 10px 10px 5px #888888;
+	}
+
     </style>
   </head>
  <body>
@@ -129,18 +138,33 @@ rect.mover {
   	
   	<div id="graphOne" class="grid_6">
   		<h1>Configuration panel for graph One</h1>
-  		<div id="graphOneLangBox" style="display:none">
-  			Choose your language : 
+  		
+  		<div id="graphOneChoiceBox" class="panel" style="display:none">
+    		<p>Choose you graph :</p>
+    		<select id="graphOneChoice"></select>
+    		<button title="ok">ok</button>
+    	</div>
+  		
+  		<div id="graphOneLangBox" class="panel" style="display:none">
+  			<p>Choose your language :</p> 
   			<select id="graphOneLang" size="1"></select>
+  			<button title="ok">ok</button>
   		</div>
     </div>
     
     <div id="graphTwo" class="grid_6">
     <h1>Configuration panel for graph Two</h1>
-    	Choose you graph :
-    	<select id="graphChoice"></select>
-    	Choose your language : 
-  		<select id="graphTwoLang" size="1"></select>
+    	<div id="graphTwoChoiceBox" class="panel" style="display:none">
+    		<p>Choose you graph :</p>
+    		<select id="graphTwoChoice"></select>
+    		<button title="ok">ok</button>
+    	</div>
+    	
+    	<div id="graphTwoLangBox" class="panel" style="display:none">
+    		<p>Choose your language :</p> 
+  			<select id="graphTwoLang" size="1"></select>
+  			<button title="ok">ok</button>
+  		</div>
     </div>
     
     <div id="chart"></div>
