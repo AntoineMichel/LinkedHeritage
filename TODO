@@ -90,6 +90,8 @@ cleaning old code
 * graph visualisation
 ** add a color (and a tooltip) to "--undefined--" nodes
 
+* create a download with all languages and flag for a nice drop down
+
 == Bug existing graph loading ==
 
 * use branch existing-graph-loading

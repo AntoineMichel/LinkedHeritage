@@ -142,7 +142,7 @@ var tout; // timeout variable
 
 //TODO : make and object for this
 function initGraphDisplay(){
-	var m = [10, 120, 50, 120],
+	var m = [20, 120, 50, 120],
 	    //w = 1280 - m[1] - m[3],
 	    //h = 800 - m[0] - m[2],
 		w = 1280,
@@ -219,7 +219,7 @@ function initGraphDisplay(){
 	
 	function openInfoBox(){
 		$( "#info-box" ).dialog( "open" );
-		log = "<p> Detailled information of the selected node </p>";
+		log = "<p> Coming soon : </p><p> Display detailled informations when selecting a node.</p>";
 		$("#info-box #infoZone").html(log);
 	}
 	
@@ -323,7 +323,7 @@ function initGraphDisplay(){
 	//TODO : use the getProp val intead
 	function getLabel(d){
 		res = lh.sem.getPropValue("prefLabel",d);
-		if (!res) res = "---racine---";
+		if (!res) res = "---undefined---";
 		return res;
 	}
 	
