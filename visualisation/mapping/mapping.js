@@ -223,7 +223,7 @@ function initGraphDisplay(){
 		$("#info-box #infoZone").html(log);
 	}
 	
-	function initToolBar(){
+	function initToolBar(tb){
 		
 		//TODO : build a data structure with elements :
 		/*
@@ -233,17 +233,26 @@ function initGraphDisplay(){
 		 * and then pass this structure to the builder (that position elements automaticaly) and bind function
 		 */
 		
-		toolBar.append("image")
+		tb.append("image")
 			.attr("x",0).attr("y",0)
 			.attr("preserveAspectRatio","xMidYMid meet")
 			.attr("viewBox","0 0 30 30")
 			.attr("width",30).attr("height",30)
 			.attr("xlink:href","img/info_32x32.png")
-			.on("click", openInfoBox);
-			;
+			.on("click", openInfoBox)
+		;
+			
+		tb.append("image")
+			.attr("x",0).attr("y",0)
+			.attr("preserveAspectRatio","xMidYMid meet")
+			.attr("viewBox","0 0 30 30")
+			.attr("width",30).attr("height",30)
+			.attr("xlink:href","img/info_32x32.png")
+			.on("click", openInfoBox)
+		;
 	}
 	
-	initToolBar();
+	initToolBar(toolBar);
 	
 	/**
 	 * en toolbar related code
@@ -857,34 +866,38 @@ function initGraphDisplay(){
 		
 		ltbnode = d3.select(parentNode).append("g");
 		
+		//drag and drop
+		ltbnode
+		.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
+		.attr("id", "localToolBar")
+		.append("image")
+			.attr("x",0).attr("y",0)
+			.attr("preserveAspectRatio","xMidYMid meet")
+			.attr("viewBox","0 0 30 30")
+			.attr("width",30).attr("height",30)
+			.attr("xlink:href","img/transfer-down_up.png")
+			//TODO : put the dragdrop event on the text, but as D3 V2.7.4 there is a conflict with click event
+			// start with this and do a bug example : http://bl.ocks.org/1378144
+			.call(dragdrop)
+		;
+		
+		//create link
 		ltbnode
 			.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
 			.attr("id", "localToolBar")
 			.append("image")
+				.attr("transform", "translate(30,0)")
 				.attr("x",0).attr("y",0)
 				.attr("preserveAspectRatio","xMidYMid meet")
 				.attr("viewBox","0 0 30 30")
 				.attr("width",30).attr("height",30)
-				.attr("xlink:href","img/bridge-stone-new.png")
+				.attr("xlink:href","img/affiliation-abstract.png")
 				.on("click", createLinkClick)
 				.on("mouseover",moltb)
 				.on("mouseout",moutltb)
 			;
 		
-		ltbnode
-		.attr("transform", "translate(" + (txtNode.node().getComputedTextLength() + 10) + "," + (-25) + ")")
-		.attr("id", "localToolBar")
-		.append("image")
-			.attr("transform", "translate(30,0)")
-			.attr("x",0).attr("y",0)
-			.attr("preserveAspectRatio","xMidYMid meet")
-			.attr("viewBox","0 0 30 30")
-			.attr("width",30).attr("height",30)
-			.attr("xlink:href","img/redo_32x32.png")
-			//TODO : put the dragdrop event on the text, but as D3 V2.7.4 there is a conflict with click event
-			// start with this and do a bug example : http://bl.ocks.org/1378144
-			.call(dragdrop)
-		;
+		
 		return ltbnode.node();
 	}
 		
