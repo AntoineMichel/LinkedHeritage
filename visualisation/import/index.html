@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-
+	<title>Import your Thesaurus !</title>
 		<style type="text/css" title="currentStyle">
 			@import "css/demo_table.css";
 
@@ -11,7 +11,7 @@
 			@import "css/form.css";
 			
 			@import "../resources/css/header-footer.css";
-</style>
+	</style>
 	<script type="text/javascript" language="javascript" src="js/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" language="javascript" src="js/jquery-ui-1.8.17.custom.min.js"></script>
 	<script type="text/javascript" language="javascript" src="js/jquery.dataTables.min.js"></script>
@@ -32,37 +32,62 @@
 					$(form).find("input:filled").each(function(i, d) {
 						jmapping.metadata[d.name] = d.value;
 					});
-				$("#tabs").tabs("enable", 1).tabs("select", 1);
-			}
+					$("#tabs").tabs("enable", 1).tabs("select", 1);
+				}
 			
+			});
+
+			//validation enablement
+			$().ready(function() {
+				$("#metadataForm").validate();
+			});
+
+			//tab build
+			$("#tabs").tabs({
+				selected : 0,
+				disabled : [ 1, 2 ]
+			});
+			
+			//from metadata form to import part
+			$("#goToimport").click(function() {
+				$("#import-acc").accordion("activate", 2);
+			});
+
+			//accordion management
+			$("#import-acc").accordion({
+				autoHeight : false,
+				selected : 0,
+			});
+			
+			//handle file selection
+			$('#files').change(handleFileSelect);
+			
+			//build CSV config dialog
+			$CSVconfig = $("#CSVConfigBox").dialog({
+				autoOpen: false,
+				height: 260,
+				width: 560,
+				modal: true,
+				buttons: {
+					"Use this parameters": function() {
+						$( this ).dialog( "close" );
+					},
+					Cancel: function() {
+						$( this ).dialog( "close" );
+					}
+				},
+				close: function() {
+					
+				}
+			});
+			
+			//open the dialog on click
+			$("#showCSVConfig").click(function(){$CSVconfig.dialog("open");});
+			
+			//final validation of import
+			addSubmitEvent();
+
 		});
-
-		//validation enablement
-		$().ready(function() {
-			$("#metadataForm").validate();
-		});
-
-		//tab build
-		$("#tabs").tabs({
-			selected : 0,
-			disabled : [ 1, 2 ]
-		});
-
-		//accordion management
-		$("#import-acc").accordion({
-			autoHeight : false,
-			selected : 0,
-		});
-
-		$("#goToimport").click(function() {
-			$("#import-acc").accordion("activate", 2);
-		});
-
-		$('#files').change(handleFileSelect);
-		
-		addSubmitEvent();
-
-	});
 	</script>
 </head>
 <body>
@@ -268,7 +293,11 @@
 		</div>
 	</div>
 
-
+	<div id="CSVConfigBox"title="CSV configuration">
+    	<p>Comming soon : Here you will be able to configure your CSV properties and get a good import !</p>
+    	<br/>
+    	<p>For now your CSV files have to be tab separated and fields delimited by a double quote char (").</p>
+	</div>
 </body>
 </html>
 

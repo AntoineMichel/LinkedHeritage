@@ -1,4 +1,58 @@
 
+== Know limitations ==
+
+* Import CSV files with tab separated and fields delimited by double quote char (").
+
+* Only english, french and dutch are supported.
+** Import provide the list of all existing language, they will be all supported soon.
+** Please select at least one of the 3 supported language, because the limitation is on the graph rendering, and if you don't select one of the 3, you can't visualise your graph.
+
+* Can only import "flat" csv file for now
+
+* Visualisation of existing mapping : mapping done are saved on the server but not displayed when redraw (bug solve soon).
+
+* Color and global look of the website and elements.
+
+* integrity check for data filled during the import are not done. Please be carefull : 
+** of selecting unique and non null [title,creator] couple during the "information" step of the import
+** of selecting a value for all fields when you want to map a column. If you don't want to map one, don't change any drop down list.
+
+
+== Know functionnalities ==
+
+* Map yourself your "flat" CSV export files to a SKOS thesaurus. 
+** A convenient and easy user interface allow you to define transformations rules to get your "flat" CSV export a nice SKOS Thesaurus
+
+* Graph display and modification features :
+** That's really the focus of this alpha realease : provide a proof of concept for an easy way to create / modify and manage a thesaurus. During this dev cycle, many things were validated, and result is good for a first shot. Rest many rooms of improvment, but that's a good way, and many more comes in near future.
+** So, what you can do is : 
+*** Display your thesaurus in the language you want : click on the flag, and select your prefered language.
+*** Reorgenise your thesarus with drag and drop : override a term, you see a "local tool bar appearing
+
+
+== Futures fonctionnalities ==
+
+* improved import : 
+** import any CSV configuration (tab, space, comma,... delimiter)
+** direct import of SKOS RDF file in n3,xml,turtle format
+** import of "nested" CSV files
+** import of your specific CSV files (please provide them as example !)
+
+
+* Ontology history management : 
+** Actually - not showed on the UI - each modification is save and store in an history ontology file.
+** This done under the hood, but future will give the user access to it and allow him : 
+*** To see modifications done by others
+*** Revert modifications 
+*** Create new versions of the thesaurus from a set of modification.
+** Another good of this history management is that just the modification done is send to the server.
+*** So, it's fast, and if the server send modifications to others connected users... many users can colaboratively edit a thesaurus and see changes in "real time".
+*** Great feature no ? Comming soon ! :) 
+
+* Mapping management :
+** Visual meaning of links you can create many types of links... each type will have a specific design
+** Link filtering : display only links you are interested in ! 
+
 == For alpha 0.0.1 ==
 
 * define and create the js workflow for getting the history file
@@ -26,6 +80,15 @@ improve local toolbox display
 cleaning old code
 
 * solve bug about uncolorization of words
+
+* load functionnality : display a load object when needed
+
+* check integrity of mapping : 
+** verify the check and allow modifications when mapping is not ok :
+** checking done by import/lh.import.js/addSubmitEvent();
+
+* graph visualisation
+** add a color (and a tooltip) to "--undefined--" nodes
 
 == Bug existing graph loading ==
 

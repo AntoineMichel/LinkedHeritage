@@ -81,7 +81,7 @@ $("#submit").click(function(){
 				obj.rdfType = "skos:Concept"; //TODO : provide a configuration for this ?
 				break;
 			case P_VALUE:
-				alert($(dynZone).children("#pType").html());
+				//alert($(dynZone).children("#pType").html());
 				pT = $(dynZone).children("#pType").val();
 				pT != -1 ? obj.propType = pT : function(){alert("Select a propType");};
 				vLang = $(dynZone).children("#lang").val(); 
@@ -100,7 +100,7 @@ $("#submit").click(function(){
 			
 		if(obj != null){
 			jmapping.mapping.push(obj);
-		}
+		};
 	});
 	//send json to the serveur
 	//load graph list
@@ -115,8 +115,7 @@ $("#submit").click(function(){
 			window.location.replace(target);
 		}
 	});
-	/*result = JSON.stringify(jmapping);
-	alert(result);*/
+	
 	//redirect to the visualisation file
 	
 });
