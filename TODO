@@ -92,6 +92,10 @@ cleaning old code
 
 * create a download with all languages and flag for a nice drop down
 
+* vérifier la fréquence de création des ontohisto, car il semble qu'il s'en crée trop
+
+* apparement la modification de concepts lorsque 2 graph sont affichés ne fonctionne pas en direct live...
+
 == Bug existing graph loading ==
 
 * use branch existing-graph-loading
