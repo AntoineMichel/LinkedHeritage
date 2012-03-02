@@ -2,7 +2,13 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <title>Node-Link Tree</title>
+    <title>Modify and Map !</title>
+    
+    <!-- header and footer -->
+    <style type="text/css" title="currentStyle">
+			@import "../resources/css/header-footer.css";
+	</style>
+    
 	<!-- 960 related stuff -->
 	<link rel="stylesheet" type="text/css" media="all" href="css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="css/text.css" />
@@ -96,7 +102,19 @@ rect.mover {
 
     </style>
   </head>
-  <body>
+ <body>
+  <div id="header">
+		<div id="lhLogo"><a href="/"><image src="../resources/images/LinkedHeritage_logo.jpg"/></a></div>
+		<div id="imageHeader"></div>
+		<div id="header-menu">
+			<ul class="menu">
+				<li><a href="/import">Import your files</a></li>
+				<li><a href="/mapping">Map your thesaurus</a></li>
+				<li>&nbsp;</li>
+			</ul>
+		</div>
+	</div>
+	<div class="c"></div>
   	<div class="container_16">
   	<div id="devel" class="grid_16">
   		<div id="debug">Debug console</div>
@@ -153,5 +171,22 @@ rect.mover {
     	<p>drop down with type of links</p>
 	</div>
     
+    <div class="c"></div>
+	<div id="footer">
+		<div id="eu">
+		<table class="footerTable">
+		<tr>
+			<td>A project of</td><td><a href="http://www.linkedheritage.org/"><img src="../resources/images/LinkedHeritage_logo.jpg"  width="90" height="50"  alt="Linked Heritage Project"></a></td><td> Co-funded by the</td><td><img src="../resources/images/eu_icon.jpg"  width="40" height="30"  alt="European Union"></td>
+			</tr>
+		</table>
+		</div>
+		<div id="iks">
+		<table class="footerTable">
+			<tr>
+				<td>Powered by</td><td><a href="http://incubator.apache.org/stanbol/"><img src="../resources/images/stanbol-2010-12-14.png"  width="90" height="50"  alt="Apache Stanbol Project"></a></td><td>A product created by</td><td><a href="http://www.iks-project.eu/"><img src="../resources/images/iks_logo.jpg"  width="90" height="50"  alt="Interactive Knowledge Stack"></a></td>
+			</tr>
+		</table>
+		</div>
+	</div>
   </body>
 </html>
