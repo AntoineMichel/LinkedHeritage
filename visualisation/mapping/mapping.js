@@ -371,9 +371,11 @@ function initGraphDisplay(){
 			opt = "";
 			//default value
 			opt += "<option value='-1'>Choose the graph you want to map to.</option>";
-			data.graphUri.forEach(function (d){
-				opt += "<option value="+d+">"+d+"</option>";
-			});
+			if (data.graphUri){
+				data.graphUri.forEach(function (d){
+					opt += "<option value="+d+">"+d+"</option>";
+				});
+			}else{alert("No graph loaded in this repository, please import one !");}
 			$("#graphOneChoice").html(opt);
 			$("#graphTwoChoice").html(opt);
 			$("#graphOneChoice").change(function(){
