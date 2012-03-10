@@ -1,43 +1,4 @@
 
-== Know limitations ==
-
-* Import CSV files with tab separated and fields delimited by double quote char (").
-
-* Only english, french and dutch are supported.
-** Import provide the list of all existing language, they will be all supported soon.
-** Please select at least one of the 3 supported language, because the limitation is on the graph rendering, and if you don't select one of the 3, you can't visualise your graph.
-
-* Can only import "flat" csv file for now
-
-* Visualisation of existing mapping : mapping done are saved on the server but not displayed when redraw (bug solve soon).
-
-* Color and global look of the website and elements.
-
-* integrity check for data filled during the import are not done. Please be carefull : 
-** of selecting unique and non null [title,creator] couple during the "information" step of the import
-** of selecting a value for all fields when you want to map a column. If you don't want to map one, don't change any drop down list.
-
-
-== Know functionnalities ==
-
-* Map yourself your "flat" CSV export files to a SKOS thesaurus. 
-** A convenient and easy user interface allow you to define transformations rules to get your "flat" CSV export a nice SKOS Thesaurus
-
-* Graph display and modification features :
-** That's really the focus of this alpha realease : provide a proof of concept for an easy way to create / modify and manage a thesaurus. During this dev cycle, many things were validated, and result is good for a first shot. Rest many rooms of improvment, but that's a good way, and many more comes in near future.
-** So, what you can do is : 
-*** Display your thesaurus in the language you want : click on the flag, and select your prefered language.
-*** Reorgenise your thesarus with drag and drop : override a term, you see a "local tool bar appearing
-
-
-== Futures fonctionnalities ==
-
-* improved import : 
-** import any CSV configuration (tab, space, comma,... delimiter)
-** direct import of SKOS RDF file in n3,xml,turtle format
-** import of "nested" CSV files
-** import of your specific CSV files (please provide them as example !)
-
 
 * Ontology history management : 
 ** Actually - not showed on the UI - each modification is save and store in an history ontology file.
@@ -53,28 +14,24 @@
 ** Visual meaning of links you can create many types of links... each type will have a specific design
 ** Link filtering : display only links you are interested in ! 
 
+== Graph loading ==
+
+* deal with error message "ex : graph don't exist" : http://localhost/lh/versions/dev/lh/visualisation/mapping/?uri=http://cuture-heritage.org/thesaurus/florent/testFullCSVimport
+** 404
+
+* build a sexy and moving (loader : please wait while data loading)
+
 == For alpha 0.0.1 ==
 
 * define and create the js workflow for getting the history file
 ** the pb is related to the fact to only get "metadata" of the graph... because server side don't manage changes order
 
 * loading gadget during thesaurus loading
-* clean screen top : debug messages
-* create real tool bar : add graph selection and lang selection
-* activate the information panel
 
-* import rdf/xml
 * create from scratch
 
-* simplification of the form : only name, organisation name, and languages
-
-* manage language creation : on the first questionnaire and on the import
-
-* filtering graph mapping when request the second graph (server side modifications)
 
 integration into stanbol pages
-
-create graph from scratch
 
 improve local toolbox display
 cleaning old code
@@ -87,12 +44,7 @@ cleaning old code
 ** verify the check and allow modifications when mapping is not ok :
 ** checking done by import/lh.import.js/addSubmitEvent();
 
-* graph visualisation
-** add a color (and a tooltip) to "--undefined--" nodes
-
 * create a download with all languages and flag for a nice drop down
-
-* vérifier la fréquence de création des ontohisto, car il semble qu'il s'en crée trop
 
 * apparement la modification de concepts lorsque 2 graph sont affichés ne fonctionne pas en direct live...
 
@@ -100,40 +52,17 @@ cleaning old code
 
 * use branch existing-graph-loading
 
-* l'activation du code commenté dans 	function displayGraphLink(gr){
-** "corrupt" les index des datas et le graph ne peut plus se mettre à jour
-** le mieux serait d'utiliser les datas sous forme de triples et les indexes par les subjects
-
-= tester la différence entre le select et le databank
-
-= voir le résultat d'un sélect avec un contruct
 
 = voir quelle possibilité pour définir le data comme le triple
 ==> rewrite de la fonction "children" avec a.s = b.o
 
 
-== Project organisation ==*
-
-* mouve all css, images and js into the global "resources" folder.
-
-== Create graph from scratch ==
-
-* for creating a graph from nothing : 
-** displayGraph(graphTwo,{"@subject" : []});
-
 == Visualisation ==
 
-
-adding properties
 add mouse rool event to deal with scrollbar
-display properties of link with text along link
+
 manage links displays for link in the same graph
 
-== Thesaurus adding process ==
-
-* allow a "create from scratch process"
-
-* allow upload of "nested csv"
 
 == Form ==
 
