@@ -21,6 +21,15 @@
 	};
 	
 	
+	//utility for get keys/properties of an object
+	lh.utils.getKeys = function(obj){
+		var keys = [];
+		for(var key in obj){
+			keys.push(key);
+		}
+		return keys;
+	};
+	
 	////timer management
 	lh.utils.ta = new Array();
 	
@@ -69,6 +78,23 @@
 	
 	/////semantic part
 	lh.sem = {};
+	
+	//RDF query utility
+	//translate sujectIndex native object to and array of object {entity: , triples :}
+    lh.sem.subjectIndexAsArray = function(subjectsObj){
+   	 var res = [];
+   	 var subjectAsArray = lh.utils.getKeys(subjectsObj);
+   	 subjectAsArray.forEach(function(d){
+   		 var r = {};
+   		 r.entity = d;
+   		 r.triples = subjectsObj[d];
+   		 
+   		 res.push(r);
+   	 });
+   	 return res;
+    }
+	
+	
 	//TODO : use better nammings for properties
 	//TODO : remove duplication in mapping .js for getValues and getPropValues
 	function getValues(propObj,prop){
@@ -155,7 +181,8 @@ function initGraphDisplay(){
 	    ;
 	
 	var tree = d3.layout.tree()
-	    .size([h - m[0] - m[2], w - m[1] - m[3]])	
+	    .size([h - m[0] - m[2], w - m[1] - m[3]])
+	    
 		;
 	
 	var diagonal = d3.svg.line()
@@ -366,8 +393,6 @@ function initGraphDisplay(){
 			clearTimeout(wTout);
 			$wait.dialog("close");},
 		success: function(data){
-			//clearTimeout(wTout);
-			//$wait.dialog("close");
 			opt = "";
 			//default value
 			opt += "<option value='-1'>Choose the graph you want to map to.</option>";
@@ -1148,12 +1173,29 @@ function initGraphDisplay(){
 		//get Graph data
 		$.ajax({
 			url : lh.server+"skosifier?uri="+graphURI,
-			//accepts : "application/json",
-			headers : {"Accept":"application/json"},
-			dataType : "json",
+			//headers : {"Accept":"application/json"},
+			//dataType : "json",
+			headers : {"Accept":"application/rdf+xml"},
+			dataType : "xml",
 			success: function(data){
-				displayGraph(graphName, data);
+				//load sem data
+				alert("success TODO : sem load");
+				graphName.rdf = {};
+				graphName.rdf.databank = $.rdf.databank([],
+	                      	{ base: 'http://www.example.org/',
+                    		namespaces: { 
+                    			skos: 'http://www.w3.org/2004/02/skos/core#'
+                    			//, map: 'http://www.culture-terminology.org/ontology/mapping#'
+                    			}
+	                      	}
+				);
+
+				graphName.rdf.databank.load(data,{});
+				alert("end load");
+				//end loading sem data
 				graphName.graphURI = graphURI;
+				displayGraph(graphName, data);
+				
 			}
 		});
 	}
@@ -1194,20 +1236,7 @@ function initGraphDisplay(){
 		graphName.curLang = graphName.langArray[0];
 		graphLangSelector(graphName);
 		
-		//get the root of all ld subjects... .@Context is about NS infos
-	     rootf = json["@subject"];
-		
-		//select just certains elements in the json.
-		//be care full this seems to not apply for ie now (see here : http://stackoverflow.com/a/2722213)
-		// method use : http://stackoverflow.com/a/1694961 
-		// TODO : have a look at json path :
-		// here : http://code.google.com/p/jsonpath/
-		// and here : http://goessner.net/articles/JsonPath/
-		
-		objWithBroader = rootf.filter(function (p){return p.broader != null;});
-		objParent = rootf.filter(function(p){return p.broader == null;});
-		///
-		
+		//end lang hack
 		
 		function getChildren(d){
 			var globD = d;
@@ -1218,27 +1247,33 @@ function initGraphDisplay(){
 			d.ingraph = graphName;
 		}
 		
-	  graphName.root = json;
+		function collapse(d) {
+		    if (d.children) {
+		      d._children = d.children;
+		      d._children.forEach(collapse);
+		      d.children = null;
+		    }
+		  }
+		
+		graphName.root = {};
+		/*var rootf = json["@subject"];
+		var objWithBroader = rootf.filter(function (p){return p.broader != null;});
+		var objParent = rootf.filter(function(p){return p.broader == null;});
+		
+		graphName.root = json;
 	  
-	  graphName.root.ingraph = graphName;
+		graphName.root.ingraph = graphName;
 	  
-	  graphName.root.children = objParent;
-	  //build the tree :
-	  graphName.root.children.forEach(getChildren);
-	  //root.x0 = h / 2;
-	  graphName.root.x0 = 10;
-	  graphName.root.y0 = 0;
+		graphName.root.children = objParent;
+		graphName.root.children.forEach(getChildren);
+		graphName.root.children.forEach(collapse);
+		*/
+		
+		graphName.root.x0 = 10;
+		graphName.root.y0 = 0;
 	
-	  function collapse(d) {
-	    if (d.children) {
-	      d._children = d.children;
-	      d._children.forEach(collapse);
-	      d.children = null;
-	    }
-	  }
-	
-	  graphName.root.children.forEach(collapse);
-	  lh.graph.update(graphName, graphName.root);
+		
+		lh.graph.update(graphName, graphName.root);
 	
 	}
 	
@@ -1343,9 +1378,111 @@ function initGraphDisplay(){
 		//UpdateGraphLink();
 	}
 	
-	function updateGraphDisplay(graphName, source) {	
+	function updateGraphDisplay(graphName, source) {
+		var ns = { base: 'http://www.example.org/',
+        		namespaces: { 
+        			skos: 'http://www.w3.org/2004/02/skos/core#'
+        			//, map: 'http://www.culture-terminology.org/ontology/mapping#'
+        			}
+              	};
+		//getRoots means get all objects with no parents (skos:broader)
+		graphName.getRoots = function(){
+			//filter on the global graph
+			//var diff1 = r1.except(r2);
+			var allConcepts = $.rdf({databank : this.rdf.databank})
+    				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+    				.where("?ccp a skos:Concept");
+			
+			//allConcepts = $.rdf.databank(allConcepts,ns);
+			
+			var allConceptsWithProps = $.rdf({databank : this.rdf.databank})
+    					.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+    					.where("?ccp a skos:Concept")
+    					//TODO : configurable props
+    					.where("?ccp skos:broader ?parent");
+			var arr = [];
+			allConceptsWithProps.each(function(i,d){
+				//alert(i);
+				arr.push(d.ccp);
+			});
+			//allConceptsWithProps = $.rdf.databank(allConceptsWithProps,ns);
+			//all concepts without this props
+			//var AllConceptsWithoutProps = allConcepts.except(allConceptsWithProps);
+			var AllConceptsWithoutProps = allConcepts.filter(function(i,d){
+				//alert(allConceptsWithProps[d.ccp]);
+				return arr.indexOf(d.ccp) < 0 ;
+				
+			});
+			return AllConceptsWithoutProps;
+			
+			/*var result = $.rdf({databank : this.rdf.databank})
+	    		.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+	    		.where("?ccp a skos:Concept")
+	    		//put here the relation to test
+	    		.where("?ccp ?rel ?parent")
+	    		.filter(function(i,d){
+	    			alert(JSON.stringify(d.rel));
+	    			return d.parent == null ? false : true;
+	    		})
+	    		;
+			return result;
+			*/
+			/*var allSubjects = this.rdf.databank.subjectIndex;
+			var sIndex = lh.sem.subjectIndexAsArray(allSubjects);
+	   	    //alert(JSON.stringify(sIndex));
+	   	    //var sIndexSize = sIndex.length;
+	   	    
+	   	    //test of filtering
+	   	    var objWithNOBroader = sIndex.filter(function(obj){
+	   	    	tempDB = $.rdf.databank(obj.triples,
+                      	{ base: 'http://www.example.org/',
+                		namespaces: { 
+                			skos: 'http://www.w3.org/2004/02/skos/core#'
+                			//, map: 'http://www.culture-terminology.org/ontology/mapping#'
+                			}
+                      	}
+				);
+	   	    	//result = $.rdf({databank : obj.triples})
+	   	    	var result = $.rdf({databank : tempDB})
+	   	    		.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+	   	    		.where("?parent skos:broader ?children");
+	   	    	
+	   	    	//store the result of this request in a propertie.
+	   	    	//better : add a func for get it update always
+	   	    	
+	   	    	return result.length == 0 ? true : false;
+	   	    });
+	   	    return objWithNOBroader;*/
+		};
+		var gRoots = graphName.getRoots();
+		alert("test groots");
+		//TODO : create a for each gRoots and manage placing of them
+		var tempRoot = gRoots[0];
+		
+		graphName.getChildren = function(d){
+			var childrens = $.rdf({databank : graphName.rdf.databank})
+					.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+					.where("?ccp skos:broader "+d.ccp);
+			
+			//alert(JSON.stringify(childrens));
+			//TODO :
+			//tranform to array, see if needed
+			var childarr = [];
+			childrens.each(function(i,d){
+				//alert(i);
+				arr.push(d.ccp);
+			});
+			return childarr;
+		};
+		
+		//children computation
+		tree = tree.children(graphName.getChildren);
+		
+		//end children computation
+		
 	  // Compute the new tree layout.
-	  var nodes = tree.nodes(graphName.root);
+	  //var nodes = tree.nodes(graphName.root);
+		var nodes = tree.nodes(tempRoot);
 	  
 	  // Normalize for fixed-depth.
 	  nodes.forEach(function(d , i) { 
@@ -1396,7 +1533,8 @@ function initGraphDisplay(){
 	    	.attr("x", function(d) { return textOffset; })
 	        .attr("dy", ".35em")
 	        .attr("text-anchor", function(d) { return "start"; })
-	        .text(getLabel)
+	        //.text(getLabel)
+	        .text("TEXT NODE TODO")
 	        .style("fill-opacity", 1e-6)
 	        //event management
 	        .on("click", targetLinkClick)
@@ -1427,12 +1565,9 @@ function initGraphDisplay(){
 		
 		//if the language has changed, update the text
 		//TODO : see to set-up a change on condition
-		nodeUpdate.select("text").text(getLabel);
-		/*
-		if(changeLang){
-			nodeUpdate.select("text").text(getLabel);
-			changeLang = false;
-		}*/
+		//nodeUpdate.select("text").text(getLabel);
+	  nodeUpdate.select("text").text("TEXT NODE TODO");
+		
 		
 	  // Transition exiting nodes to the parent's new position.
 	  var nodeExit = node.exit().transition()
