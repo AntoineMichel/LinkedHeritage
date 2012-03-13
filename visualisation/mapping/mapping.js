@@ -1,12 +1,80 @@
 (function(){
 	
+	//-- arrays utilities
+	
 	//add the last() utility to array
 	if(!Array.prototype.last) {
 	    Array.prototype.last = function() {
 	        return this[this.length - 1];
-	    }
+	    };
 	}
-
+	
+	//lazy indexOf allow you to define your own comparator.
+	//this comparator must compare two variables and return true/false
+	//the first variable is the array caller param, the second is the variable pass to indexOf
+	if (!Array.prototype.lazyIndexOf) {  
+	    Array.prototype.lazyIndexOf = function (f,searchElement /*, fromIndex */ ) {  
+	        "use strict";  
+	        if (this == null) {  
+	            throw new TypeError();  
+	        }  
+	        var t = Object(this);  
+	        var len = t.length >>> 0;  
+	        if (len === 0) {  
+	            return -1;  
+	        }  
+	        var n = 0;  
+	        if (arguments.length > 0) {  
+	            n = Number(arguments[2]);
+	            if (n != n) { // shortcut for verifying if it's NaN  
+	                n = 0;  
+	            } else if (n != 0 && n != Infinity && n != -Infinity) {  
+	                n = (n > 0 || -1) * Math.floor(Math.abs(n));  
+	            }  
+	        }  
+	        if (n >= len) {  
+	            return -1;  
+	        }  
+	        var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);  
+	        for (; k < len; k++) {
+	            //if (k in t && t[k] === searchElement) {
+	        	if (k in t && f.call(this,t[k],searchElement)) {
+	                return k;  
+	            }  
+	        }  
+	        return -1;  
+	    };
+	} 
+	
+	//put many arrays in one, with unique element (remove duplicates)
+	//from : http://stackoverflow.com/a/7122370
+	Array.prototype.merge = function(/* variable number of arrays */){
+	    for(var i = 0; i < arguments.length; i++){
+	        var array = arguments[i];
+	        for(var j = 0; j < array.length; j++){
+	            if(this.indexOf(array[j]) === -1) {
+	                this.push(array[j]);
+	            }
+	        }
+	    }
+	    return this;
+	};
+	
+	//lazy merge, merge array with lazy comparator
+	Array.prototype.lazyMerge = function(f /* variable number of arrays */){
+	    for(var i = 1; i < arguments.length; i++){
+	        var array = arguments[i];
+	        for(var j = 0; j < array.length; j++){
+	            if(this.lazyIndexOf(f,array[j]) === -1) {
+	                this.push(array[j]);
+	            }
+	        }
+	    }
+	    return this;
+	};
+	
+	
+	//-- end arrays utilities
 	
 	lh.utils = {};
 	lh.utils.langSelector = function(selectNode, langArray, changeFunc){
@@ -119,12 +187,19 @@
 	}
 	
 	lh.sem.getPropValue = function(prop, d, lang){
+		
 		if(!lang) lang = d.ingraph.curLang;
-		result = d[prop];
+		/*result = d[prop];
 		if (d[prop] instanceof Array){
 			result = d[prop].filter(function(p){ return p["@language"] == lang;})[0];
 		}
-		return getValues(result,"@literal");
+		return getValues(result,"@literal");*/
+		
+		//TODO : take lang in account
+		return $.rdf({databank : d.ingraph.rdf.databank})
+				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+				.where(d.uri+" "+prop+" ?value");
+		
 	};
 	
 	//return an array with [{oldvalueOject},{newValueObject}]
@@ -457,8 +532,11 @@ function initGraphDisplay(){
 	//commodity function to get and set label to extract
 	//TODO : use the getProp val intead
 	function getLabel(d){
-		res = lh.sem.getPropValue("prefLabel",d);
-		if (!res) res = "---undefined---";
+		//res = lh.sem.getPropValue("prefLabel",d);
+		//if (!res) res = "---undefined---";
+		//return res;
+		var res = lh.sem.getPropValue("skos:prefLabel",d);
+		res.length == 0 ? res = "---undefined---" : res = res[0].value.value;
 		return res;
 	}
 	
@@ -1179,7 +1257,7 @@ function initGraphDisplay(){
 			dataType : "xml",
 			success: function(data){
 				//load sem data
-				alert("success TODO : sem load");
+				//alert("success TODO : sem load");
 				graphName.rdf = {};
 				graphName.rdf.databank = $.rdf.databank([],
 	                      	{ base: 'http://www.example.org/',
@@ -1191,7 +1269,7 @@ function initGraphDisplay(){
 				);
 
 				graphName.rdf.databank.load(data,{});
-				alert("end load");
+				//alert("end load");
 				//end loading sem data
 				graphName.graphURI = graphURI;
 				displayGraph(graphName, data);
@@ -1373,6 +1451,7 @@ function initGraphDisplay(){
 	//TODO : rename as updateDisplay()
 	lh.graph.update = function(graphName, source) {
 		updateGraphDisplay(graphName, source);
+		//displayNodes(graphName, source,source,source);
 		d3.transition().delay(duration).duration(duration/2)
 			.each("end", UpdateGraphLink);
 		//UpdateGraphLink();
@@ -1391,248 +1470,264 @@ function initGraphDisplay(){
 			//var diff1 = r1.except(r2);
 			var allConcepts = $.rdf({databank : this.rdf.databank})
     				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-    				.where("?ccp a skos:Concept");
+    				.where("?uri a skos:Concept");
 			
 			//allConcepts = $.rdf.databank(allConcepts,ns);
 			
 			var allConceptsWithProps = $.rdf({databank : this.rdf.databank})
     					.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-    					.where("?ccp a skos:Concept")
+    					.where("?uri a skos:Concept")
     					//TODO : configurable props
-    					.where("?ccp skos:broader ?parent");
+    					.where("?uri skos:broader ?parent");
 			var arr = [];
 			allConceptsWithProps.each(function(i,d){
 				//alert(i);
-				arr.push(d.ccp);
+				arr.push(d.uri);
 			});
 			//allConceptsWithProps = $.rdf.databank(allConceptsWithProps,ns);
 			//all concepts without this props
 			//var AllConceptsWithoutProps = allConcepts.except(allConceptsWithProps);
 			var AllConceptsWithoutProps = allConcepts.filter(function(i,d){
-				//alert(allConceptsWithProps[d.ccp]);
-				return arr.indexOf(d.ccp) < 0 ;
+				//alert(allConceptsWithProps[d.uri]);
+				return arr.indexOf(d.uri) < 0 ;
 				
 			});
-			return AllConceptsWithoutProps;
 			
-			/*var result = $.rdf({databank : this.rdf.databank})
-	    		.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-	    		.where("?ccp a skos:Concept")
-	    		//put here the relation to test
-	    		.where("?ccp ?rel ?parent")
-	    		.filter(function(i,d){
-	    			alert(JSON.stringify(d.rel));
-	    			return d.parent == null ? false : true;
-	    		})
-	    		;
-			return result;
-			*/
-			/*var allSubjects = this.rdf.databank.subjectIndex;
-			var sIndex = lh.sem.subjectIndexAsArray(allSubjects);
-	   	    //alert(JSON.stringify(sIndex));
-	   	    //var sIndexSize = sIndex.length;
-	   	    
-	   	    //test of filtering
-	   	    var objWithNOBroader = sIndex.filter(function(obj){
-	   	    	tempDB = $.rdf.databank(obj.triples,
-                      	{ base: 'http://www.example.org/',
-                		namespaces: { 
-                			skos: 'http://www.w3.org/2004/02/skos/core#'
-                			//, map: 'http://www.culture-terminology.org/ontology/mapping#'
-                			}
-                      	}
-				);
-	   	    	//result = $.rdf({databank : obj.triples})
-	   	    	var result = $.rdf({databank : tempDB})
-	   	    		.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-	   	    		.where("?parent skos:broader ?children");
-	   	    	
-	   	    	//store the result of this request in a propertie.
-	   	    	//better : add a func for get it update always
-	   	    	
-	   	    	return result.length == 0 ? true : false;
-	   	    });
-	   	    return objWithNOBroader;*/
+			if(!graphName._roots) graphName._roots = [];
+			
+			//graphName._roots.merge(AllConceptsWithoutProps);
+			graphName._roots.lazyMerge(function(a,b){
+						return a.uri == b.uri;
+					},
+					AllConceptsWithoutProps);
+			
+			//return AllConceptsWithoutProps;
+			return graphName._roots;
 		};
 		var gRoots = graphName.getRoots();
-		alert("test groots");
-		//TODO : create a for each gRoots and manage placing of them
-		var tempRoot = gRoots[0];
+		//alert("test groots");
 		
+		//add the ingraph property for all roots
+		gRoots.forEach(function(d,i){
+			d.ingraph = graphName;
+		});
+		
+		//TODO : create a for each gRoots and manage placing of them
+		//var tempRoot = gRoots[0];
+		
+		/*** children computation **/
 		graphName.getChildren = function(d){
 			var childrens = $.rdf({databank : graphName.rdf.databank})
 					.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-					.where("?ccp skos:broader "+d.ccp);
-			
-			//alert(JSON.stringify(childrens));
-			//TODO :
-			//tranform to array, see if needed
+					.where("?uri skos:broader "+d.uri);
+			//transform to array as used by D3
 			var childarr = [];
 			childrens.each(function(i,d){
 				//alert(i);
-				arr.push(d.ccp);
+				d.ingraph = graphName;
+				childarr.push(d);
 			});
+			
+			if(childarr.length == 0) childarr = undefined;
+			
+			//if d don't have ._children nor .children, init as collapsed
+			if (!d._children && !d.children){
+				d._children = childarr;
+				return [];
+			}
+			//if d have ._children (children collapsed), just update _children
+			if(d._children){
+				d._children = childarr;
+				return [];
+			}
+			//last case, d have children, just update it so return childarr
 			return childarr;
 		};
 		
 		//children computation
+		//if performance problem with sparql children computation, use the children computation during init as used in the old implementation.
 		tree = tree.children(graphName.getChildren);
 		
 		//end children computation
-		
-	  // Compute the new tree layout.
-	  //var nodes = tree.nodes(graphName.root);
-		var nodes = tree.nodes(tempRoot);
-	  
-	  // Normalize for fixed-depth.
-	  nodes.forEach(function(d , i) { 
-		  d.x = d.depth * 20 ; d.y = i * 15 ;
-		  });
-	  
-	  //build a scrollbar ?
-	  scrollbar(graphName,nodes);
-	  
-	  // Update the nodes…
-	  var node = graphName.selectAll("g.node")
-	      .data(nodes, function(d) { 
-	    	  //return d.id || (d.id = ++i); 
-	    	  return d["@subject"];
-	    	  });
-	
-	  // Enter any new nodes at the parent's previous position.
-	  var nodeEnter = node.enter().append("g")
-	      .attr("class", "node")
-	      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
-	     
-	      //.style("padding-right", "200px")
-	      .on("mouseover", mo)
-	      //set a delay on the mouseOut as the toolbar don't diseapear immedialty and let the user the time to reach the toolbar
-	      //.on("mouseout", moutDelay)
-	      .on("mouseout", mout)
-	      /*.call(function(d){
-	    	  var toto = "yo";
-	      })*/
-	      ;
-	  
-	  nodeEnter.each(function(d){d.displayed = true;});
-	  
-	  //$(nodeEnter).delegate("mouseover", function(){mo(this);});
-	  //$(nodeEnter).delegate("mouseout", function(){mout(this);});
-	
-	  nodeEnter.append("circle")
-	      .attr("r", 1e-6)
-	      .style("fill", function(d) { 
-	      	var test = d._children;
-	      	return d._children ? "lightsteelblue" : "#fff"; })
-	       //click event on the circle : open children
-		    .on("click", click)
-		    //.on("click", click(graphName))
-	       ;
-	
-	  nodeEnter.append("text")
-	    	.attr("x", function(d) { return textOffset; })
-	        .attr("dy", ".35em")
-	        .attr("text-anchor", function(d) { return "start"; })
-	        //.text(getLabel)
-	        .text("TEXT NODE TODO")
-	        .style("fill-opacity", 1e-6)
-	        //event management
-	        .on("click", targetLinkClick)
-	        .on("dblclick", doubleClick)
-	        //.call(dragdrop)
-	        
-	        //
-	        ;
-	
-	  // Transition nodes to their new position.
-	  var nodeUpdate = node.transition()
-	      .duration(duration)
-	      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-	      //after the endUpdateGraphLink(); of the first transition, a second one for link
-	      //.transition()
-	      //.duration(duration)
-	      //.
-	      ;
-	
-	  nodeUpdate.select("circle")
-	      .attr("r", 4.5)
-	      .style("fill", function(d) { 
-	      	var test = d._children;
-	      	return d._children ? "lightsteelblue" : "#fff"; });
-	
-	  nodeUpdate.select("text")
-	      .style("fill-opacity", 1);
-		
-		//if the language has changed, update the text
-		//TODO : see to set-up a change on condition
-		//nodeUpdate.select("text").text(getLabel);
-	  nodeUpdate.select("text").text("TEXT NODE TODO");
+		var offset = {};
+		offset.x = 0;
+		offset.y = 0;
+		gRoots.forEach(function(n,i){
+			offset = displayNodes(graphName,source,n,offset);
+			offset.y += 20;
+		});
 		
 		
-	  // Transition exiting nodes to the parent's new position.
-	  var nodeExit = node.exit().transition()
-	      .duration(duration)
-	      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
-	      .remove()
-	      ;
-	
-	  nodeExit.select("circle")
-	      .attr("r", 1e-6);
-	
-	  nodeExit.select("text")
-	      .style("fill-opacity", 1e-6);
-	  
-	  //nodeExit.remove();
-	  nodeExit.each(function(d){d.displayed = false;});
-	  
-	  //TODO : remove
-	  var test = tree.links(nodes);
-	  
-	  // Update the links…
-	  var link = graphName.selectAll("path.link")
-	      .data(tree.links(nodes), function(d) { return d.target.id; });
-	
-	  // Enter any new links at the parent's previous position.
-	  link.enter().insert("path", "g")
-	      .attr("class", "link")
-	      //.attr("text", function(d){ return "YO " + d.target.y;})
-	      .attr("d", function(d) {
-	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	      })
-	    //TODO : voir pour avoir une transition clean
-	    .transition()
-	      .duration(duration)
-	     //.attr("d", diagonal)
-	    .attr("d", function(d) {
-	        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	      })
-		;
-	
-	  // Transition links to their new position.
-	  link.transition()
-	      .duration(duration)
-		.attr("d", function(d) {
-			return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
-	      })
-		;
-		
-	
-	  // Transition exiting nodes to the parent's new position.
-	  link.exit().transition()
-	      .duration(duration)
-	      .attr("d", function(d) {
-	    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
-	      })
-	      .remove();
-		
-	  // Stash the old positions for transition.
-	  nodes.forEach(function(d) {
-	    d.x0 = d.x;
-	    d.y0 = d.y;
-	  });
-	  
 	}
 	
+	//TODO : remove the source param and get the position of the last node
+	function displayNodes(graphName, source, rootNode, offset){
+		
+
+		  // Compute the new tree layout.
+		  //var nodes = tree.nodes(graphName.root);
+		var nodes = tree.nodes(rootNode);
+		  
+		  // Normalize for fixed-depth.
+		  nodes.forEach(function(d , i) { 
+			  d.x = offset.x + d.depth * 20 ; d.y = offset.y + i * 15 ;
+			  });
+		  
+		  //build a scrollbar ?
+		  scrollbar(graphName,nodes);
+		  
+		  //alert("g.node[\""+rootNode.uri+"\"]");
+		  // Update the nodes…
+		  var node = graphName.selectAll("g.node[rootNode=\""+rootNode.uri+"\"]")
+		      .data(nodes, function(d) { 
+		    	  //return d.id || (d.id = ++i); 
+		    	  //return d["@subject"];
+		    	  return d.uri;
+		    	  });
+		
+		  // Enter any new nodes at the parent's previous position.
+		  var nodeEnter = node.enter().append("g")
+		      .attr("class", "node")
+		      .attr("rootNode",""+rootNode.uri)
+		      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
+		     
+		      //.style("padding-right", "200px")
+		      .on("mouseover", mo)
+		      //set a delay on the mouseOut as the toolbar don't diseapear immedialty and let the user the time to reach the toolbar
+		      //.on("mouseout", moutDelay)
+		      .on("mouseout", mout)
+		      /*.call(function(d){
+		    	  var toto = "yo";
+		      })*/
+		      ;
+		  
+		  //nodeEnter.each(function(d){d.displayed = true;});
+		  
+		  //$(nodeEnter).delegate("mouseover", function(){mo(this);});
+		  //$(nodeEnter).delegate("mouseout", function(){mout(this);});
+		
+		  nodeEnter.append("circle")
+		      .attr("r", 1e-6)
+		      .style("fill", function(d) { 
+		      	var test = d._children;
+		      	return d._children ? "lightsteelblue" : "#fff"; 
+		      	//return (!d.open && d.children) ? "lightsteelblue" : "#fff";
+		      	})
+		       //click event on the circle : open children
+			    .on("click", click)
+			    //.on("click", click(graphName))
+		       ;
+		
+		  nodeEnter.append("text")
+		    	.attr("x", function(d) { return textOffset; })
+		        .attr("dy", ".35em")
+		        .attr("text-anchor", function(d) { return "start"; })
+		        .text(getLabel)
+		        //.text("TEXT NODE TODO")
+		        .style("fill-opacity", 1e-6)
+		        //event management
+		        .on("click", targetLinkClick)
+		        .on("dblclick", doubleClick)
+		        //.call(dragdrop)
+		        
+		        //
+		        ;
+		
+		  // Transition nodes to their new position.
+		  var nodeUpdate = node.transition()
+		      .duration(duration)
+		      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+		      //after the endUpdateGraphLink(); of the first transition, a second one for link
+		      //.transition()
+		      //.duration(duration)
+		      //.
+		      ;
+		
+		  nodeUpdate.select("circle")
+		      .attr("r", 4.5)
+		      .style("fill", function(d) { 
+		      	var test = d._children;
+		      	return d._children ? "lightsteelblue" : "#fff"; });
+		
+		  nodeUpdate.select("text")
+		      .style("fill-opacity", 1);
+			
+			//if the language has changed, update the text
+			//TODO : see to set-up a change on condition
+			nodeUpdate.select("text").text(getLabel);
+			//nodeUpdate.select("text").text("TEXT NODE TODO");
+			
+			
+		  // Transition exiting nodes to the parent's new position.
+		  var nodeExit = node.exit().transition()
+		      .duration(duration)
+		      .attr("transform", function(d) { return "translate(" + source.y + "," + source.x + ")"; })
+		      .remove()
+		      ;
+		
+		  nodeExit.select("circle")
+		      .attr("r", 1e-6);
+		
+		  nodeExit.select("text")
+		      .style("fill-opacity", 1e-6);
+		  
+		  //nodeExit.remove();
+		  nodeExit.each(function(d){d.displayed = false;});
+		  
+		  //TODO : remove
+		  var test = tree.links(nodes);
+		  
+		  // Update the links…
+		  var link = graphName.selectAll("path.link[rootNode=\""+rootNode.uri+"\"]")
+		      .data(tree.links(nodes), function(d) { 
+		    	  //return d.target.id; 
+		    	  return d.source.uri+"=>"+d.target.uri;
+		    	  });
+		
+		  // Enter any new links at the parent's previous position.
+		  link.enter().insert("path", "g")
+		      .attr("class", "link")
+		      .attr("rootNode",""+rootNode.uri)
+		      //.attr("text", function(d){ return "YO " + d.target.y;})
+		      .attr("d", function(d) {
+		        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+		      })
+		    //TODO : voir pour avoir une transition clean
+		    .transition()
+		      .duration(duration)
+		     //.attr("d", diagonal)
+		    .attr("d", function(d) {
+		        return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+		      })
+			;
+		
+		  // Transition links to their new position.
+		  link.transition()
+		      .duration(duration)
+			.attr("d", function(d) {
+				return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+		      })
+			;
+			
+		
+		  // Transition exiting nodes to the parent's new position.
+		  link.exit().transition()
+		      .duration(duration)
+		      .attr("d", function(d) {
+		    	  return diagonal([[source.x,source.y],[d.target.x,d.target.y]]);
+		      })
+		      .remove();
+			
+		  // Stash the old positions for transition.
+		  nodes.forEach(function(d) {
+		    d.x0 = d.x;
+		    d.y0 = d.y;
+		  });
+		  
+		  //return the lastNode for use it as offset for next graphs
+		  return nodes.last();
+		
+	}
 	
 	
 	
