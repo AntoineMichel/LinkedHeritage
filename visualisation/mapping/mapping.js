@@ -1537,11 +1537,19 @@ function initGraphDisplay(){
 			}
 			//if d have ._children (children collapsed), just update _children
 			if(d._children){
-				d._children = childarr;
+				//d._children = childarr;
+				d._children.lazyMerge(function(a,b){
+					return a.uri == b.uri;
+				},
+				childarr);
 				return [];
 			}
-			//last case, d have children, just update it so return childarr
-			return childarr;
+			//last case, if d have children, update it and return children
+			d.children.lazyMerge(function(a,b){
+				return a.uri == b.uri;
+			},
+			childarr);
+			return d.children;
 		};
 		
 		//children computation
