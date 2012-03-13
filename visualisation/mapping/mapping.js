@@ -1617,7 +1617,6 @@ function initGraphDisplay(){
 		  nodeEnter.append("circle")
 		      .attr("r", 1e-6)
 		      .style("fill", function(d) { 
-		      	var test = d._children;
 		      	return d._children ? "lightsteelblue" : "#fff"; 
 		      	//return (!d.open && d.children) ? "lightsteelblue" : "#fff";
 		      	})
@@ -1733,7 +1732,9 @@ function initGraphDisplay(){
 		  });
 		  
 		  //return the lastNode for use it as offset for next graphs
-		  return nodes.last();
+		  //update the offset.y with the last node
+		  offset.y = nodes.last().y; 
+		  return offset;
 		
 	}
 	
