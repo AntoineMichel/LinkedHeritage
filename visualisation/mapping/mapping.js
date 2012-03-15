@@ -2,6 +2,13 @@
 	
 	//-- arrays utilities
 	
+	toArray = function(v){
+		return [].slice.call(v);
+	}
+	
+	//TODO : create a lib for array management
+	//look at array imps here and see if include in the lib : https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_nest	
+
 	//add the last() utility to array
 	if(!Array.prototype.last) {
 	    Array.prototype.last = function() {
@@ -73,6 +80,25 @@
 	    return this;
 	};
 	
+	//lazyunion : only keep elements in the original array that is in *all* params arrays
+	Array.prototype.lazyUnion = function(f /* variable number of arrays */){
+	    for(var i = 1; i < arguments.length; i++){
+	        var array = arguments[i];
+	        for(var j = 0; j < this.length; j++){
+	            if(array.lazyIndexOf(f,this[j]) === -1) {
+	                //this.push(array[j]);
+	                this.splice(j,j);
+	            }
+	        }
+	    }
+	    return this;
+	};
+	
+	//TODO : test if multiple array is well passing throw
+	Array.prototype.lazyUnionAndMerge = function(f /* variable number of arrays */){
+		this.lazyUnion.apply(this, arguments);
+		this.lazyMerge.apply(this, arguments);
+	};
 	
 	//-- end arrays utilities
 	
@@ -1172,27 +1198,37 @@ function initGraphDisplay(){
 	
 	function dragend(d,i){
 		
-		txt = "drag END :" + getLabel(d) + ":::" + getLabel(target);
-		d3.select("#dragend").text(txt);
-		
-		
 		//if the drag move to the same place, or to a different graph, do nothing
 		if( (target != d) && (d.ingraph == target.ingraph)){
-		
-		//remove this object from his parent's children list
-		childrenOfParent = d.parent.children;
-		childrenOfParent.splice(childrenOfParent.indexOf(d), 1);
-		
-		//put this object as children of the target (his new parent)
-		childrenOfTarget = collapsed(target) ? target._children : target.children;
-		//if this is the first children of the target
-		if(childrenOfTarget == null){
-			//collapsed is false for sure (no children), so we create a new target.children
-			target.children = new Array();
-			childrenOfTarget = target.children;
-		}
-		childrenOfTarget.push(d);
-		lh.graph.update(target.ingraph, target);
+			
+			//TODO : history management and sending for this modification
+			//for the history and triple management, add a .remove and .add to the graph, this methods deal with local graph and history
+			if(d.parent){
+				target.ingraph.rdf.databank.remove(d.uri +" skos:broader "+d.parent.uri);
+			}
+			//create the new link beetween d and the target
+			//todo : use the {?parent skos:relation ?children} tip 
+			//for example here it's an inverse relation {?child skos:broader ?parent}
+			target.ingraph.rdf.databank.add(d.uri +" skos:broader "+target.uri);
+			
+			
+			//remove the object from the display
+			d3.select(this.parentNode.parentNode).remove();
+			
+			//remove this object from his parent's children list
+			/*childrenOfParent = d.parent.children;
+			childrenOfParent.splice(childrenOfParent.indexOf(d), 1);
+			
+			//put this object as children of the target (his new parent)
+			childrenOfTarget = collapsed(target) ? target._children : target.children;
+			//if this is the first children of the target
+			if(childrenOfTarget == null){
+				//collapsed is false for sure (no children), so we create a new target.children
+				target.children = new Array();
+				childrenOfTarget = target.children;
+			}
+			childrenOfTarget.push(d);*/
+			lh.graph.update(target.ingraph, target);
 		}
 		//if not respect contraint, redraw
 		else{ lh.graph.update(d.ingraph,d);}
@@ -1464,6 +1500,7 @@ function initGraphDisplay(){
         			//, map: 'http://www.culture-terminology.org/ontology/mapping#'
         			}
               	};
+		
 		//getRoots means get all objects with no parents (skos:broader)
 		graphName.getRoots = function(){
 			//filter on the global graph
@@ -1495,7 +1532,16 @@ function initGraphDisplay(){
 			
 			if(!graphName._roots) graphName._roots = [];
 			
-			//graphName._roots.merge(AllConceptsWithoutProps);
+			//as lazyUnion need array, transform object to array
+			var AllConceptsWithoutPropsArray = toArray(AllConceptsWithoutProps);
+			
+			//lazy union for only get elements in both arrays ie remove old elements in graphName._roots
+			graphName._roots.lazyUnion(function(a,b){
+							return a.uri == b.uri;
+						},
+						AllConceptsWithoutPropsArray);
+			
+			//lazy merge in order to add new elements from the request to the _root array
 			graphName._roots.lazyMerge(function(a,b){
 						return a.uri == b.uri;
 					},
@@ -1537,15 +1583,15 @@ function initGraphDisplay(){
 			}
 			//if d have ._children (children collapsed), just update _children
 			if(d._children){
-				//d._children = childarr;
-				d._children.lazyMerge(function(a,b){
+				//lazy union and merge for remove element in _children not in childarr and then add new childarr elements
+				d._children.lazyUnionAndMerge(function(a,b){
 					return a.uri == b.uri;
 				},
 				childarr);
 				return [];
 			}
 			//last case, if d have children, update it and return children
-			d.children.lazyMerge(function(a,b){
+			d.children.lazyUnionAndMerge(function(a,b){
 				return a.uri == b.uri;
 			},
 			childarr);
@@ -1560,6 +1606,14 @@ function initGraphDisplay(){
 		var offset = {};
 		offset.x = 0;
 		offset.y = 0;
+		
+		/*var n = graphName.selectAll("g.node")
+	      .data(gRoots, function(d) { 
+	    	  return d.uri;
+	    	  });
+		
+		n.exit().remove();*/
+		
 		gRoots.forEach(function(n,i){
 			offset = displayNodes(graphName,source,n,offset);
 			offset.y += 20;

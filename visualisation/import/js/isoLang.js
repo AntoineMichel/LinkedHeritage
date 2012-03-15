@@ -13,6 +13,8 @@ function getIsoOptions(){
 /**
  * from : http://stackoverflow.com/a/4900304
  * improvment ? : parse this file : http://loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
+ * or more nice, use the thesaurus from the librairie of congres : http://id.loc.gov/download/
+ * 
  */
 var isoLangs = {
     ab : {
