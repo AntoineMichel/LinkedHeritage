@@ -233,32 +233,7 @@
 	
 	
 	lh.modify.buildDialog = function(d){
-		node = d;
 		
-		//**** TODO : use lh.history.createLocalChange
-		//define the base for this localhistory
-		lh.history.ns.base = d.ingraph.history.hroot.toString();
-		lh.history.hRootNode = $.rdf.resource("<"+d.ingraph.history.hroot+">");
-		
-		lh.history.rdfChanges = $.rdf.databank([],lh.history.ns);
-		
-		//lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
-		//lh.history.hRootNode = "<"+d.ingraph.history.hroot+">";
-		//alert(lh.history.hRootNode);
-		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
-		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
-		
-		/*alert("test if != databank");
-		var serializer = new XMLSerializer();
-		var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
-		var graphdump = d.ingraph.history.rdfChanges.dump({format:'application/rdf+xml'});
-		alert(serializer.serializeToString(localdump));
-		alert(serializer.serializeToString(graphdump));
-		alert("end test");*/
-		
-		//**** TODO : end use lh.history.createLocalChange
-		
-		//d.updatedTriples = {};
 		function createField(val){
 			res = $("<textarea rows='1' />");
 			//attributes to identify the field
@@ -287,7 +262,55 @@
 			});
 			
 			return res;
-		}
+		};
+		
+		function addPropertyTab(jqtabs,propName){
+			
+			tab_content = createField(propName);
+			$tabs.tabs("add","#tabs-"+propName,propName,($tabs.tabs("length") - 1));
+			//open the just created tab
+			$tabs.tabs("select",($tabs.tabs("length") - 2));
+			var langSel = $("#modifyLang")[0];
+			var l = langSel.options[langSel.selectedIndex].value;
+			lh.history.create(node,propName,null,l);
+		};
+		
+		function getActiveLinks(){
+			var res = $("<ul></ul>");
+			a.forEach(function(val,i){
+				//keep only properties that are not actually presents
+				if (!d[val]){
+					res.append($('<li></li>').append($('<a href="#'+val+'">'+val+'</a>').click(function(){addPropertyTab($tabs,val);})));
+				}
+			});
+			return res;
+		};
+		
+		var node = d;
+		
+		//**** TODO : use lh.history.createLocalChange
+		//define the base for this localhistory
+		lh.history.ns.base = d.ingraph.history.hroot.toString();
+		lh.history.hRootNode = $.rdf.resource("<"+d.ingraph.history.hroot+">");
+		
+		lh.history.rdfChanges = $.rdf.databank([],lh.history.ns);
+		
+		//lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
+		//lh.history.hRootNode = "<"+d.ingraph.history.hroot+">";
+		//alert(lh.history.hRootNode);
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
+		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
+		
+		/*alert("test if != databank");
+		var serializer = new XMLSerializer();
+		var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+		var graphdump = d.ingraph.history.rdfChanges.dump({format:'application/rdf+xml'});
+		alert(serializer.serializeToString(localdump));
+		alert(serializer.serializeToString(graphdump));
+		alert("end test");*/
+		
+		//**** TODO : end use lh.history.createLocalChange
+		
 		
 		lh.utils.langSelector( $("#modifyLang"), d.ingraph.langArray,
 				function(){
@@ -300,7 +323,7 @@
 					});
 		});
 		
-		var a = skosOnto.getValues();
+		
 		
 		var tab_content;
 		var tabTemplateSimple = "<li><a href='#{href}'>#{label}</a>";
@@ -331,6 +354,7 @@
 		}
 		
 		txt = "";
+		var a = skosOnto.getValues();
 		a.forEach(function(val){ 
 			if(d[val]){
 				//ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
@@ -340,27 +364,7 @@
 			} 
 		});
 		
-		function addPropertyTab(jqtabs,propName){
-			
-			tab_content = createField(propName);
-			$tabs.tabs("add","#tabs-"+propName,propName,($tabs.tabs("length") - 1));
-			//open the just created tab
-			$tabs.tabs("select",($tabs.tabs("length") - 2));
-			var langSel = $("#modifyLang")[0];
-			var l = langSel.options[langSel.selectedIndex].value;
-			lh.history.create(node,propName,null,l);
-		}
 		
-		function getActiveLinks(){
-			var res = $("<ul></ul>");
-			a.forEach(function(val,i){
-				//keep only properties that are not actually presents
-				if (!d[val]){
-					res.append($('<li></li>').append($('<a href="#'+val+'">'+val+'</a>').click(function(){addPropertyTab($tabs,val);})));
-				}
-			});
-			return res;
-		}
 		
 		//add the + tab
 		//put a simple tab template (this tab is not closable
