@@ -632,6 +632,10 @@ function initGraphDisplay(){
 	lh.modify.initModifyUI("#dialog-form");
 	
 	function doubleClick(d) {
+		/*localEvent.doubleClick = true;
+		d3.event.stopPropagation();
+		d3.event.preventDefault();*/
+		
 		//create the dialog form 
 		// 1) get avalaible language for the graph
 		// 2) get list of properties and existing properties in this object (see A)
@@ -1070,7 +1074,9 @@ function initGraphDisplay(){
 	//////////// mouseOver Related code
 	var target; 
 	var onltb = false;
-	var onDragAndDrop = false;
+	var DandD = {};
+	var localEvent = {};
+	DandD.onDragAndDrop = false;
 	
 	function moltb(d){
 		d3.select("#mover").text("MO TOOL BAR");
@@ -1127,7 +1133,6 @@ function initGraphDisplay(){
 				.on("mouseout",moutltb)
 			;
 		
-		
 		return ltbnode.node();
 	}
 		
@@ -1135,7 +1140,7 @@ function initGraphDisplay(){
 	//TODO : rename to : attach
 	function mo(d,i){
 		
-		if (!onDragAndDrop){
+		if (!DandD.onDragAndDrop){
 			yo = "";
 			if (ltb){
 				rmTB(ltb);
@@ -1144,7 +1149,7 @@ function initGraphDisplay(){
 			ltb = buildToolBar(this);
 		}
 		else {
-			target = d
+			target = d;
 			var txtNode =  d3.select(this).select("text");
 			txtNode.attr("fill", "red");
 		};
@@ -1164,7 +1169,7 @@ function initGraphDisplay(){
 	
 	
 	function mout(d,i){
-		if(!onDragAndDrop){
+		if(!DandD.onDragAndDrop){
 			node = this;
 			//lh.utils.addTevent(rmTB,this, 5000);
 			//ltb.remove();
@@ -1177,23 +1182,68 @@ function initGraphDisplay(){
 	////////////end mouseOver Related code
 	
 	function dragstart(d,i){
-		//alert("");
-		//txt = "start Drag :" + getLabel(d);
-		//d3.select("#debug").text(txt);
-		onDragAndDrop = true;
+		
+		DandD.onDragAndDrop = true;
+		
+		//nodes and links that mouves
+		var nodes = tree.nodes(d);
+		
+		//var posi = d3.mouse(d.ingraph[0][0]);
+		var offset = {};
+		
+		// Normalize for fixed-depth.
+		//required for not have node anywhere... see why required
+		nodes.forEach(function(d , i) { 
+			d.x = d.depth * 20 ; 
+			d.y = i * 15 ;
+		});
+		
+		//DandD.node= d.ingraph.selectAll("g.node[rootNode=\""+d.uri+"\"]")
+		DandD.node= d.ingraph.selectAll("g.node")
+	      .data(nodes, function(d) { 
+	    	  return d.uri;
+	    	  });
+		
+		//DandD.link = d.ingraph.selectAll("path.link[rootNode=\""+d.uri+"\"]")
+		DandD.link = d.ingraph.selectAll("path.link")
+	      .data(tree.links(nodes), function(d) { 
+	    	  //return d.target.id; 
+	    	  return d.source.uri+"=>"+d.target.uri;
+	    	  });
+		
 	};
 	function dragmove(d,i){
+		var mv = {};
+		mv.x = d3.event.x+10;
+		mv.y = d3.event.y+10;
+		//var posi = d3.mouse(d.ingraph[0][0]);
+		// Update the nodes…
+		
+		DandD.node.attr("transform", 
+				function(r){
+					r.x += d3.event.x+10;
+					r.y += d3.event.y+10;
+					return "translate(" + r.x + "," + r.y + ")";
+				}
+				);
+		
+		// Update the links…
+		  // Transition links to their new position.
+		  DandD.link.attr("d", function(d) {
+				return diagonal([[d.source.x,d.source.y],[d.target.x,d.target.y]]);
+		      })
+			;
 		
 		//if drag-drop directly on the text (see bug describe in this file) : 
 		//pnode = d3.select(this.parentNode);
 		//when drag-drop call on the localTool bar
-		pnode = d3.select(this.parentNode.parentNode);
+		/*pnode = d3.select(this.parentNode.parentNode);
 		
 		d.x += d3.event.x+10;
 		d.y += d3.event.y+10;
 		
 		//d3.select(this.parentNode).attr("transform", "translate(" + d.x + "," + d.y + ")");
-		pnode.attr("transform", "translate(" + d.x + "," + d.y + ")");
+		pnode.attr("transform", "translate(" + d.x + "," + d.y + ")");*/
 	};
 	
 	function dragend(d,i){
@@ -1213,7 +1263,9 @@ function initGraphDisplay(){
 			
 			
 			//remove the object from the display
-			d3.select(this.parentNode.parentNode).remove();
+			//d3.select(this.parentNode.parentNode).remove();
+			
+			//d3.select(this).remove();
 			
 			//remove this object from his parent's children list
 			/*childrenOfParent = d.parent.children;
@@ -1232,7 +1284,7 @@ function initGraphDisplay(){
 		}
 		//if not respect contraint, redraw
 		else{ lh.graph.update(d.ingraph,d);}
-		onDragAndDrop = false;
+		DandD.onDragAndDrop = false;
 		
 	};
 	
@@ -1607,13 +1659,14 @@ function initGraphDisplay(){
 		offset.x = 0;
 		offset.y = 0;
 		
-		/*var n = graphName.selectAll("g.node")
+		//remove root node that can be merge as sub-nodes
+		var n = graphName.selectAll("g.node")
 	      .data(gRoots, function(d) { 
 	    	  return d.uri;
 	    	  });
+		n.exit().remove();
 		
-		n.exit().remove();*/
-		
+		//display all sub-nodes of roots
 		gRoots.forEach(function(n,i){
 			offset = displayNodes(graphName,source,n,offset);
 			offset.y += 20;
@@ -1690,6 +1743,7 @@ function initGraphDisplay(){
 		        .on("click", targetLinkClick)
 		        .on("dblclick", doubleClick)
 		        //.call(dragdrop)
+		        //.call(testCall)
 		        
 		        //
 		        ;
@@ -1732,8 +1786,8 @@ function initGraphDisplay(){
 		  nodeExit.select("text")
 		      .style("fill-opacity", 1e-6);
 		  
-		  //nodeExit.remove();
-		  nodeExit.each(function(d){d.displayed = false;});
+		  nodeExit.remove();
+		  //nodeExit.each(function(d){d.displayed = false;});
 		  
 		  //TODO : remove
 		  var test = tree.links(nodes);

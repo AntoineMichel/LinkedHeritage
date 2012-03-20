@@ -304,7 +304,7 @@
 		
 		var tab_content;
 		var tabTemplateSimple = "<li><a href='#{href}'>#{label}</a>";
-		var tabTemplateWithClose = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>"
+		var tabTemplateWithClose = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>";
 		var $tabs = $("#tabs").tabs({
 			tabTemplate: tabTemplateWithClose,
 			add: function( event, ui ) {
@@ -338,11 +338,9 @@
 				tab_content = createField(val);
 				$tabs.tabs( "add", '#tabs-'+val,val );
 			} 
-			});
+		});
 		
 		function addPropertyTab(jqtabs,propName){
-			
-			//var propName = $(this).attr("p");//"PROPNAME"; //this.attr ?? (this = a)
 			
 			tab_content = createField(propName);
 			$tabs.tabs("add","#tabs-"+propName,propName,($tabs.tabs("length") - 1));
