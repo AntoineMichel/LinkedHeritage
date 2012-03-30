@@ -1571,7 +1571,7 @@ function initGraphDisplay(){
 		offset.y = 0;
 		
 		//remove root node that can be merge as sub-nodes
-		var n = graphName.selectAll("g.node")
+		var n = graphName.selectAll("g.node[isRoot='true']")
 	      .data(gRoots, function(d) { 
 	    	  return d.uri;
 	    	  });
@@ -1615,6 +1615,7 @@ function initGraphDisplay(){
 		  var nodeEnter = node.enter().append("g")
 		      .attr("class", "node")
 		      .attr("rootNode",""+rootNode.uri)
+		      .attr("isRoot",function(d,i){ return i==0 ;})
 		      .attr("transform", function(d) { return "translate(" + source.y0 + "," + source.x0 + ")"; })
 		     
 		      //.style("padding-right", "200px")
@@ -1683,7 +1684,6 @@ function initGraphDisplay(){
 			nodeUpdate.select("text").text(getLabel);
 			//nodeUpdate.select("text").text("TEXT NODE TODO");
 			
-			
 		  // Transition exiting nodes to the parent's new position.
 		  var nodeExit = node.exit().transition()
 		      .duration(duration)
@@ -1698,10 +1698,11 @@ function initGraphDisplay(){
 		      .style("fill-opacity", 1e-6);
 		  
 		  nodeExit.remove();
+		  
 		  //nodeExit.each(function(d){d.displayed = false;});
 		  
 		  //TODO : remove
-		  var test = tree.links(nodes);
+		  //var test = tree.links(nodes);
 		  
 		  // Update the links…
 		  var link = graphName.selectAll("path.link[rootNode=\""+rootNode.uri+"\"]")
