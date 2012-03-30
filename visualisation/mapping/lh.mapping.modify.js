@@ -1,4 +1,15 @@
-
+//TODO : try to override the jquery with add a s,p,o properties to objects
+(function(){
+	semUI = (function(){
+		semUI.fn = semUI.prototype = {
+				constructor: semUI,
+				init: function( selector, context, rootjQuery ){
+					return $(selector,context,rootjQuery);
+				}
+		};
+	});
+	
+})();
 (function(){
 	//TODO : create an object with new in order to be able to have "locals" changes for the dialog box,
 	//local changes that are merged when modifications validates.
@@ -231,16 +242,39 @@
 	};
 	
 	
-	
 	lh.modify.buildDialog = function(d){
 		
-		function createField(val){
-			res = $("<textarea rows='1' />");
+		function createField(p,o){
+			var overjq = semUI("<textarea rows='1' />");
+			var res = $("<textarea rows='1' />");
 			//attributes to identify the field
-			$(res).attr("predicate",val);
-			$(res).attr("language",d.ingraph.curLang);
-			data = lh.sem.getPropValue(val, d);
-			data ? $(res).val(data) : $(res).attr("placeholder","Value not set for this language");
+			res.p = function(v){
+				if(!v){
+					return this.p._data;
+				}
+				else{
+					this.p._data = v;
+					this.attr("predicate",p);
+				}
+			};
+			res.o = function(o){
+				if(!o){
+					return this.p._data;
+				}
+				else{
+					this.p._data = o;
+					this.attr("language",o.lang);
+					o ? this.val(o.value) : this.attr("placeholder","Value not set for this language");
+				}
+			};
+			res.p(p);
+			res.o(o);
+			alert(res.p());
+			//$(res).attr("predicate",p);
+			//$(res).attr("language",o.lang);
+			//data = lh.sem.getPropValue(val, d);
+			//data = po.o;
+			o ? $(res).val(o.value) : $(res).attr("placeholder","Value not set for this language");
 			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
 			 * see tabs for 1st part of workaround
 			 */
@@ -264,23 +298,49 @@
 			return res;
 		};
 		
+		function createFields(po){
+			var $container = $("<div> </div>");
+			//var data = po.o;
+			var $field = $("<p> </p>");
+			if($.isArray(po.o)){
+				po.o.forEach(function(vo,i){
+					$container = $field.append(createField(po.p,vo));
+				});
+			}else{
+				$container = $field.append(createField(po.p,po.o));
+			}
+			return $container;
+		}
+		
 		function addPropertyTab(jqtabs,propName){
-			
-			tab_content = createField(propName);
-			$tabs.tabs("add","#tabs-"+propName,propName,($tabs.tabs("length") - 1));
-			//open the just created tab
-			$tabs.tabs("select",($tabs.tabs("length") - 2));
+			//get current language
 			var langSel = $("#modifyLang")[0];
 			var l = langSel.options[langSel.selectedIndex].value;
+			
+			//tab_content = createField(propName);
+			var emptyLit = $.rdf.literal("" , {lang : "fr"});
+			tab_content = createField(propName,emptyLit);
+			$tabs.tabs("add","#tabs-"+propName.value.fragment,propName.value.fragment,($tabs.tabs("length") - 1));
+			//open the just created tab
+			$tabs.tabs("select",($tabs.tabs("length") - 2));
+			
+			alert("TODO : create an history here ? maybe not, just when a value is filled");
 			lh.history.create(node,propName,null,l);
 		};
 		
 		function getActiveLinks(){
 			var res = $("<ul></ul>");
+			//TODO : optimise this, use a clean export for skos properties
+			//TODO : for genericity, pass the full uri for "val"
 			a.forEach(function(val,i){
+				var hasprop = propObjList.filter(function(i,po){
+					return po.p.value.fragment == val;
+				});
 				//keep only properties that are not actually presents
-				if (!d[val]){
-					res.append($('<li></li>').append($('<a href="#'+val+'">'+val+'</a>').click(function(){addPropertyTab($tabs,val);})));
+				if (hasprop.length == 0){
+					//res.append($('<li></li>').append($('<a href="#'+val+'">'+val+'</a>').click(function(){addPropertyTab($tabs,val);})));
+					var p = $.rdf.resource("skos:"+val,lh.history.ns);
+					res.append($('<li></li>').append($('<a href="#'+val+'">'+val+'</a>').click(function(){addPropertyTab($tabs,p);})));
 				}
 			});
 			return res;
@@ -317,7 +377,8 @@
 					var lang = this.options[this.selectedIndex].value; 
 					$( "#dialog-form textarea" ).each(function(n){
 						$(this).attr("language",lang);
-						val = lh.sem.getPropValue($(this).attr("predicate"),d, lang);
+						//propObjList.
+						var val = lh.sem.getPropValue($(this).attr("predicate"),d, lang);
 						
 						val ? $(this).val(val) : $(this).val("");
 					});
@@ -355,14 +416,27 @@
 		
 		txt = "";
 		var a = skosOnto.getValues();
-		a.forEach(function(val){ 
-			if(d[val]){
+		var propObjList = $.rdf({databank : d.ingraph.rdf.databank})
+						.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+						.where(d.uri+" ?p ?o")
+						.group('p');
+		//propObjList.group();
+		propObjList.each(function(i,po){
+			//TODO : here we limit to literal, see UI for remove this limitation (link ?)
+			//also, use the type/link filter to only get literal
+			if(po.p != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"){
+				tab_content = createFields(po);
+				$tabs.tabs( "add", '#tabs-'+po.p.value.fragment,po.p.value.fragment );
+			}
+		});
+		//a.forEach(function(val){ 
+			//if(d[val]){
 				//ulTabs = $(ulTabs).append('<li><a href="#tabs-'+val+'">'+val+'</a></li>');
 				//divs = $(divs).append($('<div id="tabs-'+val+'"> </div>').append(createField(val)));
-				tab_content = createField(val);
-				$tabs.tabs( "add", '#tabs-'+val,val );
-			} 
-		});
+//				tab_content = createField(val);
+//				$tabs.tabs( "add", '#tabs-'+val,val );
+			//} 
+//		});
 		
 		
 		
