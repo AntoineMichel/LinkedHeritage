@@ -54,7 +54,15 @@
 		//TODO : take lang in account
 		return $.rdf({databank : d.ingraph.rdf.databank})
 				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-				.where(d.uri+" "+prop+" ?value");
+				.where(d.uri+" "+prop+" ?value")
+				.filter(function(){
+					if(lang){
+						return this.value.lang == lang;
+					}
+					//if lang is null don't filter
+					else return true;
+				})
+				;
 		
 	};
 	

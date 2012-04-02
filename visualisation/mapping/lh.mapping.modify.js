@@ -241,14 +241,55 @@
 		});
 	};
 	
+	$.fn.sem = function () {
+	    var self = this;
+	    self.subject = {};
+	    self.predicate = {};
+	    self.object = {};
+	    
+	    if (!this.data("sem")) {
+	        this.data("sem", {
+	           element: self,
+	           p : function(v){
+					if(!v){
+						return self.predicate;
+					}
+					else{
+						self.predicate = v;
+						self.attr("predicate",v);
+					}
+				},
+				o : function(o){
+					if(!o){
+						return self.object;
+					}
+					else{
+						self.object = o;
+						self.attr("language",o.lang);
+						o ? self.val(o.value) : self.attr("placeholder","Value not set for this language");
+					}
+				}
+	        });
+	    }
+
+	    return this.data("sem");
+	};
+
 	
 	lh.modify.buildDialog = function(d){
 		
 		function createField(p,o){
-			var overjq = semUI("<textarea rows='1' />");
+			//var overjq = semUI("<textarea rows='1' />");
 			var res = $("<textarea rows='1' />");
+			
+			
 			//attributes to identify the field
-			res.p = function(v){
+			//test rdf
+			//$(res).rdf().add('<photo1.jpg> dc:creator <http://www.blogger.com/profile/1109404> .',lh.history.ns);
+			//test extend
+			var ext = {};
+			//res.p = function(v){
+			/*ext.p = function(v){
 				if(!v){
 					return this.p._data;
 				}
@@ -256,8 +297,9 @@
 					this.p._data = v;
 					this.attr("predicate",p);
 				}
-			};
-			res.o = function(o){
+			};*/
+			//res.o = function(o){
+			/*ext.o = function(o){
 				if(!o){
 					return this.p._data;
 				}
@@ -267,9 +309,17 @@
 					o ? this.val(o.value) : this.attr("placeholder","Value not set for this language");
 				}
 			};
-			res.p(p);
-			res.o(o);
-			alert(res.p());
+			var t = $.extend(true, res, ext);
+			*/
+			//res.sem();
+			
+			var s = res.sem();
+			s.p(p);
+			s.o(o);
+//			res.p(p);
+//			res.o(o);
+			
+			//alert(res.p());
 			//$(res).attr("predicate",p);
 			//$(res).attr("language",o.lang);
 			//data = lh.sem.getPropValue(val, d);
@@ -318,7 +368,7 @@
 			var l = langSel.options[langSel.selectedIndex].value;
 			
 			//tab_content = createField(propName);
-			var emptyLit = $.rdf.literal("" , {lang : "fr"});
+			var emptyLit = $.rdf.literal("" , {lang : l});
 			tab_content = createField(propName,emptyLit);
 			$tabs.tabs("add","#tabs-"+propName.value.fragment,propName.value.fragment,($tabs.tabs("length") - 1));
 			//open the just created tab
@@ -376,11 +426,14 @@
 				function(){
 					var lang = this.options[this.selectedIndex].value; 
 					$( "#dialog-form textarea" ).each(function(n){
+						var s = $(this).sem();
+						alert(s.p());
 						$(this).attr("language",lang);
 						//propObjList.
 						var val = lh.sem.getPropValue($(this).attr("predicate"),d, lang);
-						
-						val ? $(this).val(val) : $(this).val("");
+						alert("use the $(this). and $(this).o properties to update filed content");
+						//$(this).p();
+						//val ? $(this).val(val) : $(this).val("");
 					});
 		});
 		
@@ -392,6 +445,7 @@
 		var $tabs = $("#tabs").tabs({
 			tabTemplate: tabTemplateWithClose,
 			add: function( event, ui ) {
+				//var testADD = $( ui.panel ).add("<div></div>");
 				$( ui.panel ).append(tab_content);
 				$(ui.tab.nextElementSibling).click(function(){
 					var index = $( "li", $tabs ).index( $( this ).parent() );
