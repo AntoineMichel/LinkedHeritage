@@ -250,6 +250,15 @@
 	    if (!this.data("sem")) {
 	        this.data("sem", {
 	           element: self,
+	           s : function(v){
+					if(!v){
+						return self.subject;
+					}
+					else{
+						self.subject = v;
+						self.attr("about",v);
+					}
+	           },
 	           p : function(v){
 					if(!v){
 						return self.predicate;
@@ -279,51 +288,12 @@
 	lh.modify.buildDialog = function(d){
 		
 		function createField(p,o){
-			//var overjq = semUI("<textarea rows='1' />");
 			var res = $("<textarea rows='1' />");
-			
-			
-			//attributes to identify the field
-			//test rdf
-			//$(res).rdf().add('<photo1.jpg> dc:creator <http://www.blogger.com/profile/1109404> .',lh.history.ns);
-			//test extend
-			var ext = {};
-			//res.p = function(v){
-			/*ext.p = function(v){
-				if(!v){
-					return this.p._data;
-				}
-				else{
-					this.p._data = v;
-					this.attr("predicate",p);
-				}
-			};*/
-			//res.o = function(o){
-			/*ext.o = function(o){
-				if(!o){
-					return this.p._data;
-				}
-				else{
-					this.p._data = o;
-					this.attr("language",o.lang);
-					o ? this.val(o.value) : this.attr("placeholder","Value not set for this language");
-				}
-			};
-			var t = $.extend(true, res, ext);
-			*/
-			//res.sem();
 			
 			var s = res.sem();
 			s.p(p);
 			s.o(o);
-//			res.p(p);
-//			res.o(o);
 			
-			//alert(res.p());
-			//$(res).attr("predicate",p);
-			//$(res).attr("language",o.lang);
-			//data = lh.sem.getPropValue(val, d);
-			//data = po.o;
 			o ? $(res).val(o.value) : $(res).attr("placeholder","Value not set for this language");
 			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
 			 * see tabs for 1st part of workaround
@@ -348,17 +318,43 @@
 			return res;
 		};
 		
-		function createFields(po){
-			var $container = $("<div> </div>");
-			//var data = po.o;
-			var $field = $("<p> </p>");
-			if($.isArray(po.o)){
-				po.o.forEach(function(vo,i){
-					$container = $field.append(createField(po.p,vo));
-				});
-			}else{
-				$container = $field.append(createField(po.p,po.o));
+		
+		
+		
+		//create field and init container if $container null
+		//update $container if not null
+		function createFields(p,o,lang,$container){
+			if(!$container){
+				$container = $("<div> </div>");
+				//class for identify the sem container
+				$container.attr("class","semContainer");
 			}
+			var s = $container.sem();
+			s.p(p);
+			s.o(o);
+			
+			var fo = o;
+			if(lang){
+				fo = o.filter(function(d,i){
+					return d.lang == lang || d.type == "uri";
+					//alert("filter po by lang");
+				});
+				
+			}
+			//s.o(po.o);
+			//TODO : use the field separator in container append
+			var fieldSeparator = "<p> </p>";
+			//if($.isArray(o)){
+				fo.forEach(function(vo,i){
+					$container = $container.append($("<p> </p>").append(createField(p,vo)));
+				});
+				//create an empty field when the properti don't exist in the language
+				if(fo.length == 0){
+					$container = $container.append($("<p> </p>").append(createField(p,null)));
+				}
+			/*}else{
+				$container = $container.append($("<p> </p>").append(createField(p,o)));
+			}*/
 			return $container;
 		}
 		
@@ -424,8 +420,21 @@
 		
 		lh.utils.langSelector( $("#modifyLang"), d.ingraph.langArray,
 				function(){
-					var lang = this.options[this.selectedIndex].value; 
-					$( "#dialog-form textarea" ).each(function(n){
+					var lang = this.options[this.selectedIndex].value;
+					//select all .semContainer that are not tabs-add 
+					//TODO : check if (id!='tabs-add']) is necessary
+					$("#dialog-form  *[id^='tabs-'][id!='tabs-add'] .semContainer").each(function(t){
+						alert("in");
+						var emptyLit = $.rdf.literal("" , {lang : lang});
+						//alert($(this).sem().p());
+						$(this).empty();
+						tab_content = createFields($(this).sem().p(),$(this).sem().o(),lang,$(this));
+						
+						//$(this).append(tab_content);
+						
+					});
+					
+					/*$( "#dialog-form textarea" ).each(function(n){
 						var s = $(this).sem();
 						alert(s.p());
 						$(this).attr("language",lang);
@@ -434,7 +443,7 @@
 						alert("use the $(this). and $(this).o properties to update filed content");
 						//$(this).p();
 						//val ? $(this).val(val) : $(this).val("");
-					});
+					});*/
 		});
 		
 		
@@ -470,18 +479,46 @@
 		
 		txt = "";
 		var a = skosOnto.getValues();
+		var lang = d.ingraph.curLang;
 		var propObjList = $.rdf({databank : d.ingraph.rdf.databank})
 						.prefix("skos","http://www.w3.org/2004/02/skos/core#")
 						.where(d.uri+" ?p ?o")
+						/*.filter(function(){
+                                       if(lang){
+                                               return this.o.lang == lang;
+                                       }
+                                       //if lang is null don't filter
+                                       else return true;
+                         })*/
 						.group('p');
-		//propObjList.group();
+		
+		function tabRenderer(lang){
+			tab_content = createFields(this.p,this.o,lang);
+			$tabs.tabs( "add", '#tabs-'+this.plainName,this.plainName );
+		};
+		
+		//TODO : make the propertieBoxes an object and create the .render(lang) func
+		d.propertiesBoxes = [];
 		propObjList.each(function(i,po){
 			//TODO : here we limit to literal, see UI for remove this limitation (link ?)
 			//also, use the type/link filter to only get literal
 			if(po.p != "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"){
-				tab_content = createFields(po);
-				$tabs.tabs( "add", '#tabs-'+po.p.value.fragment,po.p.value.fragment );
+				
+				var propBox = {};
+				propBox.p = po.p;
+				//!$.isArray(po.o) ? propBox.o = [po.o] : propBox.o = po.o ;
+				propBox.o = toArray(po.o);
+				propBox.plainName = po.p.value.fragment;
+				propBox.template = tabRenderer;
+				d.propertiesBoxes.push(propBox);
+//				tab_content = createFields(po);
+//				$tabs.tabs( "add", '#tabs-'+po.p.value.fragment,po.p.value.fragment );
 			}
+		});
+		
+		d.propertiesBoxes.forEach(function(pb,i){
+			//TODO call this function render, into each propBox but also on the global object propertieBox
+			pb.template.call(pb,lang);
 		});
 		//a.forEach(function(val){ 
 			//if(d[val]){
