@@ -4,7 +4,7 @@
 	
 	toArray = function(v){
 		return [].slice.call(v);
-	}
+	};
 	
 	//TODO : create a lib for array management
 	//look at array imps here and see if include in the lib : https://github.com/mbostock/d3/wiki/Arrays#wiki-d3_nest	
@@ -136,7 +136,7 @@
 ///		ev[1] = f;
 		//ev[1] = typeof f === "function" ? f.call() : f;
 		lh.utils.ta.push(ev);
-	}
+	};
 	
 	lh.utils.processEvent = function(){
 		//$("#mover").text("process " + Date.now());
@@ -158,7 +158,7 @@
 			lh.utils.ta.splice(t,1);
 		});
 		//$("#mover").text("process " + JSON.stringify(lh.utils.ta));
-	}
+	};
 	
 	var processID;
 	//

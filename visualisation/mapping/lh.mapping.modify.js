@@ -16,13 +16,15 @@
 	
 	
 	//check if value have changed
-	function isValueChanged(o,p,d,l){
-		
+	/*function isValueChanged(o,p,d,l){
 		if(o == lh.sem.getPropValue(p,d,l)) return false;
 		if ((o=="") && (lh.sem.getPropValue(p,d,l) == null)) return false;
-		
 		return true;
-		
+	}*/
+	function isValueChanged(o,oldo){
+		if(o == oldo) return false;
+		if ((o=="") && (oldo == null)) return false;
+		return true;
 	}
 	
 	lh.modify = {};
@@ -60,6 +62,7 @@
 	    self.subject = {};
 	    self.predicate = {};
 	    self.object = {};
+	    self.triple = {};
 	    
 	    if (!this.data("sem")) {
 	        this.data("sem", {
@@ -91,6 +94,14 @@
 						self.attr("language",o.lang);
 						o ? self.val(o.value) : self.attr("placeholder","Value not set for this language");
 					}
+				},
+				triple : function(trp){
+					if(!trp){
+						return self.triple;
+					}
+					else{
+						self.triple = trp;
+					}
 				}
 	        });
 	    }
@@ -105,10 +116,16 @@
 			var res = $("<textarea rows='1' />");
 			
 			var s = res.sem();
+			//set the subject as it's used for create the history file
+			s.s(d.uri);
 			s.p(p);
 			s.o(o);
+			s.triple($.rdf.triple(d.uri,p,o,lh.history.ns));
 			
-			o ? $(res).val(o.value) : $(res).attr("placeholder","Value not set for this language");
+			//o ? $(res).val(o.value) : $(res).attr("placeholder","Value not set for this language");
+			$(res).val(o.value);
+			$(res).attr("placeholder","Value not set for this language");
+			
 			/* workaround for https://github.com/padolsey/jQuery.fn.autoResize/issues/35
 			 * see tabs for 1st part of workaround
 			 */
@@ -120,15 +137,19 @@
 				});
 			
 			$(res).focusout(function(){
-				o = $(this).val(); 
-				p = $(this).attr("predicate");
-				l = $(this).attr("language");
-				
-				if(isValueChanged(o,p,d,l)){
-					lh.history.update(d,p,o,l);
-				} 
+				var o = $(this).val(); 
+				var p = $(this).attr("predicate");
+				var l = $(this).attr("language");
+				var sem = $(this).sem();
+				/*var s = sem.s();
+				var p = sem.p();
+				var o = sem.o();*/
+				//if(isValueChanged(o,p,d,l)){
+				if(isValueChanged(o,sem.o().value)){
+					//lh.history.update(d,p,o,l);
+					lh.history.update(sem.triple(),p,o,l);
+				} ;
 			});
-			
 			return res;
 		};
 		
@@ -151,7 +172,6 @@
 			if(lang){
 				fo = o.filter(function(d,i){
 					return d.lang == lang || d.type == "uri";
-					//alert("filter po by lang");
 				});
 				
 			}
@@ -162,9 +182,12 @@
 				fo.forEach(function(vo,i){
 					$container = $container.append($("<p> </p>").append(createField(p,vo)));
 				});
-				//create an empty field when the properti don't exist in the language
+				//create an empty field when the property don't exist in the language
 				if(fo.length == 0){
-					$container = $container.append($("<p> </p>").append(createField(p,null)));
+					//TODO : deal with case where it's not a literal that come in
+					//use the more generic constructor (with the type:"" property)
+					var onull = $.rdf.literal("",{lang : lang});
+					$container = $container.append($("<p> </p>").append(createField(p,onull)));
 				}
 			/*}else{
 				$container = $container.append($("<p> </p>").append(createField(p,o)));
@@ -208,56 +231,18 @@
 		
 		var node = d;
 		
-		//**** TODO : use lh.history.createLocalChange
-		//define the base for this localhistory
-		lh.history.ns.base = d.ingraph.history.hroot.toString();
-		lh.history.hRootNode = $.rdf.resource("<"+d.ingraph.history.hroot+">");
-		
-		lh.history.rdfChanges = $.rdf.databank([],lh.history.ns);
-		
-		//lh.history.hRootNode = $.rdf.resource("<http://historyFILE.com/DO-GENERATE>");
-		//lh.history.hRootNode = "<"+d.ingraph.history.hroot+">";
-		//alert(lh.history.hRootNode);
-		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"a","h:history",lh.history.ns));
-		lh.history.rdfChanges.add($.rdf.triple(lh.history.hRootNode,"h:historyOf","<"+d.ingraph.graphURI+">",lh.history.ns));
-		
-		/*alert("test if != databank");
-		var serializer = new XMLSerializer();
-		var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
-		var graphdump = d.ingraph.history.rdfChanges.dump({format:'application/rdf+xml'});
-		alert(serializer.serializeToString(localdump));
-		alert(serializer.serializeToString(graphdump));
-		alert("end test");*/
-		
-		//**** TODO : end use lh.history.createLocalChange
-		
+		lh.history.initLocalChange(d.ingraph);
 		
 		lh.utils.langSelector( $("#modifyLang"), d.ingraph.langArray,
 				function(){
 					var lang = this.options[this.selectedIndex].value;
 					//select all .semContainer that are not tabs-add 
-					//TODO : check if (id!='tabs-add']) is necessary
+					//TODO : check if (id!='tabs-add']) is necessary, ie there is a .semContainer on ?
 					$("#dialog-form  *[id^='tabs-'][id!='tabs-add'] .semContainer").each(function(t){
-						alert("in");
 						var emptyLit = $.rdf.literal("" , {lang : lang});
-						//alert($(this).sem().p());
 						$(this).empty();
 						tab_content = createFields($(this).sem().p(),$(this).sem().o(),lang,$(this));
-						
-						//$(this).append(tab_content);
-						
 					});
-					
-					/*$( "#dialog-form textarea" ).each(function(n){
-						var s = $(this).sem();
-						alert(s.p());
-						$(this).attr("language",lang);
-						//propObjList.
-						var val = lh.sem.getPropValue($(this).attr("predicate"),d, lang);
-						alert("use the $(this). and $(this).o properties to update filed content");
-						//$(this).p();
-						//val ? $(this).val(val) : $(this).val("");
-					});*/
 		});
 		
 		
@@ -356,28 +341,31 @@
 		$tabs.tabs( "option", "tabTemplate", tabTemplateWithClose);
 		
 		
+		lh.modify.save = function(){
+			var dump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
+			var serializer = new XMLSerializer();
+			var xmldump = serializer.serializeToString(dump); 
+			//send change history to the server
+			/*$.ajax({
+				url : lh.server+"skosifier/changes",
+				type : "POST",
+				data : {change : xmldump},
+			}).done(function( msg ) {
+				//TODO : a fadin fadout message for says ok
+				  //alert( "Data Saved: " + msg );
+			});
+			*/
+			lh.history.apply(lh.history.rdfChanges,d.ingraph.rdf.databank);
+			var cdos = $.rdf({databank : d.ingraph.rdf.databank})
+				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
+				.where(d.uri + " skos:prefLabel ?o");
+			return d;
+		};
+		
+	//end of lh.modify.buildDialog	
 	};
 	
-	lh.modify.save = function(){
-		var dump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
-		var serializer = new XMLSerializer();
-		var xmldump = serializer.serializeToString(dump); 
-		//send change history to the server
-		$.ajax({
-			url : lh.server+"skosifier/changes",
-			type : "POST",
-			data : {change : xmldump},
-		}).done(function( msg ) {
-			//TODO : a fadin fadout message for says ok
-			  //alert( "Data Saved: " + msg );
-		});
-			
-		
-		
-		//alert("after");
-		//alert(JSON.stringify(lh.history.changes));
-		return d;
-	};
+	
 		
 	/*lh.modify.revertChanges = function(){
 		lh.history.changes.values.reverse().forEach(function(c){
