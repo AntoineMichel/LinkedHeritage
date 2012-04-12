@@ -172,7 +172,7 @@
 })();
 
 //NS for graph function
-lh.graph = {};
+//lh.graph = {};
 
 //var tOut = Array();
 var ltb ;
@@ -251,10 +251,9 @@ function initGraphDisplay(){
 	//
 	
 	//init the graph zone for links
-	var graphLink = svgZone.append("g")
-		.attr("id", "graphLink");
-	
-	
+	/*var graphLink = svgZone.append("g")
+		.attr("id", "graphLink");*/
+	var graphLink = new lh.graph(svgZone.append("g").attr("id", "graphLink"));
 	/*****
 	 * Tool bar related code
 	 */
@@ -341,7 +340,7 @@ function initGraphDisplay(){
 	var graphOneURL = getURLargs()["uri"];
 	if(graphOneURL){
 		getGraph(graphOne,graphOneURL);
-	}
+	};
 	
 	//loading the graphLink
 	// !! use this when the 2 graphs are loaded or near to be loaded
@@ -372,7 +371,7 @@ function initGraphDisplay(){
 				//remove the graph lang content
 				$(curLangSelector).empty();
 				//remove the graphLink content
-				graphLink.selectAll("path.mapLink")
+				graphLink.svg.selectAll("path.mapLink")
 					.transition()
 					.duration(duration*2)
 					//.attr("style", "fill:red")
@@ -414,7 +413,11 @@ function initGraphDisplay(){
 				});
 			}else{alert("No graph loaded in this repository, please import one !");}
 			$("#graphOneChoice").html(opt);
+			if(graphOneURL){ //load the default value if passed in url
+				$("#graphOneChoice").val(graphOneURL);
+			}
 			$("#graphTwoChoice").html(opt);
+			//TODO : do the same default loading when paramter for 2 graph exist
 			$("#graphOneChoice").change(function(){
 				graphChoiceChange("#graphOneChoice","#graphOneLang",graphOne,"#graphTwoChoice","#graphTwoLang",graphTwo);
 			});
@@ -672,7 +675,7 @@ function initGraphDisplay(){
 	function linkMouseMove(){
 		//allow click event to passthrow the link
 		var offset = 3;
-		mp = d3.svg.mouse(graphLink.node());
+		mp = d3.svg.mouse(graphLink.svg.node());
 		
 		//get the starting point coord
 		var pt = nodeLinkObj.node().getPointAtLength(0);
@@ -699,7 +702,7 @@ function initGraphDisplay(){
 		
 		pt = pt.matrixTransform(nl.sourceDOM.getCTM());
 		
-		nodeLinkObj = graphLink.append("path")
+		nodeLinkObj = graphLink.svg.append("path")
 			.attr("class", "tempLink")
 			.attr("d", function(r) {
 	    	  //return diagonal([[60, 60],[pt.x,pt.y]]);
@@ -822,7 +825,7 @@ function initGraphDisplay(){
 		
 		//TODO : have a clean impl beetween stored links and created ones
 		// !!! use another property "storedMapLink"
-		var link = graphLink.selectAll("path.maplink").data(semNodes, function(d){
+		var link = graphLink.svg.selectAll("path.maplink").data(semNodes, function(d){
 			return d.id || (d.id == ++i);
 		});
 		
@@ -839,7 +842,7 @@ function initGraphDisplay(){
 			//update link position if nodes moved
 			link.transition().duration(duration).attr("d", function(d){
 				return getCTMDiagonal(d);
-			})
+			});
 		
 		  link.exit().remove();
 		
@@ -867,14 +870,12 @@ function initGraphDisplay(){
 		//var graphLink = svgZone.append("g").attr("transform", "translate(" + m[3] + "," + m[0] + ")")
 		//.attr("id", "graphLink");
 		//mapLinks = [1,2,3,4,5,6];
-		//var ll = graphLink.selectAll("path.link").remove();
 		
 		var filtered = mapLinks.filter(function(d,i){
 			return (d.source.displayed && d.target.displayed);
 		});
 		
-		var link = graphLink.selectAll("path.mapLink")
-		//.data(mapLinks, function(d,i){
+		var link = graphLink.svg.selectAll("path.mapLink")
 			.data(filtered, function(d,i){
 			return d.id || (d.id = ++i);});
 	
@@ -898,7 +899,7 @@ function initGraphDisplay(){
 		//update link position if nodes moved
 		link.transition().duration(duration).attr("d", function(d){
 			return getCTMDiagonal(d);
-		})
+		});
 	  // Transition links to their new position.
 	  /*link.transition()
 	      .duration(duration)
@@ -1333,18 +1334,6 @@ function initGraphDisplay(){
 		  }
 		
 		graphName.root = {};
-		/*var rootf = json["@subject"];
-		var objWithBroader = rootf.filter(function (p){return p.broader != null;});
-		var objParent = rootf.filter(function(p){return p.broader == null;});
-		
-		graphName.root = json;
-	  
-		graphName.root.ingraph = graphName;
-	  
-		graphName.root.children = objParent;
-		graphName.root.children.forEach(getChildren);
-		graphName.root.children.forEach(collapse);
-		*/
 		
 		graphName.root.x0 = 10;
 		graphName.root.y0 = 0;

@@ -356,9 +356,6 @@
 			});
 			*/
 			lh.history.apply(lh.history.rdfChanges,d.ingraph.rdf.databank);
-			var cdos = $.rdf({databank : d.ingraph.rdf.databank})
-				.prefix("skos","http://www.w3.org/2004/02/skos/core#")
-				.where(d.uri + " skos:prefLabel ?o");
 			return d;
 		};
 		
