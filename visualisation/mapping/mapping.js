@@ -169,6 +169,15 @@
 	};
 	//TODO add a lh.utils.stopProcess
 	
+	
+	//TODO : move to an utility class or better overload the rdf.fn
+	//Check if a databank contain a particular triple
+	lh.contains = function (databank, triple) {
+		var match = $.rdf({databank : databank}, lh.history.ns)
+			.where(triple.subject+" "+triple.property+" "+" "+triple.object);
+		return !(match.length == 0);
+	};
+	
 })();
 
 //NS for graph function
@@ -630,23 +639,34 @@ function initGraphDisplay(){
 					var selNode = $("#tolSelect")[0];
 					var selectedProp = selNode.options[selNode.selectedIndex].value;
 					if(selectedProp != selectAValueMessage){
-						var semObj = {
+						/*var semObj = {
 								"@subject" : nl.source["@subject"],
-								selectedProp : nl.target["@subject"]
-						};
+								selectedProp : nl.target["@subject"]};*/
 						
-						var s = $.rdf.resource("<"+nl.source["@subject"]+">",lh.history.ns);
+						alert("use nl.source.uri");
+						var s = nl.source.uri;
 						var p = $.rdf.resource("skos:"+selectedProp,lh.history.ns);
-						var o = $.rdf.resource("<"+nl.target["@subject"]+">",lh.history.ns);
-						lh.history.newTriple(s,p,o);
-						
+						var o = nl.target.uri;
+						//lh.history.newTriple(s,p,o);
+						//TODO : remove this global reference. Use a local one instead
+						//graphLink.history.newTriple(s,p,o);
+						graphLink.newTriple(s,p,o);
 						/*alert("test results");
 						var serializer = new XMLSerializer();
-						var localdump = lh.history.rdfChanges.dump({format:'application/rdf+xml'});
-						alert(serializer.serializeToString(localdump));
-						*/
+						var localdump = graphLink.history.rdfChanges.dump({format:'application/rdf+xml'});
+						alert(serializer.serializeToString(localdump));*/
+						
+						
+						
+						
+						
+						
+						
+						
 						//commit changes to the server
-						lh.modify.save();
+						//alert("TODO: the commit !");
+						graphLink.commit();
+						//lh.modify.save();
 						
 					}
 					
@@ -668,7 +688,7 @@ function initGraphDisplay(){
 		initTOLDialogContent($tolBox);
 		
 		//$tolBox.dialog("option", "position", [x,y] );
-		lh.history.createLocalChange(graphLink);
+		//lh.history.createLocalChange(graphLink);
 		$tolBox.dialog("open");
 	}
 	
@@ -750,52 +770,53 @@ function initGraphDisplay(){
 		
 		$.ajax({
 			url : lh.server+"skosifier/graphlink?graphOne="+g1.graphURI+"&graphTwo="+g2.graphURI,
-			//dataType : "json",
 			headers : {"Accept":"application/rdf+xml"},
 			dataType : "xml",
 			success: function(data){
-				//alert("get graphLink");
-				//alert(JSON.stringify(data));
-				
-				graphLink.rdf = {};
+				/*graphLink.rdf = {};
 				graphLink.rdf.databank = $.rdf.databank([],
 	                      	{ base: 'http://www.example.org/',
                     		namespaces: { 
                     			skos: 'http://www.w3.org/2004/02/skos/core#',
                     			map: 'http://www.culture-terminology.org/ontology/mapping#'} }
 				);
-
-				graphLink.rdf.databank.load(data,{});
+				graphLink.rdf.databank.load(data,{});*/
+				var db = $.rdf.databank([],lh.history.ns);
+				db.load(data,{});
+				//TODO : ?? create and endpoint for getting graph(s) uri ?? 
 				//get the graphURI, normally unique for this graph
-				graphLink.graphURI = $.rdf({databank : graphLink.rdf.databank})
+				//graphLink.graphURI = $.rdf({databank : graphLink.rdf.databank})
+				var graphURI = $.rdf({databank : db})
 					.prefix('map', 'http://www.culture-terminology.org/ontology/mapping#')
 					.where("?root a map:graphMapping")
 					[0].root.value
 					;
-				//"@type": "http://www.culture-terminology.org/ontology/mapping#graphMapping",
+				//graphLink.seturi(graphURI);
+				//displayGraphLink(graphLink);
 				
-				//TODO : get history for this linkgraph
-				//var graphLinkURI = data["@subject"];
-				///alert("GRAPH LINK URI");
-				//alert(graphLink.graphURI);
-				//graphLink.graphURI = data["@subject"];
-				//alert(JSON.stringify(data));
-				getGraphHistory(graphLink, graphLink.graphURI);
-				//Diplay of this graphLink
-				//TODO : see display graph
-				graphLink.root = data;
-				displayGraphLink(graphLink);
+				graphLink.seturi(graphURI, function(){displayGraphLink(graphLink);});
 				
-				//displayGraph(graphLink,data);
+				/*queue(1)
+            		//.defer(function(){return getRDFGraph(uri);})
+        			.defer(graphLink.seturi,graphURI)
+        			.defer(displayGraphLink,graphLink)
+        			.await(function(error, results) {
+        				alert("YYOOOOOO");
+        				alert(results);
+        			});*/
+				
+				//alert("TODO : the rest !");
+				
 			}
 		});
 		
 	}
 	
 	function displayGraphLink(gr){
-		//alert("TODO : display existing");
+		//alert("In the display !!");
 		
-		var semNodes = $.rdf({databank : gr.rdf.databank})
+		//var semNodes = $.rdf({databank : gr.rdf.databank})
+		var semNodes = $.rdf({databank : gr.rdf})
 				.prefix('map', 'http://www.culture-terminology.org/ontology/mapping#')
 				//.where("?id ?p ?children")
 				.where("?sourceURI ?p ?targetURI")
@@ -1208,6 +1229,8 @@ function initGraphDisplay(){
 	/*********** End drag and drop ****/
 	
 	/********* History ******/
+	//@Deprecated
+	//TODO : use lh.graph and lh.histo objects instead
 	function getGraphHistory(graphName, graphURI){
 		$.ajax({
 			url : lh.server+"skosifier/history?for="+graphURI,
