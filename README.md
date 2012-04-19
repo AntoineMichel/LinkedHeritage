@@ -1,12 +1,14 @@
-TODO : 
 
-- create a launcher for lh : launcher that just embeded skosifier
+# Build server
 
-- solve bugin html UI of skosifier
+- $ cd launcher
+- $ mvn clean install
+- $ cd target
+- $ java -jar eu.lh.launcher-0.9.0-incubating-SNAPSHOT.jar
 
-- implements other http verb : 
--- like DEL for deleting a graph
--- like get for get a graph
--- like ... for modifications
+The server is now up and running on http://localhost:8080
 
-- clean javascripts in visualisation folder, just keep needed
+# Test the import and mapping UI
+
+- Set to your http server and access to the LinkedHeritage folder.
+- open your browser to http://yourserver/linkedHeritageFolder/visualisation

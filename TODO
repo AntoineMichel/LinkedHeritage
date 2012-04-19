@@ -1,5 +1,14 @@
 
 
+- implements other http verb : 
+-- like DEL for deleting a graph
+-- like get for get a graph
+-- like ... for modifications
+
+- clean javascripts in visualisation folder, just keep needed
+
+== history management
+
 * Ontology history management : 
 ** Actually - not showed on the UI - each modification is save and store in an history ontology file.
 ** This done under the hood, but future will give the user access to it and allow him : 
@@ -9,10 +18,6 @@
 ** Another good of this history management is that just the modification done is send to the server.
 *** So, it's fast, and if the server send modifications to others connected users... many users can colaboratively edit a thesaurus and see changes in "real time".
 *** Great feature no ? Comming soon ! :) 
-
-* Mapping management :
-** Visual meaning of links you can create many types of links... each type will have a specific design
-** Link filtering : display only links you are interested in ! 
 
 == Graph loading ==
 
@@ -25,8 +30,6 @@
 
 * define and create the js workflow for getting the history file
 ** the pb is related to the fact to only get "metadata" of the graph... because server side don't manage changes order
-
-* loading gadget during thesaurus loading
 
 * create from scratch
 
@@ -67,7 +70,6 @@ manage links displays for link in the same graph
 == Form ==
 
 === Metadata informations ===
-* voir avec hugo pour les champs du formulaire ? quels champs obligatoires ?
 
 * language : faire de la multi-selection
 
