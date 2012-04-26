@@ -120,22 +120,12 @@ public class Patch {
         	gToChange = tcManager.getMGraph((UriRef)trpForGraphToChange.getObject());
         	//get the list of changes
         	Iterator<Triple> changes = histoGraph.filter(h.getSubject(), LHOntology.change.getProperty(),null);
+        	//change list is sorted by date ascending
         	Collection<Triple> sc = sortChanges(changes,histoGraph);
-        	//TODO : be careful : the changes have to be sorted by date ascending before processing
-        	System.out.println("list of changes");
-        	//while(changes.hasNext()){
         	Iterator<Triple> isc = sc.iterator();
         	while(isc.hasNext()){
-        		//Triple c = changes.next();
         		Triple c = isc.next();
-        		System.out.println(c);
         		UriRef changeRef = (UriRef)c.getObject();
-        		
-        		//Collection<Triple> toRemove = new ArrayList<Triple>();
-        		//Collection<Triple> toAdd = new ArrayList<Triple>();
-        		
-        		//TODO : create a recursive function for traitment
-        		//for dealing with indice and lhontology.* ==> have an array with this properties and run throw this array
         		
         		//get changed subjects
         		Iterator<Triple> changedSubjects = histoGraph.filter(changeRef,LHOntology.subject.getProperty(),null);

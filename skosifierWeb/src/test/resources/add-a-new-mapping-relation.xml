@@ -1,27 +1,27 @@
 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:h="http://www.culture-terminology.org/ontoHisto/" xmlns:skos="http://www.w3.org/2004/02/skos/core#">
-	<h:history rdf:about="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995">
+	<h:history rdf:about="http://ontoHisto.test/histoGraph/1">
 		<h:historyOf rdf:resource="http://ontoHisto.testGraph/1"/>
-		<h:change rdf:resource="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#884a5153-6436-49ba-b380-ded7c04eb1fb"/>
+		<h:change rdf:resource="http://ontoHisto.test/change/1"/>
 	</h:history>
 
-	<h:change rdf:about="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#884a5153-6436-49ba-b380-ded7c04eb1fb">
+	<h:change rdf:about="http://ontoHisto.test/change/1">
 		<h:from rdf:resource="http://define.GRAPH.VERSION"/>
 		<h:date rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1334747282371</h:date>
 		<h:user>default user</h:user>
-		<h:subject rdf:resource="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#490cbb54-001d-4293-8b23-5541caf9d7ba"/>
+		<h:subject rdf:resource="http://ontoHisto.test/change/1/subject/1"/>
 	</h:change>
 
-	<h:subject rdf:about="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#490cbb54-001d-4293-8b23-5541caf9d7ba">
-		<h:newValue rdf:resource="http://www.culture-terminology.org/thesaurus/florent/thesaurus33/abf5bd51-e12e-4b53-b48c-e2e3a6e718eb"/>
-		<h:property rdf:resource="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#f99728b5-dfc3-44ac-9e80-8830b5072b4b"/>
+	<h:subject rdf:about="http://ontoHisto.test/change/1/subject/1">
+		<h:newValue rdf:resource="http://www/subject/1"/>
+		<h:property rdf:resource="http://ontoHisto.test/change/1/property/1"/>
 	</h:subject>
 	
-	<h:property rdf:about="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#f99728b5-dfc3-44ac-9e80-8830b5072b4b">
-		<h:newValue rdf:resource="http://www.w3.org/2004/02/skos/core#broader"/>
-		<h:object rdf:resource="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#fb8f1f12-f46d-47b3-aa18-e47216a6edd5"/>
+	<h:property rdf:about="http://ontoHisto.test/change/1/property/1">
+		<h:newValue rdf:resource="http://www/prop/broader"/>
+		<h:object rdf:resource="http://ontoHisto.test/change/1/object/1"/>
 	</h:property>
 
-	<h:object rdf:about="http://www.culture-terminology.org/ontoHisto/3194b67d-6232-43d9-abbd-cc770f7eb995#fb8f1f12-f46d-47b3-aa18-e47216a6edd5">
-		<h:newValue rdf:resource="http://www.culture-terminology.org/thesaurus/florent/thesaurus44/95e176d6-4e04-431f-97fd-21af3ad6de13"/>
+	<h:object rdf:about="http://ontoHisto.test/change/1/object/1">
+		<h:newValue rdf:resource="http://www/object/broader"/>
 	</h:object>
 </rdf:RDF>
