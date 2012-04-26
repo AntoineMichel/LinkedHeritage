@@ -73,6 +73,7 @@ import org.apache.stanbol.enhancer.servicesapi.rdf.TechnicalClasses;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONArray;
+import org.lh.stanbol.ontoHisto.Patch;
 import org.mortbay.util.ajax.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,14 +285,6 @@ public class SkosifierRootResource<e> extends BaseStanbolResource {
     	return okGraphResponse(headers, mg);
     }
     
-    
-    //convenient method to translate filter's iterator to a collection
-    private Collection<Triple> toCollection(Iterator<Triple> iter){
-    	Collection<Triple> res = new ArrayList<Triple>();
-    	while(iter.hasNext()) res.add(iter.next());
-    	return res;
-    }
-    
     //end point for getting history of a graph
     @Path("/history")
     @GET
@@ -348,248 +341,13 @@ public class SkosifierRootResource<e> extends BaseStanbolResource {
     public Response changeCommit(@FormParam(value ="change") String jsonConfig, 
     								@Context HttpHeaders headers) throws EngineException, IOException {
         
-    	MGraph gToChange = null;
+    	Patch p = new Patch();
+    	//TODO : get format from the headers
+    	//TODO : change the name of the variable jsonConfig
+    	Graph changeGraph = parser.parse(IOUtils.toInputStream(jsonConfig), "application/rdf+xml");
+    	MGraph gToChange = p.apply(changeGraph,tcManager);
     	
-        //TODO : get format from the headers
-    	//TODO : check if the json format is created as a parser
-        Graph changeGraph = parser.parse(IOUtils.toInputStream(jsonConfig), "application/rdf+xml");
-                
-        //processing history file
-        //get history "root"
-        Iterator<Triple> histories = changeGraph.filter(null, Properties.RDF_TYPE, LHOntology.history.getProperty());
-        
-        System.out.println("get histories");
-        while(histories.hasNext()){
-        	Triple h = histories.next();
-        	
-            //add this changes to the stored graph(s) history(ies)
-        	//TODO : this piece of code add all the history graph, potentially many histories
-        	//... ask clerezza how to get all related triples of a "base"/"root" triple
-        	MGraph historyG = tcManager.getMGraph((UriRef)h.getSubject());
-        	historyG.addAll(toCollection(changeGraph.filter(null, null, null)));
-        	//end adding the change graph to the global history graph
-        	
-        	//process
-        	//get the related graph, only get the first one (no mean to have many graphs here ?)
-        	Triple trpForGraphToChange = changeGraph.filter(h.getSubject(),LHOntology.historyOf.getProperty(),null).next();
-        	//get the modifiable graph
-        	gToChange = tcManager.getMGraph((UriRef)trpForGraphToChange.getObject());
-        	//get the list of changes
-        	Iterator<Triple> changes = changeGraph.filter(h.getSubject(), LHOntology.change.getProperty(),null);
-        	//TODO : be carefull : the changes have to be sorted by date ascending before processing
-        	System.out.println("list of changes");
-        	while(changes.hasNext()){
-        		Triple c = changes.next();
-        		System.out.println(c);
-        		UriRef changeRef = (UriRef)c.getObject();
-        		
-        		Collection<Triple> toRemove = new ArrayList<Triple>();
-        		Collection<Triple> toAdd = new ArrayList<Triple>();
-        		
-        		//TODO : create a recursive function for traitment
-        		//for dealing with indice and lhontology.* ==> have an array with this properties and run throw this array
-        		
-        		//get changed subjects
-        		Iterator<Triple> changedSubjects = changeGraph.filter(changeRef,LHOntology.subject.getProperty(),null);
-        		//get the change node
-        		while(changedSubjects.hasNext()){
-        			//DiffObject currentDiff = new DiffObject();
-        			List<Triple> rmTripleList = new ArrayList<Triple>();
-        			List<Triple> addTripleList = new ArrayList<Triple>();
-        			
-        			
-        			List<Resource> rmFilterTriple = new ArrayList<Resource>();
-        			rmFilterTriple.add(null);
-        			rmFilterTriple.add(null);
-        			rmFilterTriple.add(null);
-        			List<Resource> addTriple = new ArrayList<Resource>();
-        			addTriple.add(null);
-        			addTriple.add(null);
-        			addTriple.add(null);
-        			UriRef subjectToChange = (UriRef)changedSubjects.next().getObject();
-        			//normally unique
-        			NonLiteral subjectElement = (NonLiteral)changeGraph.filter(subjectToChange,LHOntology.element.getProperty(),null).next().getObject();
-        			//TODO : check if new value
-        			//do this mean something for the subject ? change the urn for the subject don't mean something...
-        			//this mean if the new value is delete, because then remove all the node
-        			Iterator<Triple> newSubjectList = changeGraph.filter(subjectToChange,LHOntology.newValue.getProperty(),null);
-        			NonLiteral newSubject = newSubjectList.hasNext() ? (NonLiteral)newSubjectList.next().getObject() : null; 
-        			
-        			Iterator<Triple> changedProps = changeGraph.filter(subjectToChange,LHOntology.property.getProperty(),null);
-        			
-        			if(newSubject != null){
-        				if (newSubject.equals(LHOntology.delete.getProperty())){
-        					rmFilterTriple.remove(0);
-        					rmFilterTriple.add(0,subjectElement);
-            			}
-        				else{
-        					rmFilterTriple.remove(0);
-        					rmFilterTriple.add(0,subjectElement);
-        					addTriple.remove(0);
-        					addTriple.add(0,newSubject);
-        				}
-        			}
-        			//if no newSubject, this is a modification of the triple or and addition
-        			else{
-        				rmFilterTriple.remove(0);
-        				rmFilterTriple.add(0,subjectElement);
-        				addTriple.remove(0);
-        				addTriple.add(0,subjectElement);
-        			}
-        			
-        			//if no properties changed, we want to remove the subject and all this properties
-        			if (!changedProps.hasNext()){
-        				rmTripleList.addAll(toCollection(gToChange.filter((NonLiteral)rmFilterTriple.get(0), null, null)));
-        				//rmFilterTriple.add(null);
-        				//rmFilterTriple.add(null);
-        			}
-        			
-        			
-        			System.out.println("get the subject to change");
-        			System.out.println(subjectElement);
-        			
-        			//get changed properties
-            		while(changedProps.hasNext()){
-            			UriRef propsToChange = (UriRef)changedProps.next().getObject();
-            			//normally unique
-            			UriRef propElement = (UriRef)changeGraph.filter(propsToChange,LHOntology.element.getProperty(),null).next().getObject();
-            			//check if new value
-            			Iterator<Triple> newPropList = changeGraph.filter(propsToChange,LHOntology.newValue.getProperty(),null);
-            			UriRef newProp = newPropList.hasNext() ? (UriRef)newPropList.next().getObject() : null; 
-            			
-            			//get changed objects
-                		Iterator<Triple> changedObjs = changeGraph.filter(propsToChange,LHOntology.object.getProperty(),null);
-            			
-            			if(newProp != null){
-            				if (newProp.equals(LHOntology.delete.getProperty())){
-            					rmFilterTriple.remove(1);
-            					rmFilterTriple.add(1,propElement);
-                			}
-            				else{
-            					rmFilterTriple.remove(1);
-            					rmFilterTriple.add(1,propElement);
-            					addTriple.remove(1);
-            					addTriple.add(1,newProp);
-            				}
-            			}
-            			//if no newSubject, this is a modification of the triple or and addition
-            			else{
-            				rmFilterTriple.remove(1);
-            				rmFilterTriple.add(1,propElement);
-            				addTriple.remove(1);
-            				addTriple.add(1,propElement);
-            			}
-            			//if no object changed, we want to remove the all object with this property
-            			if (!changedObjs.hasNext()){
-            				rmTripleList.addAll(toCollection(gToChange.filter((NonLiteral)rmFilterTriple.get(0), (UriRef)rmFilterTriple.get(1), null)));
-            				//rmTripleList.add(new TripleImpl());
-            				//rmFilterTriple.add(null);
-            			} 
-            			
-            			System.out.println("get the prop to change");
-            			System.out.println(propElement);
-            			
-            			/*** minimal block **/
-            			/*** note : for create a minimal block : 
-            			 * use an "anonymouse function
-            			 * change subject/property and object node by "atom" ou "tripleAtom" ou "tatom" (they are used for filter)
-            			 * see how to deal with delete on a property level : delete all properties don't "really" means something
-            			 */
-            			
-                		
-                		//get the change node
-                		while(changedObjs.hasNext()){
-                			UriRef objToChange = (UriRef)changedObjs.next().getObject();
-                			//normally unique
-                			//NonLiteral objElement = (NonLiteral)changeGraph.filter(objToChange,LHOntology.element.getProperty(),null).next().getObject();
-                			Resource objElement = (Resource)changeGraph.filter(objToChange,LHOntology.element.getProperty(),null).next().getObject();
-                			//check if new value
-                			Iterator<Triple> newObjList = changeGraph.filter(objToChange,LHOntology.newValue.getProperty(),null);
-                			Resource newObj = newObjList.hasNext() ? (Resource)newObjList.next().getObject() : null; 
-                			
-                			System.out.println("get the object to change");
-                			System.out.println(objElement);
-                			
-                			
-                			if(newObj != null){
-                				if (newObj.equals(LHOntology.delete.getProperty())){
-                					rmFilterTriple.remove(2);
-                					rmFilterTriple.add(2,objElement);
-                    			}
-                				else{
-                					rmFilterTriple.remove(2);
-                					rmFilterTriple.add(2,objElement);
-                					addTriple.remove(2);
-                					addTriple.add(2,newObj);
-                				}
-                			}
-                			//if no newSubject, this is a modification of the triple or and addition
-                			else{
-                				rmFilterTriple.remove(2);
-                				rmFilterTriple.add(2,objElement);
-                				addTriple.remove(2);
-                				addTriple.add(2,objElement);
-                			}
-                			
-                			rmTripleList.add(new TripleImpl((NonLiteral)rmFilterTriple.get(0), (UriRef)rmFilterTriple.get(1), rmFilterTriple.get(2)));
-                			
-                			//this test prevent from creating blank node
-                			//if(!addTriple.contains(null)){
-                			//this test is set up for prevent null properties
-                			if(!(addTriple.get(1) == null)){
-                				addTripleList.add(new TripleImpl((NonLiteral)addTriple.get(0), (UriRef)addTriple.get(1), addTriple.get(2)));
-                			}
-                			
-                			//if no object changed, we want to remove the all object with this property
-                			/*if (!changedObjs.hasNext()){
-                				rmFilterTriple.add(null);
-                			}*/
-                			
-                			/*
-                			//TODO : rework on this if to embrace all cases
-                			
-                			//if all newObj are null, nothing to change, just add
-                			if(newSubject == null && newProp == null && newObj == null){
-                				Triple add = new TripleImpl(subjectElement,propElement,objElement);
-                    			toAdd.add(add);
-                			}
-                			//if only newObject is not null, modification of the object
-                			if(newSubject == null && newProp == null && newObj != null){
-                				Triple rm = new TripleImpl(subjectElement,propElement,objElement);
-                    			toRemove.add(rm);
-                				Triple add = new TripleImpl(subjectElement,propElement,newObj);
-                    			toAdd.add(add);
-                			}
-                			
-                			//if only newPredicate is not null, modification on the predicate
-                			if(newSubject == null && newProp != null && newObj == null){
-                				Triple rm = new TripleImpl(subjectElement,propElement,objElement);
-                    			toRemove.add(rm);
-                				Triple add = new TripleImpl(subjectElement,newProp,objElement);
-                    			toAdd.add(add);
-                			}*/
-                			
-                			System.out.println("and so new element is.....");
-                			
-                			//System.out.println(add);
-                			
-                		}
-            			/*** end minimal block **/
-            			
-            		}
-            		gToChange.removeAll(rmTripleList);
-            		gToChange.addAll(addTripleList);
-        		}		
-        		
-//        		gToChange.removeAll(toRemove);
-//        		gToChange.addAll(toAdd);
-        		
-        	}
-        	
-        	
-        }
     	return okGraphResponse(headers, gToChange);
-
     }
     
     @Path("/skosdefinition")
